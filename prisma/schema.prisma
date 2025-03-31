@@ -1,0 +1,310 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PEMBELI
+  PENITIP
+  PEGAWAI
+  ORGANISASI
+}
+
+model Jabatan {
+  id_jabatan Int @id @default(autoincrement())
+  nama_jabatan String @db.VarChar(32)
+
+  pegawai Pegawai[] @relation("PegawaiToJabatan")
+
+  @@map("jabatan")
+}
+
+model Pegawai {
+  id_pegawai String @id @db.VarChar(16)
+  nama String @db.VarChar(255)
+  nomor_telepon String @db.VarChar(15)
+  komisi Float
+  tgl_lahir DateTime
+  id_jabatan Int 
+  penitipan_hunter Penitipan[] @relation("PenitipanToHunter")
+  penitipan_qc Penitipan[] @relation("PenitipanToPegawaiQC")
+  pengiriman_kurir Pengiriman[] @relation("PengirimanToKurir")
+
+  jabatan Jabatan @relation("PegawaiToJabatan", fields: [id_jabatan], references: [id_jabatan])
+
+  user User? @relation("UserToPegawai")
+
+  @@map("pegawai")
+}
+
+model Organisasi {
+  id_organisasi String @id @db.VarChar(16)
+  nama_organisasi String @db.VarChar(255)
+  alamat String @db.Text
+  nomor_telepon String @db.VarChar(15)
+  deskripsi String @db.VarChar(255)
+  request_donasi RequestDonasi[] @relation("RequestDonasiToOrganisasi")
+
+  user User? @relation("UserToOrganisasi")
+
+  @@map("organisasi")
+}
+
+model Penitip {
+  id_penitip String @id @db.VarChar(16)
+  nomor_ktp String @db.VarChar(32)
+  nama String @db.VarChar(255)
+  alamat String @db.VarChar(255)
+  nomor_telepon String @db.VarChar(15)
+  saldo Float
+  rating Float
+  total_review Float
+  jumlah_review Int
+  total_per_bulan Float
+  poin Int
+  penitipan Penitipan[] @relation("PenitipanToPenitip")
+
+  user User? @relation("UserToPenitip")
+
+  @@map("penitip")
+}
+
+model Pembeli {
+  id_pembeli String @id @db.VarChar(16) // ini awalnya integer
+  nama String @db.VarChar(255)
+  nomor_telepon String @db.VarChar(15)
+  poin_loyalitas Int
+  alamat Alamat[] @relation("AlamatToPembeli")
+  transaksi Transaksi[] @relation("TransaksiToPembeli")
+  keranjang Keranjang[] @relation("KeranjangToPembeli")
+
+  user User? @relation("UserToPembeli")
+  redeem_merch RedeemMerchandise[] @relation("RedeemMerchToPembeli")
+
+  @@map("pembeli")
+}
+
+model Alamat {
+  id_alamat Int @id @default(autoincrement())
+  nama_alamat String @db.VarChar(255)
+  detail_alamat String @db.VarChar(255)
+  status_default Boolean @default(false)
+  id_pembeli String @db.VarChar(16)
+  pengiriman Pengiriman[] @relation("PengirimanToAlamat")
+
+  pembeli Pembeli @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_alamat_to_pembeli")
+}
+
+model User {
+  id_user Int @id @default(autoincrement())
+  email String @unique
+  password String
+  role Role @default(PEMBELI) // ini diganti enum, awalnya varchar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id_referensi String @unique @db.VarChar(16)
+  diskusi Diskusi[] @relation("DiskusiToUser")
+  
+  pegawai Pegawai? @relation("UserToPegawai", fields: [id_referensi], references: [id_pegawai], map: "fk_user_to_pegawai")
+  organisasi Organisasi? @relation("UserToOrganisasi", fields: [id_referensi], references: [id_organisasi], map: "fk_user_to_organisasi")
+  penitip Penitip? @relation("UserToPenitip", fields: [id_referensi], references: [id_penitip], map: "fk_user_to_penitip")
+  pembeli Pembeli? @relation("UserToPembeli", fields: [id_referensi], references: [id_pembeli], map: "fk_user_to_pembeli")
+
+  @@map("users")
+}
+
+model RedeemMerchandise {
+  id_redeem_merch Int @id @default(autoincrement()) // ini juga diganti
+  tanggal_redeem DateTime
+  id_pembeli String @db.VarChar(16)
+  detail_redeem DetailRedeemMerchandise[] @relation("DetailRedeemToRedeemMerch")
+
+  pembeli Pembeli @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_redeem_merch_to_pembeli")
+
+  @@map("redeem_merchandise") // awalnya redeemmerchandise
+}
+
+model Merchandise {
+  id_merchandise Int @id @default(autoincrement())
+  nama_merch String @db.VarChar(255)
+  harga_poin Int
+  stok Int
+  detail_redeem DetailRedeemMerchandise[] @relation("DetailRedeemToMerchandise")
+
+  @@map("merchandise")
+}
+
+model DetailRedeemMerchandise {
+  id_dtl_redeem_merch Int @id @default(autoincrement()) // ini juga diganti namanya
+  jumlah_merch Int
+  id_redeem_merch Int 
+  id_merchandise Int
+
+  redeem_merch RedeemMerchandise @relation("DetailRedeemToRedeemMerch", fields: [id_redeem_merch], references: [id_redeem_merch], map: "fk_detail_redeem_to_redeem_merch")
+  merchandise Merchandise @relation("DetailRedeemToMerchandise", fields: [id_merchandise], references: [id_merchandise], map: "fk_detail_redeem_to_merchandise")
+
+  @@map("dtl_redeem_merch") // awalnya dtl_redeemmerch
+}
+
+model Kategori {
+  id_kategori Int @id @default(autoincrement())
+  nama_kategori String @db.VarChar(255)
+  barang Barang[] @relation("BarangToKategori")
+
+  @@map("kategori")
+}
+
+model Barang {
+  id_barang String @id @db.VarChar(16)
+  nama_barang String @db.VarChar(255)
+  deskripsi String @db.VarChar(255)
+  harga Float
+  status String @db.VarChar(32)
+  garansi DateTime
+  berat Float
+  id_kategori Int
+  diskusi Diskusi[] @relation("DiskusiToBarang")
+  keranjang Keranjang[] @relation("KeranjangToBarang")
+  detail_transaksi DetailTransaksi? @relation("DetailTransaksiToBarang")
+  donasi Donasi? @relation("DonasiToBarang")
+  detail_penitipan DetailPenitipan? @relation("DetailPenitipanToBarang")
+
+  kategori Kategori @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], map: "fk_barang_to_kategori")
+
+  @@map("barang")
+}
+
+model Diskusi {
+  id_diskusi Int @id @default(autoincrement())
+  tanggal_diskusi DateTime
+  pesan String @db.VarChar(255)
+  id_barang String @db.VarChar(16)
+  id_user Int
+
+  barang Barang @relation("DiskusiToBarang", fields: [id_barang], references: [id_barang], map: "fk_diskusi_to_barang")
+  user User @relation("DiskusiToUser", fields: [id_user], references: [id_user], map: "fk_diskusi_to_user")
+
+  @@map("diskusi")
+}
+
+model Transaksi {
+  id_transaksi String @id @db.VarChar(16)
+  tanggal_transaksi DateTime
+  total_harga Float
+  status_Pembayaran String @db.VarChar(32)
+  tanggal_pembayaran DateTime
+  bukti_transfer String @db.VarChar(255)
+  poin Int
+  potongan_poin Int
+  metode_pengiriman String @db.VarChar(50)
+  ongkos_kirim Float
+  total_akhir Float
+  id_pembeli String @db.VarChar(16)
+  detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
+  pengiriman Pengiriman? @relation("PengirimanToTransaksi")
+
+  pembeli Pembeli @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_transaksi_to_pembeli")
+
+  @@map("transaksi")
+}
+
+model DetailTransaksi {
+  id_dtl_transaksi Int @id @default(autoincrement()) // awalnya varchar
+  id_barang String @unique @db.VarChar(16)
+  id_transaksi String @db.VarChar(16)
+
+  barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang")
+  transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi")
+
+  @@map("dtl_transaksi")
+}
+
+model Keranjang {
+  id_keranjang Int @id @default(autoincrement()) //awalnya char
+  id_barang String @db.VarChar(16)
+  id_pembeli String @db.VarChar(16)
+
+  barang Barang @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], map: "fk_keranjang_to_barang")
+  pembeli Pembeli @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_keranjang_to_pembeli")
+
+  @@map("keranjang")
+}
+
+model RequestDonasi {
+  id_request Int @id @default(autoincrement())
+  deskripsi String @db.VarChar(255)
+  tanggal_request DateTime
+  status String @db.VarChar(32)
+  id_organisasi String @db.VarChar(16)
+  donasi Donasi? @relation("DonasiToRequestDonasi")
+
+  organisasi Organisasi @relation("RequestDonasiToOrganisasi", fields: [id_organisasi], references: [id_organisasi], map: "fk_request_donasi_to_organisasi")
+
+  @@map("request_donasi") // awalnya requestdonasi
+}
+
+model Donasi {
+  id_donasi Int @id @default(autoincrement())
+  tanggal_donasi DateTime
+  nama_penerima String @db.VarChar(255)
+  id_barang String @unique @db.VarChar(16)
+  id_request Int @unique
+
+  barang Barang @relation("DonasiToBarang", fields: [id_barang], references: [id_barang], map: "fk_donasi_to_barang")
+  request RequestDonasi? @relation("DonasiToRequestDonasi", fields: [id_request], references: [id_request], map: "fk_donasi_to_request")
+
+  @@map("donasi")
+}
+
+model Penitipan {
+  id_penitipan String @id @db.VarChar(16)
+  tanggal_masuk DateTime
+  tanggal_akhir DateTime
+  tanggal_laku DateTime
+  batas_ambil DateTime
+  is_perpanjang Boolean @default(false) // awalnya isPerpanjang
+  id_penitip String @db.VarChar(16)
+  id_hunter String? @db.VarChar(16)
+  id_pegawai_qc String @db.VarChar(16)
+  detail_penitipan DetailPenitipan[] @relation("DetailPenitipanToPenitipan")
+
+  penitip Penitip @relation("PenitipanToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_penitipan_to_penitip")
+  hunter Pegawai? @relation("PenitipanToHunter", fields: [id_hunter], references: [id_pegawai], map: "fk_penitipan_to_hunter")
+  pegawai_qc Pegawai @relation("PenitipanToPegawaiQC", fields: [id_pegawai_qc], references: [id_pegawai], map: "fk_penitipan_to_qc")
+
+  @@map("penitipan")
+}
+
+model DetailPenitipan {
+  id_dtl_penitipan Int @id @default(autoincrement())
+  id_penitipan String @db.VarChar(16)
+  id_barang String @unique @db.VarChar(16) // jadi one to one ke barang
+  
+  penitipan Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], map: "fk_detail_penitipan_to_penitipan")
+  barang Barang @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_penitipan_to_barang")
+  
+  @@map("dtl_penitipan")
+}
+
+model Pengiriman {
+  id_pengiriman Int @id @default(autoincrement()) // awalnya varchar
+  tanggal DateTime
+  status_pengiriman String @db.VarChar(255)
+  id_kurir String @db.VarChar(16)  // awalnya id_pegawai
+  id_alamat Int
+  id_transaksi String @unique @db.VarChar(16)
+
+  kurir Pegawai @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
+  alamat Alamat @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat")
+  transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi")
+}
