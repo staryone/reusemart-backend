@@ -19,6 +19,7 @@
     "bcrypt": "^5.1.1",
     "express": "^4.21.2",
     "joi": "^17.13.3",
+    "uuid": "^11.1.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
@@ -27,8 +28,11 @@
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/supertest": "^6.0.3",
+    "@types/uuid": "^10.0.0",
     "babel-jest": "^29.7.0",
+    "fs": "^0.0.1-security",
     "jest": "^29.7.0",
+    "path": "^0.12.7",
     "prisma": "^6.5.0",
     "supertest": "^7.1.0"
   }
