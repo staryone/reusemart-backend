@@ -271,7 +271,7 @@ model Donasi {
 
 model Penitipan {
   id_penitipan String @id @db.VarChar(16)
-  tanggal_masuk DateTime
+  tanggal_masuk DateTime @default(now()) // tambah default now
   tanggal_akhir DateTime
   tanggal_laku DateTime
   batas_ambil DateTime
