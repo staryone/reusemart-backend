@@ -181,6 +181,7 @@ model Barang {
   status String @db.VarChar(32)
   garansi DateTime
   berat Float
+  path_gambar String @db.VarChar(255) // tambah atribut ini dibarang
   id_kategori Int
   diskusi Diskusi[] @relation("DiskusiToBarang")
   keranjang Keranjang[] @relation("KeranjangToBarang")

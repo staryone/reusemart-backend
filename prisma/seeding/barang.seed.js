@@ -12,6 +12,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2024-12-15"),
     berat: 2.5,
+    path_gambar: "path_gambar_dummy_1",
     id_kategori: 1,
   },
   {
@@ -24,6 +25,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2025-06-30"),
     berat: 0.2,
+    path_gambar: "path_gambar_dummy_2",
     id_kategori: 2,
   },
   {
@@ -36,17 +38,20 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2024-08-20"),
     berat: 5.0,
+    path_gambar: "path_gambar_dummy_3",
     id_kategori: 3,
   },
   {
     prefix: "B",
     id_barang: 4,
-    nama_barang: "Buku Novel 'Laskar Pelangi'",
-    deskripsi: "Novel best-seller karya Andrea Hirata, kondisi baru",
+    nama_barang: "Buku Novel Laskar Pelangi",
+    deskripsi:
+      "Novel best-seller karya Andrea Hirata, kondisi belum dibuka plastiknya",
     harga: 95000,
     status: "siap dijual",
     garansi: new Date("2025-09-10"),
     berat: 0.4,
+    path_gambar: "path_gambar_dummy_4",
     id_kategori: 4,
   },
   {
@@ -59,6 +64,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2024-11-01"),
     berat: 0.5,
+    path_gambar: "path_gambar_dummy_5",
     id_kategori: 5,
   },
   {
@@ -70,6 +76,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2025-12-25"),
     berat: 7.0,
+    path_gambar: "path_gambar_dummy_6",
     id_kategori: 6,
   },
   {
@@ -82,6 +89,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2024-06-05"),
     berat: 8.0,
+    path_gambar: "path_gambar_dummy_7",
     id_kategori: 7,
   },
   {
@@ -94,6 +102,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2025-07-15"),
     berat: 1.2,
+    path_gambar: "path_gambar_dummy_8",
     id_kategori: 8,
   },
   {
@@ -105,6 +114,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2024-03-10"),
     berat: 6.0,
+    path_gambar: "path_gambar_dummy_9",
     id_kategori: 9,
   },
   {
@@ -117,6 +127,7 @@ const listBarang = [
     status: "siap dijual",
     garansi: new Date("2025-05-20"),
     berat: 0.6,
+    path_gambar: "path_gambar_dummy_10",
     id_kategori: 10,
   },
 ];
