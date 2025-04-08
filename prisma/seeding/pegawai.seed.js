@@ -3,7 +3,8 @@ import { logger } from "../../src/application/logging.js";
 
 const listPegawai = [
   {
-    id_pegawai: "P1",
+    id_pegawai: 1,
+    id_user: 1,
     nama: "Frendy",
     nomor_telepon: "081221282818",
     komisi: 0,
@@ -11,7 +12,8 @@ const listPegawai = [
     id_jabatan: 1,
   },
   {
-    id_pegawai: "P2",
+    id_pegawai: 2,
+    id_user: 2,
     nama: "Alexander Fabian",
     nomor_telepon: "081321282817",
     komisi: 0,
@@ -19,7 +21,8 @@ const listPegawai = [
     id_jabatan: 2,
   },
   {
-    id_pegawai: "P3",
+    id_pegawai: 3,
+    id_user: 3,
     nama: "Stanyslaus Hary",
     nomor_telepon: "081411282816",
     komisi: 0,
@@ -27,7 +30,8 @@ const listPegawai = [
     id_jabatan: 2,
   },
   {
-    id_pegawai: "P4",
+    id_pegawai: 4,
+    id_user: 4,
     nama: "Sukarjo Maja",
     nomor_telepon: "081521282810",
     komisi: 0,
@@ -35,7 +39,8 @@ const listPegawai = [
     id_jabatan: 3,
   },
   {
-    id_pegawai: "P5",
+    id_pegawai: 5,
+    id_user: 5,
     nama: "Eni Manari",
     nomor_telepon: "081721282815",
     komisi: 0,
@@ -43,7 +48,8 @@ const listPegawai = [
     id_jabatan: 3,
   },
   {
-    id_pegawai: "P6",
+    id_pegawai: 6,
+    id_user: 6,
     nama: "Putri Sakoju",
     nomor_telepon: "081821282814",
     komisi: 0,
@@ -51,7 +57,8 @@ const listPegawai = [
     id_jabatan: 4,
   },
   {
-    id_pegawai: "P7",
+    id_pegawai: 7,
+    id_user: 7,
     nama: "Dewi Sekira",
     nomor_telepon: "082211282813",
     komisi: 0,
@@ -59,7 +66,8 @@ const listPegawai = [
     id_jabatan: 4,
   },
   {
-    id_pegawai: "P8",
+    id_pegawai: 8,
+    id_user: 8,
     nama: "Ahmad Jaya",
     nomor_telepon: "081621282112",
     komisi: 0,
@@ -67,7 +75,8 @@ const listPegawai = [
     id_jabatan: 5,
   },
   {
-    id_pegawai: "P9",
+    id_pegawai: 9,
+    id_user: 9,
     nama: "Fauzan Iman",
     nomor_telepon: "082121282119",
     komisi: 0,
@@ -75,7 +84,8 @@ const listPegawai = [
     id_jabatan: 5,
   },
   {
-    id_pegawai: "P10",
+    id_pegawai: 10,
+    id_user: 10,
     nama: "Hugo Palimasada",
     nomor_telepon: "081521282122",
     komisi: 0,
@@ -83,12 +93,49 @@ const listPegawai = [
     id_jabatan: 6,
   },
   {
-    id_pegawai: "P11",
+    id_pegawai: 11,
+    id_user: 11,
     nama: "Indah Pertiwi",
     nomor_telepon: "082322282142",
     komisi: 0,
     tgl_lahir: new Date("2004-06-17"),
     id_jabatan: 6,
+  },
+  {
+    id_pegawai: 12,
+    id_user: 12,
+    nama: "Budi Santoso",
+    nomor_telepon: "081921282123",
+    komisi: 0,
+    tgl_lahir: new Date("2001-05-15"),
+    id_jabatan: 3,
+  },
+  {
+    id_pegawai: 13,
+    id_user: 13,
+    nama: "Rina Wulandari",
+    nomor_telepon: "082021282124",
+    komisi: 0,
+    tgl_lahir: new Date("2002-03-20"),
+    id_jabatan: 3,
+  },
+  {
+    id_pegawai: 14,
+    id_user: 14,
+    nama: "Tina Amelia",
+    nomor_telepon: "081321282125",
+    komisi: 0,
+    tgl_lahir: new Date("2003-07-25"),
+    id_jabatan: 4,
+  },
+  {
+    id_pegawai: 15,
+    id_user: 15,
+    nama: "Rudi Hartono",
+    nomor_telepon: "082421282126",
+    komisi: 0,
+    tgl_lahir: new Date("2002-12-10"),
+    id_jabatan: 4,
   },
 ];
 

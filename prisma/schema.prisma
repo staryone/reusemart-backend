@@ -20,6 +20,24 @@ enum Role {
   ORGANISASI
 }
 
+model User {
+  id_user Int @id @default(autoincrement())
+  email String @unique
+  password String
+  role Role @default(PEMBELI) // ini diganti enum, awalnya varchar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  token String? @db.VarChar(255) // ini awalnya ga ada
+  diskusi Diskusi[] @relation("DiskusiToUser")
+  
+  pegawai Pegawai? @relation("PegawaiToUser")
+  organisasi Organisasi? @relation("OrganisasiToUser")
+  penitip Penitip? @relation("PenitipToUser")
+  pembeli Pembeli? @relation("PembeliToUser")
+
+  @@map("users")
+}
+
 model Jabatan {
   id_jabatan Int @id @default(autoincrement())
   nama_jabatan String @db.VarChar(32)
@@ -30,7 +48,9 @@ model Jabatan {
 }
 
 model Pegawai {
-  id_pegawai String @id @db.VarChar(16)
+  prefix String @db.Char(1) @default("P") // tambahkan prefix
+  id_pegawai Int @id @default(autoincrement()) // diganti ke int
+  id_user Int @unique // tambah id_user fk
   nama String @db.VarChar(255)
   nomor_telepon String @db.VarChar(15)
   komisi Float
@@ -40,28 +60,31 @@ model Pegawai {
   penitipan_qc Penitipan[] @relation("PenitipanToPegawaiQC")
   pengiriman_kurir Pengiriman[] @relation("PengirimanToKurir")
 
+  user User @relation("PegawaiToUser", fields: [id_user], references: [id_user], map: "fk_pegawai_to_user")
   jabatan Jabatan @relation("PegawaiToJabatan", fields: [id_jabatan], references: [id_jabatan])
-
-  user User? @relation("UserToPegawai")
 
   @@map("pegawai")
 }
 
 model Organisasi {
-  id_organisasi String @id @db.VarChar(16)
+  prefix String @db.Char(3) @default("ORG") // tambahkan prefix
+  id_organisasi Int @id @default(autoincrement()) // ubah ke integer
+  id_user Int @unique // tambah id_user fk
   nama_organisasi String @db.VarChar(255)
   alamat String @db.Text
   nomor_telepon String @db.VarChar(15)
   deskripsi String @db.VarChar(255)
   request_donasi RequestDonasi[] @relation("RequestDonasiToOrganisasi")
 
-  user User? @relation("UserToOrganisasi")
+  user User @relation("OrganisasiToUser", fields: [id_user], references: [id_user], map: "fk_organisasi_to_user")
 
   @@map("organisasi")
 }
 
 model Penitip {
-  id_penitip String @id @db.VarChar(16)
+  prefix String @db.Char(1) @default("T") // tambahkan prefix
+  id_penitip Int @id @default(autoincrement()) // ubah ke integer
+  id_user Int @unique // tambah id_user fk
   nomor_ktp String @db.VarChar(32)
   nama String @db.VarChar(255)
   alamat String @db.VarChar(255)
@@ -74,13 +97,14 @@ model Penitip {
   poin Int
   penitipan Penitipan[] @relation("PenitipanToPenitip")
 
-  user User? @relation("UserToPenitip")
+  user User @relation("PenitipToUser", fields: [id_user], references: [id_user], map: "fk_penitip_to_user")
 
   @@map("penitip")
 }
 
 model Pembeli {
-  id_pembeli String @id @db.VarChar(16) // ini awalnya integer
+  id_pembeli Int @id @default(autoincrement()) // tetap integer
+  id_user Int @unique // tambah id_user fk
   nama String @db.VarChar(255)
   nomor_telepon String @db.VarChar(15)
   poin_loyalitas Int
@@ -88,7 +112,7 @@ model Pembeli {
   transaksi Transaksi[] @relation("TransaksiToPembeli")
   keranjang Keranjang[] @relation("KeranjangToPembeli")
 
-  user User? @relation("UserToPembeli")
+  user User @relation("PembeliToUser", fields: [id_user], references: [id_user], map: "fk_pembeli_to_user")
   redeem_merch RedeemMerchandise[] @relation("RedeemMerchToPembeli")
 
   @@map("pembeli")
@@ -99,7 +123,7 @@ model Alamat {
   nama_alamat String @db.VarChar(255)
   detail_alamat String @db.VarChar(255)
   status_default Boolean @default(false)
-  id_pembeli String @db.VarChar(16)
+  id_pembeli Int // ganti jadi int
   pengiriman Pengiriman[] @relation("PengirimanToAlamat")
 
   pembeli Pembeli @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_alamat_to_pembeli")
@@ -107,29 +131,10 @@ model Alamat {
   @@map("alamat")
 }
 
-model User {
-  id_user Int @id @default(autoincrement())
-  email String @unique
-  password String
-  role Role @default(PEMBELI) // ini diganti enum, awalnya varchar
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  token String? @db.VarChar(255) // ini awalnya ga ada
-  id_referensi String @unique @db.VarChar(16)
-  diskusi Diskusi[] @relation("DiskusiToUser")
-  
-  pegawai Pegawai? @relation("UserToPegawai", fields: [id_referensi], references: [id_pegawai], map: "fk_user_to_pegawai")
-  organisasi Organisasi? @relation("UserToOrganisasi", fields: [id_referensi], references: [id_organisasi], map: "fk_user_to_organisasi")
-  penitip Penitip? @relation("UserToPenitip", fields: [id_referensi], references: [id_penitip], map: "fk_user_to_penitip")
-  pembeli Pembeli? @relation("UserToPembeli", fields: [id_referensi], references: [id_pembeli], map: "fk_user_to_pembeli")
-
-  @@map("users")
-}
-
 model RedeemMerchandise {
   id_redeem_merch Int @id @default(autoincrement()) // ini juga diganti
   tanggal_redeem DateTime
-  id_pembeli String @db.VarChar(16)
+  id_pembeli Int // jadi integer
   detail_redeem DetailRedeemMerchandise[] @relation("DetailRedeemToRedeemMerch")
 
   pembeli Pembeli @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_redeem_merch_to_pembeli")
@@ -168,7 +173,8 @@ model Kategori {
 }
 
 model Barang {
-  id_barang String @id @db.VarChar(16)
+  prefix String @db.Char(1)
+  id_barang Int @id @default(autoincrement()) // jadi integer
   nama_barang String @db.VarChar(255)
   deskripsi String @db.VarChar(255)
   harga Float
@@ -191,8 +197,8 @@ model Diskusi {
   id_diskusi Int @id @default(autoincrement())
   tanggal_diskusi DateTime
   pesan String @db.VarChar(255)
-  id_barang String @db.VarChar(16)
-  id_user Int
+  id_barang Int // jadi integer
+  id_user Int // jadi integer
 
   barang Barang @relation("DiskusiToBarang", fields: [id_barang], references: [id_barang], map: "fk_diskusi_to_barang")
   user User @relation("DiskusiToUser", fields: [id_user], references: [id_user], map: "fk_diskusi_to_user")
@@ -212,7 +218,7 @@ model Transaksi {
   metode_pengiriman String @db.VarChar(50)
   ongkos_kirim Float
   total_akhir Float
-  id_pembeli String @db.VarChar(16)
+  id_pembeli Int // jadi integer
   detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
   pengiriman Pengiriman? @relation("PengirimanToTransaksi")
 
@@ -223,7 +229,7 @@ model Transaksi {
 
 model DetailTransaksi {
   id_dtl_transaksi Int @id @default(autoincrement()) // awalnya varchar
-  id_barang String @unique @db.VarChar(16)
+  id_barang Int @unique // jadi integer
   id_transaksi String @db.VarChar(16)
 
   barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang")
@@ -234,8 +240,8 @@ model DetailTransaksi {
 
 model Keranjang {
   id_keranjang Int @id @default(autoincrement()) //awalnya char
-  id_barang String @db.VarChar(16)
-  id_pembeli String @db.VarChar(16)
+  id_barang Int // jadi integer
+  id_pembeli Int // ini int awalnya String
 
   barang Barang @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], map: "fk_keranjang_to_barang")
   pembeli Pembeli @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_keranjang_to_pembeli")
@@ -248,7 +254,7 @@ model RequestDonasi {
   deskripsi String @db.VarChar(255)
   tanggal_request DateTime
   status String @db.VarChar(32)
-  id_organisasi String @db.VarChar(16)
+  id_organisasi Int
   donasi Donasi? @relation("DonasiToRequestDonasi")
 
   organisasi Organisasi @relation("RequestDonasiToOrganisasi", fields: [id_organisasi], references: [id_organisasi], map: "fk_request_donasi_to_organisasi")
@@ -260,7 +266,7 @@ model Donasi {
   id_donasi Int @id @default(autoincrement())
   tanggal_donasi DateTime
   nama_penerima String @db.VarChar(255)
-  id_barang String @unique @db.VarChar(16)
+  id_barang Int @unique // jadi integer
   id_request Int @unique
 
   barang Barang @relation("DonasiToBarang", fields: [id_barang], references: [id_barang], map: "fk_donasi_to_barang")
@@ -273,12 +279,12 @@ model Penitipan {
   id_penitipan String @id @db.VarChar(16)
   tanggal_masuk DateTime @default(now()) // tambah default now
   tanggal_akhir DateTime
-  tanggal_laku DateTime
+  tanggal_laku DateTime? // ini dijadikan bisa null
   batas_ambil DateTime
   is_perpanjang Boolean @default(false) // awalnya isPerpanjang
-  id_penitip String @db.VarChar(16)
-  id_hunter String? @db.VarChar(16)
-  id_pegawai_qc String @db.VarChar(16)
+  id_penitip Int // ini integer
+  id_hunter Int? // ini dijadikan bisa null
+  id_pegawai_qc Int // ini integer
   detail_penitipan DetailPenitipan[] @relation("DetailPenitipanToPenitipan")
 
   penitip Penitip @relation("PenitipanToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_penitipan_to_penitip")
@@ -291,7 +297,7 @@ model Penitipan {
 model DetailPenitipan {
   id_dtl_penitipan Int @id @default(autoincrement())
   id_penitipan String @db.VarChar(16)
-  id_barang String @unique @db.VarChar(16) // jadi one to one ke barang
+  id_barang Int @unique // jadi one to one ke barang dan integer
   
   penitipan Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], map: "fk_detail_penitipan_to_penitipan")
   barang Barang @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_penitipan_to_barang")
@@ -303,11 +309,11 @@ model Pengiriman {
   id_pengiriman Int @id @default(autoincrement()) // awalnya varchar
   tanggal DateTime
   status_pengiriman String @db.VarChar(255)
-  id_kurir String @db.VarChar(16)  // awalnya id_pegawai
+  id_kurir Int?  // awalnya id_pegawai dan dijadikan bisa null, ini int
   id_alamat Int
   id_transaksi String @unique @db.VarChar(16)
 
-  kurir Pegawai @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
+  kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
   alamat Alamat @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat")
   transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi")
 
