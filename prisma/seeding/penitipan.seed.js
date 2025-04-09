@@ -114,16 +114,6 @@ const listPenitipan = [
   },
 ];
 
-// id_penitipan Int @id @default(autoincrement())
-// tanggal_masuk DateTime @default(now()) // tambah default now
-// tanggal_akhir DateTime
-// tanggal_laku DateTime? // ini dijadikan bisa null
-// batas_ambil DateTime
-// is_perpanjang Boolean @default(false) // awalnya isPerpanjang
-// id_penitip Int // ini integer
-// id_hunter Int? // ini dijadikan bisa null
-// id_pegawai_qc Int // ini integer
-
 export async function penitipanSeeding() {
   await prismaClient.penitipan.createMany({
     data: listPenitipan,
