@@ -238,7 +238,8 @@ model Transaksi {
   tanggal_transaksi DateTime
   total_harga Float
   status_Pembayaran StatusPembayaran @default(BELUM_DIBAYAR) // ini jadi enum
-  tanggal_pembayaran DateTime?
+  tanggal_pembayaran DateTime? // ini menjadi nullable
+  batas_pembayaran DateTime // menambah atribut ini
   bukti_transfer String @db.VarChar(255)
   poin Int
   potongan_poin Int
