@@ -20,6 +20,32 @@ enum Role {
   ORGANISASI
 }
 
+enum StatusPembayaran {
+  BELUM_DIBAYAR
+  SUDAH_DIBAYAR
+  DITERIMA
+  DIBATALKAN
+}
+
+enum MetodePengiriman {
+  DIAMBIL
+  DIKIRIM
+}
+
+enum StatusBarang {
+  TERSEDIA
+  KEMBALI
+  DIDONASIKAN
+  TERJUAL
+}
+
+enum StatusPengiriman {
+  DIPROSES
+  SIAP_DIAMBIL
+  SEDANG_DIKIRIM
+  SUDAH_DITERIMA
+}
+
 model User {
   id_user Int @id @default(autoincrement())
   email String @unique
@@ -178,7 +204,7 @@ model Barang {
   nama_barang String @db.VarChar(255)
   deskripsi String @db.VarChar(255)
   harga Float
-  status String @db.VarChar(32)
+  status StatusBarang @default(TERSEDIA) // jadi enum
   garansi DateTime? // bisa null
   berat Float
   path_gambar String @db.VarChar(255) // tambah atribut ini dibarang
@@ -211,12 +237,12 @@ model Transaksi {
   id_transaksi Int @id @default(autoincrement())
   tanggal_transaksi DateTime
   total_harga Float
-  status_Pembayaran String @db.VarChar(32)
+  status_Pembayaran StatusPembayaran @default(BELUM_DIBAYAR) // ini jadi enum
   tanggal_pembayaran DateTime
   bukti_transfer String @db.VarChar(255)
   poin Int
   potongan_poin Int
-  metode_pengiriman String @db.VarChar(50)
+  metode_pengiriman MetodePengiriman @default(DIAMBIL) // ini jadi enum
   ongkos_kirim Float
   total_akhir Float
   id_pembeli Int // jadi integer
@@ -309,7 +335,7 @@ model DetailPenitipan {
 model Pengiriman {
   id_pengiriman Int @id @default(autoincrement()) // awalnya varchar
   tanggal DateTime
-  status_pengiriman String @db.VarChar(255)
+  status_pengiriman StatusPengiriman @default(DIPROSES) // jadi enum
   id_kurir Int?  // awalnya id_pegawai dan dijadikan bisa null, ini int
   id_alamat Int
   id_transaksi Int @unique
