@@ -1,28 +1,60 @@
 import { prismaClient } from "../src/application/database.js";
 import { logger } from "../src/application/logging.js";
-import path from "path";
-import fs from "fs";
+import { userSeeding } from "./seeding/user.seed.js";
+import { jabatanSeeding } from "./seeding/jabatan.seed.js";
+import { pegawaiSeeding } from "./seeding/pegawai.seed.js";
+import { organisasiSeeding } from "./seeding/organisasi.seed.js";
+import { penitipSeeding } from "./seeding/penitip.seed.js";
+import { pembeliSeeding } from "./seeding/pembeli.seed.js";
+import { alamatSeeding } from "./seeding/alamat.seed.js";
+import { merchandiseSeeding } from "./seeding/merchandise.seed.js";
+import { kategoriSeeding } from "./seeding/kategori.seed.js";
+import { barangSeeding } from "./seeding/barang.seed.js";
+import { diskusiSeeding } from "./seeding/diskusi.seed.js";
+import { keranjangSeeding } from "./seeding/keranjang.seed.js";
+import { requestSeeding } from "./seeding/request_donasi.seed.js";
+import { penitipanSeeding } from "./seeding/penitipan.seed.js";
 
-// async function seed() {
-//   const seedFilesPath = path.resolve("prisma\\seeding");
+const seedFiles = [
+    { name: "users", seed: userSeeding },
+    { name: "jabatan", seed: jabatanSeeding },
+    { name: "pegawai", seed: pegawaiSeeding },
+    { name: "organisasi", seed: organisasiSeeding },
+    { name: "penitip", seed: penitipSeeding },
+    { name: "pembeli", seed: pembeliSeeding },
+    { name: "alamat", seed: alamatSeeding },
+    // redeemMerch
+    { name: "merchandise", seed: merchandiseSeeding },
+    // detailmerch
+    { name: "kategori", seed: kategoriSeeding },
+    { name: "barang", seed: barangSeeding },
+    { name: "diskusi", seed: diskusiSeeding },
+    // transaksi
+    { name: "keranjang", seed: keranjangSeeding },
+    { name: "request_donasi", seed: requestSeeding },
+    // donasi
+    { name: "penitipan", seed: penitipanSeeding },
+    // detail penitipan
+    // pengiriman
+];
 
-//   const seedFiles = fs
-//     .readFileSync(seedFilesPath)
-//     .filter((file) => file.endsWith(".seed.js"));
+async function main() {
+    try {
+        logger.info("Starting seeding process...");
 
-//   for (const seedFile of seedFiles) {
-//     logger.info(seedFile);
-//   }
-// }
+        for (const { name, seed } of seedFiles) {
+            logger.info(`Seeding ${name}...`);
+            await seed(prismaClient);
+            logger.info(`${name} seeded successfully`);
+        }
 
-// seed();
-// .then(() => {
-//   logger.info("Berhasil menambahkan seluruh seed");
-// })
-// .catch((e) => {
-//   logger.info(e);
-//   process.exit(1);
-// })
-// .finally(() => {
-//   prismaClient.$disconnect();
-// });
+        logger.info("Seeding completed successfully!");
+    } catch (e) {
+        logger.error("Error during seeding:", e);
+        process.exit(1);
+    } finally {
+        await prismaClient.$disconnect();
+    }
+}
+
+main();
