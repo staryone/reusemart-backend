@@ -72,6 +72,76 @@ const listRequest = [
     status: "Approved",
     id_organisasi: 9,
   },
+  {
+    id_request: 11,
+    deskripsi: "Rak buku dan lemari untuk perpustakaan mini",
+    tanggal_request: new Date("2025-04-17"),
+    status: "Approved",
+    id_organisasi: 4,
+  },
+  {
+    id_request: 12,
+    deskripsi: "Sepeda bekas untuk anak-anak sekolah",
+    tanggal_request: new Date("2025-04-18"),
+    status: "Approved",
+    id_organisasi: 2,
+  },
+  {
+    id_request: 13,
+    deskripsi: "Meja dan kursi belajar untuk ruang baca",
+    tanggal_request: new Date("2025-04-19"),
+    status: "Pending",
+    id_organisasi: 6,
+  },
+  {
+    id_request: 14,
+    deskripsi: "Peralatan pertukangan untuk bengkel komunitas",
+    tanggal_request: new Date("2025-04-18"),
+    status: "Approved",
+    id_organisasi: 5,
+  },
+  {
+    id_request: 15,
+    deskripsi: "Sound system untuk acara komunitas",
+    tanggal_request: new Date("2025-04-20"),
+    status: "Approved",
+    id_organisasi: 9,
+  },
+  {
+    id_request: 16,
+    deskripsi: "Peralatan kebersihan untuk lingkungan sekolah",
+    tanggal_request: new Date("2025-04-21"),
+    status: "Pending",
+    id_organisasi: 3,
+  },
+  {
+    id_request: 17,
+    deskripsi: "Whiteboard dan spidol untuk kelas belajar",
+    tanggal_request: new Date("2025-04-22"),
+    status: "Approved",
+    id_organisasi: 1,
+  },
+  {
+    id_request: 18,
+    deskripsi: "Kompor gas dan tabung untuk dapur umum",
+    tanggal_request: new Date("2025-04-23"),
+    status: "Pending",
+    id_organisasi: 7,
+  },
+  {
+    id_request: 19,
+    deskripsi: "Proyektor mini untuk kegiatan edukasi",
+    tanggal_request: new Date("2025-04-24"),
+    status: "Approved",
+    id_organisasi: 10,
+  },
+  {
+    id_request: 20,
+    deskripsi: "Mainan edukatif untuk PAUD",
+    tanggal_request: new Date("2025-04-25"),
+    status: "Pending",
+    id_organisasi: 8,
+  }  
 ];
 
 export async function requestSeeding() {

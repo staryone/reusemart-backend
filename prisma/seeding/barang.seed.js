@@ -249,7 +249,128 @@ const listBarang = [
     berat: 0.5,
     path_gambar: "path_gambar_dummy_20",
     id_kategori: 3
+  },
+  {
+    prefix: "L",
+    id_barang: 21,
+    nama_barang: "Laptop Lenovo ThinkPad E470",
+    deskripsi: "Laptop bekas performa bagus, cocok untuk pelatihan komputer remaja",
+    harga: 2700000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 1.8,
+    path_gambar: "path_gambar_dummy_22",
+    id_kategori: 3
+  },
+  {
+    prefix: "P",
+    id_barang: 22,
+    nama_barang: "Printer & Scanner Canon MG2570S",
+    deskripsi: "Printer dan scanner bekas, cocok untuk administrasi kantor atau sekolah",
+    harga: 650000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 4.2,
+    path_gambar: "path_gambar_dummy_23",
+    id_kategori: 9
+  },
+  {
+    prefix: "K",
+    id_barang: 23,
+    nama_barang: "Kasur Lipat",
+    deskripsi: "Kasur lipat bekas dan selimut bersih",
+    harga: 300000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 5.5,
+    path_gambar: "path_gambar_dummy_24",
+    id_kategori: 6
+  },
+  {
+    prefix: "D",
+    id_barang: 24,
+    nama_barang: "Dumbell bekas",
+    deskripsi: "Dumbell bekas 5kg - 20kg, cocok untuk aktivitas komunitas pemuda",
+    harga: 200000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 3.0,
+    path_gambar: "path_gambar_dummy_25",
+    id_kategori: 7
+  },
+  {
+    prefix: "R",
+    id_barang: 25,
+    nama_barang: "Rak Buku dan Lemari",
+    deskripsi: "Rak buku dan lemari untuk perpustakaan mini",
+    harga: 120000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 10,
+    path_gambar: "path_gambar_dummy_21",
+    id_kategori: 4
+  },
+  {
+    prefix: "S",
+    id_barang: 26,
+    nama_barang: "Sepeda Anak",
+    deskripsi: "Sepeda bekas untuk anak-anak",
+    harga: 300000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 7,
+    path_gambar: "path_gambar_dummy_22",
+    id_kategori: 6
+  },
+  {
+    prefix: "P",
+    id_barang: 27,
+    nama_barang: "Alat Pertukangan",
+    deskripsi: "Peralatan pertukangan lengkap dengan palu dan gergaji",
+    harga: 18000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 8,
+    path_gambar: "path_gambar_dummy_23",
+    id_kategori: 5
+  },
+  {
+    prefix: "S",
+    id_barang: 28,
+    nama_barang: "Sound System",
+    deskripsi: "Speaker, Mic, Amplifier",
+    harga: 2500000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 5,
+    path_gambar: "path_gambar_dummy_24",
+    id_kategori: 3
+  },
+  {
+    prefix: "W",
+    id_barang: 29,
+    nama_barang: "Whiteboard",
+    deskripsi: "Whiteboard dan spidol untuk kelas belajar",
+    harga: 100000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 3,
+    path_gambar: "path_gambar_dummy_25",
+    id_kategori: 1
+  },
+  {
+    prefix: "P",
+    id_barang: 30,
+    nama_barang: "Proyektor Mini",
+    deskripsi: "Proyektor mini dengan 4000 lumen",
+    harga: 2000000,
+    status: "didonasikan",
+    garansi: null,
+    berat: 1,
+    path_gambar: "path_gambar_dummy_26",
+    id_kategori: 1
   }
+  
 ];
 
 export async function barangSeeding() {
