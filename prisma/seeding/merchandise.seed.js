@@ -59,6 +59,36 @@ const listMerchandise = [
     harga_poin: 100,
     stok: 0,
   },
+  {
+    id_merchandise: 11,
+    nama_merch: "Tote Bag ReUseMart",
+    harga_poin: 250,
+    stok: 15,
+  },
+  {
+    id_merchandise: 12,
+    nama_merch: "Stiker Ramah Lingkungan",
+    harga_poin: 50,
+    stok: 100,
+  },
+  {
+    id_merchandise: 13,
+    nama_merch: "Tempat Pensil Kanvas",
+    harga_poin: 400,
+    stok: 30,
+  },
+  {
+    id_merchandise: 14,
+    nama_merch: "Notebook Daur Ulang",
+    harga_poin: 300,
+    stok: 40,
+  },
+  {
+    id_merchandise: 15,
+    nama_merch: "Pin ReUseMart",
+    harga_poin: 200,
+    stok: 50,
+  },
 ];
 
 export async function merchandiseSeeding(prismaClient) {
