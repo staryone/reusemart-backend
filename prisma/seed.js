@@ -16,6 +16,7 @@ import { requestSeeding } from "./seeding/request_donasi.seed.js";
 import { penitipanSeeding } from "./seeding/penitipan.seed.js";
 import { donasiSeeding } from "./seeding/donasi.seed.js";
 import { transaksiSeeding } from "./seeding/transaksi.seed.js";
+import { detailTransaksiSeeding } from "./seeding/detail_transaksi.seed.js";
 
 const seedFiles = [
     { name: "users", seed: userSeeding },
@@ -36,7 +37,7 @@ const seedFiles = [
     { name: "request_donasi", seed: requestSeeding },
     { name: "donasi", seed: donasiSeeding },
     { name: "penitipan", seed: penitipanSeeding },
-    // detail penitipan
+    { name: "dtl_transaksi", seed: detailTransaksiSeeding },
     // pengiriman
 ];
 
