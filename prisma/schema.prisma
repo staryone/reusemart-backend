@@ -179,7 +179,7 @@ model Barang {
   deskripsi String @db.VarChar(255)
   harga Float
   status String @db.VarChar(32)
-  garansi DateTime
+  garansi DateTime? // bisa null
   berat Float
   path_gambar String @db.VarChar(255) // tambah atribut ini dibarang
   id_kategori Int
