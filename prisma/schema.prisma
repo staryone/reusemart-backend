@@ -208,7 +208,7 @@ model Diskusi {
 }
 
 model Transaksi {
-  id_transaksi String @id @db.VarChar(16)
+  id_transaksi Int @id @default(autoincrement())
   tanggal_transaksi DateTime
   total_harga Float
   status_Pembayaran String @db.VarChar(32)
@@ -231,7 +231,7 @@ model Transaksi {
 model DetailTransaksi {
   id_dtl_transaksi Int @id @default(autoincrement()) // awalnya varchar
   id_barang Int @unique // jadi integer
-  id_transaksi String @db.VarChar(16)
+  id_transaksi Int
 
   barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang")
   transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi")
@@ -277,7 +277,7 @@ model Donasi {
 }
 
 model Penitipan {
-  id_penitipan String @id @db.VarChar(16)
+  id_penitipan Int @id @default(autoincrement())
   tanggal_masuk DateTime @default(now()) // tambah default now
   tanggal_akhir DateTime
   tanggal_laku DateTime? // ini dijadikan bisa null
@@ -297,7 +297,7 @@ model Penitipan {
 
 model DetailPenitipan {
   id_dtl_penitipan Int @id @default(autoincrement())
-  id_penitipan String @db.VarChar(16)
+  id_penitipan Int
   id_barang Int @unique // jadi one to one ke barang dan integer
   
   penitipan Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], map: "fk_detail_penitipan_to_penitipan")
@@ -312,7 +312,7 @@ model Pengiriman {
   status_pengiriman String @db.VarChar(255)
   id_kurir Int?  // awalnya id_pegawai dan dijadikan bisa null, ini int
   id_alamat Int
-  id_transaksi String @unique @db.VarChar(16)
+  id_transaksi Int @unique
 
   kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
   alamat Alamat @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat")
