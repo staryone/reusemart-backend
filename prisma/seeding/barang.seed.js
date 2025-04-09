@@ -45,7 +45,7 @@ const listBarang = [
         deskripsi:
             "Novel best-seller karya Andrea Hirata, kondisi belum dibuka plastiknya",
         harga: 95000,
-        status: "TERSEDIA",
+        status: "TERJUAL",
         garansi: null,
         berat: 0.4,
         path_gambar: "path_gambar_dummy_4",
@@ -58,7 +58,7 @@ const listBarang = [
         deskripsi:
             "Action figure original Marvel, detail tinggi, cocok untuk koleksi",
         harga: 350000,
-        status: "TERSEDIA",
+        status: "TERJUAL",
         garansi: new Date("2024-11-01"),
         berat: 0.5,
         path_gambar: "path_gambar_dummy_5",
@@ -97,7 +97,7 @@ const listBarang = [
         deskripsi:
             "Pot tanaman aesthetic berdiameter 20 cm, cocok untuk dekorasi taman",
         harga: 65000,
-        status: "TERSEDIA",
+        status: "TERJUAL",
         garansi: new Date("2025-07-15"),
         berat: 1.2,
         path_gambar: "path_gambar_dummy_8",
