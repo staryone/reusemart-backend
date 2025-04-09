@@ -46,6 +46,11 @@ enum StatusPengiriman {
   SUDAH_DITERIMA
 }
 
+enum StatusRequestDonasi {
+  MENUNGGU
+  DISETUJUI
+}
+
 model User {
   id_user Int @id @default(autoincrement())
   email String @unique
@@ -281,7 +286,7 @@ model RequestDonasi {
   id_request Int @id @default(autoincrement())
   deskripsi String @db.VarChar(255)
   tanggal_request DateTime
-  status String @db.VarChar(32)
+  status StatusRequestDonasi @default(MENUNGGU)
   id_organisasi Int
   donasi Donasi? @relation("DonasiToRequestDonasi")
 
