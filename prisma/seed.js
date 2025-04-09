@@ -15,6 +15,7 @@ import { keranjangSeeding } from "./seeding/keranjang.seed.js";
 import { requestSeeding } from "./seeding/request_donasi.seed.js";
 import { penitipanSeeding } from "./seeding/penitipan.seed.js";
 import { donasiSeeding } from "./seeding/donasi.seed.js";
+import { transaksiSeeding } from "./seeding/transaksi.seed.js";
 
 const seedFiles = [
     { name: "users", seed: userSeeding },
@@ -30,7 +31,7 @@ const seedFiles = [
     { name: "kategori", seed: kategoriSeeding },
     { name: "barang", seed: barangSeeding },
     { name: "diskusi", seed: diskusiSeeding },
-    // transaksi
+    { name: "transaksi", seed: transaksiSeeding },
     { name: "keranjang", seed: keranjangSeeding },
     { name: "request_donasi", seed: requestSeeding },
     { name: "donasi", seed: donasiSeeding },
