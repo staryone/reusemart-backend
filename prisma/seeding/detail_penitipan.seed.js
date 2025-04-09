@@ -99,6 +99,16 @@ const listDetailPenitipan = [
     id_penitipan: 10,
     id_barang: 20,
   },
+  {
+    id_dtl_penitipan: 21,
+    id_penitipan: 9,
+    id_barang: 31,
+  },
+  {
+    id_dtl_penitipan: 22,
+    id_penitipan: 8,
+    id_barang: 32,
+  },
 ];
 
 export async function detailPenitipanSeeding() {
