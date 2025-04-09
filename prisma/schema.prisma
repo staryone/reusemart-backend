@@ -303,11 +303,11 @@ model Pengiriman {
   id_pengiriman Int @id @default(autoincrement()) // awalnya varchar
   tanggal DateTime
   status_pengiriman String @db.VarChar(255)
-  id_kurir String @db.VarChar(16)  // awalnya id_pegawai
+  id_kurir String? @db.VarChar(16)  // awalnya id_pegawai
   id_alamat Int
   id_transaksi String @unique @db.VarChar(16)
 
-  kurir Pegawai @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
+  kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
   alamat Alamat @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat")
   transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi")
 
