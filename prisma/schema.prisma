@@ -125,6 +125,7 @@ model Penitip {
   total_review Float
   jumlah_review Int
   total_per_bulan Float
+  is_top_seller Boolean @default(false)
   poin Int
   penitipan Penitipan[] @relation("PenitipanToPenitip")
 

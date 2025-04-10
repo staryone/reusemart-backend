@@ -123,6 +123,7 @@ const listPenitip = [
         total_review: 4,
         jumlah_review: 1,
         total_per_bulan: 2300000,
+        is_top_seller: true,
         poin: 20,
     },
     {
