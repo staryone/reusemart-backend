@@ -69,6 +69,41 @@ const listDonasi = [
         id_barang: 30,
         id_request: 19,
     },
+    {
+        id_donasi: 11,
+        tanggal_donasi: new Date("2025-04-26 09:15:30.000"),
+        nama_penerima: "Pak Budi",
+        id_barang: 43,
+        id_request: 21,
+    },
+    {
+        id_donasi: 12,
+        tanggal_donasi: new Date("2025-04-27 13:45:00.000"),
+        nama_penerima: "Ibu Sari",
+        id_barang: 44,
+        id_request: 22,
+    },
+    {
+        id_donasi: 13,
+        tanggal_donasi: new Date("2025-04-28 10:30:45.000"),
+        nama_penerima: "Mas Joko",
+        id_barang: 45,
+        id_request: 23,
+    },
+    {
+        id_donasi: 14,
+        tanggal_donasi: new Date("2025-04-29 15:20:15.000"),
+        nama_penerima: "Mbak Rina",
+        id_barang: 46,
+        id_request: 24,
+    },
+    {
+        id_donasi: 15,
+        tanggal_donasi: new Date("2025-04-30 11:50:25.000"),
+        nama_penerima: "Adi",
+        id_barang: 47,
+        id_request: 25,
+    },
 ];
 
 export async function donasiSeeding(prismaClient) {

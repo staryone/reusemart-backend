@@ -48,7 +48,32 @@ const listRedeemMerchandise = [
         id_redeem_merch: 10,
         tanggal_redeem: new Date("2025-04-20"),
         id_pembeli: 3,
-    }
+    },
+    {
+        id_redeem_merch: 11,
+        tanggal_redeem: new Date("2025-04-25 08:45:20.000"),
+        id_pembeli: 11,
+    },
+    {
+        id_redeem_merch: 12,
+        tanggal_redeem: new Date("2025-04-26 14:30:15.000"),
+        id_pembeli: 12,
+    },
+    {
+        id_redeem_merch: 13,
+        tanggal_redeem: new Date("2025-04-27 10:15:45.000"),
+        id_pembeli: 13,
+    },
+    {
+        id_redeem_merch: 14,
+        tanggal_redeem: new Date("2025-04-28 16:20:30.000"),
+        id_pembeli: 14,
+    },
+    {
+        id_redeem_merch: 15,
+        tanggal_redeem: new Date("2025-04-29 09:50:10.000"),
+        id_pembeli: 15,
+    },
 ];
 
 export async function redeemMerchandiseSeeding(prismaClient) {

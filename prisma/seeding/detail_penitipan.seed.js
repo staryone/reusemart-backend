@@ -109,6 +109,81 @@ const listDetailPenitipan = [
         id_penitipan: 8,
         id_barang: 32,
     },
+    {
+        id_dtl_penitipan: 23,
+        id_penitipan: 11,
+        id_barang: 33,
+    },
+    {
+        id_dtl_penitipan: 24,
+        id_penitipan: 11,
+        id_barang: 34,
+    },
+    {
+        id_dtl_penitipan: 25,
+        id_penitipan: 12,
+        id_barang: 35,
+    },
+    {
+        id_dtl_penitipan: 26,
+        id_penitipan: 12,
+        id_barang: 36,
+    },
+    {
+        id_dtl_penitipan: 27,
+        id_penitipan: 13,
+        id_barang: 37,
+    },
+    {
+        id_dtl_penitipan: 28,
+        id_penitipan: 13,
+        id_barang: 38,
+    },
+    {
+        id_dtl_penitipan: 29,
+        id_penitipan: 14,
+        id_barang: 39,
+    },
+    {
+        id_dtl_penitipan: 30,
+        id_penitipan: 14,
+        id_barang: 40,
+    },
+    {
+        id_dtl_penitipan: 31,
+        id_penitipan: 15,
+        id_barang: 41,
+    },
+    {
+        id_dtl_penitipan: 32,
+        id_penitipan: 15,
+        id_barang: 42,
+    },
+    {
+        id_dtl_penitipan: 33,
+        id_penitipan: 11,
+        id_barang: 43,
+    },
+    {
+        id_dtl_penitipan: 34,
+        id_penitipan: 12,
+        id_barang: 44,
+    },
+    {
+        id_dtl_penitipan: 35,
+        id_penitipan: 13,
+        id_barang: 45,
+    },
+    {
+        id_dtl_penitipan: 36,
+        id_penitipan: 14,
+        id_barang: 46,
+    },
+    {
+        id_dtl_penitipan: 37,
+        id_penitipan: 15,
+        id_barang: 47,
+    },
 ];
 
 export async function detailPenitipanSeeding(prismaClient) {

@@ -139,6 +139,41 @@ const listDiskusi = [
         id_barang: 4,
         id_user: 7,
     },
+    {
+        id_diskusi: 21,
+        tanggal_diskusi: new Date("2025-04-20 14:00:00.000"),
+        pesan: "Kamera ini lensa bawaannya ada gak?",
+        id_barang: 33,
+        id_user: 46,
+    },
+    {
+        id_diskusi: 22,
+        tanggal_diskusi: new Date("2025-04-20 14:05:00.000"),
+        pesan: "Ada kak, lensa kit 18-55mm masih lengkap.",
+        id_barang: 33,
+        id_user: 49,
+    },
+    {
+        id_diskusi: 23,
+        tanggal_diskusi: new Date("2025-04-21 15:00:00.000"),
+        pesan: "Jaket kulitnya masih mulus gak ya?",
+        id_barang: 34,
+        id_user: 47,
+    },
+    {
+        id_diskusi: 24,
+        tanggal_diskusi: new Date("2025-04-21 15:05:00.000"),
+        pesan: "Mulus kak, cuma bekas pakai ringan.",
+        id_barang: 34,
+        id_user: 50,
+    },
+    {
+        id_diskusi: 25,
+        tanggal_diskusi: new Date("2025-04-22 16:00:00.000"),
+        pesan: "Rak sepatunya muat berapa pasang?",
+        id_barang: 35,
+        id_user: 48,
+    },
 ];
 
 export async function diskusiSeeding(prismaClient) {

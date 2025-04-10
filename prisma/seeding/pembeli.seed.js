@@ -69,6 +69,41 @@ const listPembeli = [
         nomor_telepon: "081234567899",
         poin_loyalitas: 1140,
     },
+    {
+        id_pembeli: 11,
+        nama: "Sarah Wijaya",
+        nomor_telepon: "081234567900",
+        poin_loyalitas: 300,
+        id_user: 46,
+    },
+    {
+        id_pembeli: 12,
+        nama: "Hendri Pratama",
+        nomor_telepon: "081234567901",
+        poin_loyalitas: 250,
+        id_user: 47,
+    },
+    {
+        id_pembeli: 13,
+        nama: "Nur Halimah",
+        nomor_telepon: "081234567902",
+        poin_loyalitas: 400,
+        id_user: 48,
+    },
+    {
+        id_pembeli: 14,
+        nama: "Lestari Indah",
+        nomor_telepon: "081234567903",
+        poin_loyalitas: 150,
+        id_user: 57,
+    },
+    {
+        id_pembeli: 15,
+        nama: "Rina Permata",
+        nomor_telepon: "081234567904",
+        poin_loyalitas: 200,
+        id_user: 58,
+    },
 ];
 
 export async function pembeliSeeding(prismaClient) {

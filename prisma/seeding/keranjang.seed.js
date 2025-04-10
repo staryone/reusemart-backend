@@ -49,6 +49,31 @@ const listKeranjang = [
         id_barang: 2,
         id_pembeli: 9,
     },
+    {
+        id_keranjang: 11,
+        id_barang: 38,
+        id_pembeli: 11,
+    },
+    {
+        id_keranjang: 12,
+        id_barang: 39,
+        id_pembeli: 12,
+    },
+    {
+        id_keranjang: 13,
+        id_barang: 42,
+        id_pembeli: 13,
+    },
+    {
+        id_keranjang: 14,
+        id_barang: 33,
+        id_pembeli: 14,
+    },
+    {
+        id_keranjang: 15,
+        id_barang: 34,
+        id_pembeli: 15,
+    },
 ];
 
 export async function keranjangSeeding(prismaClient) {

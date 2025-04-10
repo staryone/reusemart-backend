@@ -79,6 +79,33 @@ const listOrganisasi = [
         nomor_telepon: "082345678901",
         deskripsi: "Organisasi pengembangan pemuda",
     },
+    {
+        id_organisasi: 11,
+        nama_organisasi: "Komunitas Pemuda Hijau",
+        alamat: "Jl. Seturan No. 50, Sleman",
+        nomor_telepon: "081234567930",
+        deskripsi: "Komunitas peduli lingkungan dan pemuda",
+        id_user: 55,
+        prefix: "ORG",
+    },
+    {
+        id_organisasi: 12,
+        nama_organisasi: "Yayasan Peduli Bumi",
+        alamat: "Jl. Magelang Km 10, Sleman",
+        nomor_telepon: "081234567931",
+        deskripsi: "Yayasan pelestarian alam",
+        id_user: 56,
+        prefix: "ORG",
+    },
+    {
+        id_organisasi: 13,
+        nama_organisasi: "Organisasi Harapan Baru",
+        alamat: "Jl. Solo Km 15, Sleman",
+        nomor_telepon: "081234567932",
+        deskripsi: "Organisasi bantuan sosial",
+        id_user: 60,
+        prefix: "ORG",
+    },
 ];
 
 export async function organisasiSeeding(prismaClient) {

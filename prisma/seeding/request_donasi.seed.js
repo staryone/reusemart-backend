@@ -139,6 +139,41 @@ const listRequest = [
         status: "MENUNGGU",
         id_organisasi: 8,
     },
+    {
+        id_request: 21,
+        deskripsi: "Televisi untuk ruang komunitas",
+        tanggal_request: new Date("2025-04-26 08:30:15.000"),
+        status: "DISETUJUI",
+        id_organisasi: 11,
+    },
+    {
+        id_request: 22,
+        deskripsi: "Kipas angin untuk ruang belajar",
+        tanggal_request: new Date("2025-04-27 14:45:30.000"),
+        status: "DISETUJUI",
+        id_organisasi: 12,
+    },
+    {
+        id_request: 23,
+        deskripsi: "Setrika uap untuk kebutuhan rumah tangga",
+        tanggal_request: new Date("2025-04-28 10:15:45.000"),
+        status: "DISETUJUI",
+        id_organisasi: 13,
+    },
+    {
+        id_request: 24,
+        deskripsi: "Lemari pakaian untuk penyimpanan donasi",
+        tanggal_request: new Date("2025-04-29 16:20:00.000"),
+        status: "DISETUJUI",
+        id_organisasi: 11,
+    },
+    {
+        id_request: 25,
+        deskripsi: "Sepatu olahraga untuk kegiatan pemuda",
+        tanggal_request: new Date("2025-04-30 09:50:25.000"),
+        status: "DISETUJUI",
+        id_organisasi: 12,
+    },
 ];
 
 export async function requestSeeding(prismaClient) {

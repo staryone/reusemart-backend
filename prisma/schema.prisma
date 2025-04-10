@@ -264,6 +264,7 @@ model DetailTransaksi {
   id_dtl_transaksi Int @id @default(autoincrement()) // awalnya varchar
   id_barang Int @unique // jadi integer
   id_transaksi Int
+  is_rating Boolean @default(false)
 
   barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang")
   transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi")
