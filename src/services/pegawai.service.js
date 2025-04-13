@@ -2,31 +2,15 @@ import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 import {
   createPegawaiValidation,
+  deletePegawaiValidation,
   getPegawaiValidation,
+  updatePegawaiValidation,
 } from "../validation/pegawai.validate.js";
 import { validate } from "../validation/validate.js";
 import { logger } from "../application/logging.js";
-import { formatStringDate } from "../utils/date_util.js";
 
 const create = async (request) => {
-  const data = validate(createPegawaiValidation, request);
-
-  //   const dataUser = {
-  //     email: data.email,
-  //     password: await bcrypt.hash(formatStringDate(data.tgl_lahir), 10),
-  //     role: "PEGAWAI",
-  //   };
-
-  //   const user = await userService.create(dataUser);
-
-  const pegawai = {
-    nama: data.nama,
-    nomor_telepon: data.nomor_telepon,
-    komisi: 0,
-    tgl_lahir: data.tgl_lahir,
-    id_jabatan: data.id_jabatan,
-    id_user: data.id_user,
-  };
+  const pegawai = validate(createPegawaiValidation, request);
 
   return await prismaClient.pegawai.create({
     data: pegawai,
@@ -44,6 +28,8 @@ const get = async (email) => {
       email: true,
       pegawai: {
         select: {
+          prefix: true,
+          id_pegawai: true,
           nama: true,
           nomor_telepon: true,
           komisi: true,
@@ -55,7 +41,7 @@ const get = async (email) => {
   });
 
   if (!pegawai) {
-    throw new ResponseError(404, "pegawai tidak ditemukan");
+    throw new ResponseError(404, "Pegawai tidak ditemukan");
   }
 
   return pegawai;
@@ -70,16 +56,13 @@ const getAll = async () => {
       email: true,
       pegawai: {
         select: {
+          prefix: true,
+          id_pegawai: true,
           nama: true,
           nomor_telepon: true,
           komisi: true,
           tgl_lahir: true,
-          jabatan: {
-            select: {
-              id_jabatan: true,
-              nama_jabatan: true,
-            },
-          },
+          jabatan: true,
         },
       },
     },
@@ -92,20 +75,117 @@ const getAll = async () => {
   return listPegawai;
 };
 
-const update = async () => {};
+const update = async (request) => {
+  const updateRequest = validate(updatePegawaiValidation, request);
 
-const remove = async () => {};
+  const data = await prismaClient.user.findUnique({
+    where: {
+      email: updateRequest.email,
+    },
+    select: {
+      pegawai: true,
+    },
+  });
 
-const search = async () => {};
+  console.log(data);
 
-// create({
-//     email: "test@gmail.com",
-//     nama: "Test User",
-//     nomor_telepon: "08612812111",
-//     tgl_lahir: new Date("2004-12-12"),
-//     id_jabatan: 1,
-// });
+  if (updateRequest.nama) {
+    data.pegawai.nama = updateRequest.nama;
+  }
 
-// get("stanyslaushary@reusemart.my.id");
+  if (updateRequest.nomor_telepon) {
+    data.pegawai.nomor_telepon = updateRequest.nomor_telepon;
+  }
 
-getAll();
+  if (updateRequest.komisi) {
+    data.pegawai.komisi = updateRequest.komisi;
+  }
+
+  if (updateRequest.tgl_lahir) {
+    data.pegawai.tgl_lahir = updateRequest.tgl_lahir;
+  }
+
+  if (updateRequest.id_jabatan) {
+    data.pegawai.id_jabatan = updateRequest.id_jabatan;
+  }
+
+  return prismaClient.pegawai.update({
+    where: {
+      id_pegawai: data.pegawai.id_pegawai,
+    },
+    data: data.pegawai,
+  });
+};
+
+const destroy = async (email) => {
+  email = validate(deletePegawaiValidation, email);
+
+  const user = await prismaClient.user.findFirst({
+    where: {
+      email: email,
+    },
+    select: {
+      pegawai: true,
+    },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "Pegawai tidak ditemukan!");
+  }
+
+  const deletedPegawai = prismaClient.pegawai.delete({
+    where: {
+      id_pegawai: user.pegawai.id_pegawai,
+    },
+  });
+
+  const deletedUser = prismaClient.user.delete({
+    where: {
+      email: email,
+    },
+  });
+
+  return prismaClient.$transaction([deletedPegawai, deletedUser]);
+};
+
+const search = async (keyword) => {
+  const listPegawai = await prismaClient.user.findMany({
+    where: {
+      role: "PEGAWAI",
+    },
+    select: {
+      email: true,
+      pegawai: {
+        where: {
+          OR: [
+            {
+              nama: {
+                contains: keyword,
+              },
+            },
+          ],
+        },
+        select: {
+          prefix: true,
+          id_pegawai: true,
+          nama: true,
+          nomor_telepon: true,
+          komisi: true,
+          tgl_lahir: true,
+        },
+      },
+    },
+  });
+
+  if (!listPegawai) {
+    throw new ResponseError(404, "Tidak ada pegawai yang ditemukan!");
+  }
+
+  const filteredListPegawai = listPegawai.filter((item) => {
+    return item.pegawai !== null;
+  });
+
+  return filteredListPegawai;
+};
+
+export default { create, get, getAll, update, destroy, search };
