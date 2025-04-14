@@ -129,7 +129,7 @@ model Penitip {
   poin Int
   penitipan Penitipan[] @relation("PenitipanToPenitip")
 
-  user User @relation("PenitipToUser", fields: [id_user], references: [id_user], map: "fk_penitip_to_user")
+  user User @relation("PenitipToUser", fields: [id_user], references: [id_user], map: "fk_penitip_to_user", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("penitip")
 }
@@ -144,7 +144,7 @@ model Pembeli {
   transaksi Transaksi[] @relation("TransaksiToPembeli")
   keranjang Keranjang[] @relation("KeranjangToPembeli")
 
-  user User @relation("PembeliToUser", fields: [id_user], references: [id_user], map: "fk_pembeli_to_user")
+  user User @relation("PembeliToUser", fields: [id_user], references: [id_user], map: "fk_pembeli_to_user", onUpdate: Cascade, onDelete: Cascade)
   redeem_merch RedeemMerchandise[] @relation("RedeemMerchToPembeli")
 
   @@map("pembeli")
@@ -158,7 +158,7 @@ model Alamat {
   id_pembeli Int // ganti jadi int
   pengiriman Pengiriman[] @relation("PengirimanToAlamat")
 
-  pembeli Pembeli @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_alamat_to_pembeli")
+  pembeli Pembeli @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_alamat_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("alamat")
 }
@@ -169,7 +169,7 @@ model RedeemMerchandise {
   id_pembeli Int // jadi integer
   detail_redeem DetailRedeemMerchandise[] @relation("DetailRedeemToRedeemMerch")
 
-  pembeli Pembeli @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_redeem_merch_to_pembeli")
+  pembeli Pembeli @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_redeem_merch_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("redeem_merchandise") // awalnya redeemmerchandise
 }
@@ -190,8 +190,8 @@ model DetailRedeemMerchandise {
   id_redeem_merch Int 
   id_merchandise Int
 
-  redeem_merch RedeemMerchandise @relation("DetailRedeemToRedeemMerch", fields: [id_redeem_merch], references: [id_redeem_merch], map: "fk_detail_redeem_to_redeem_merch")
-  merchandise Merchandise @relation("DetailRedeemToMerchandise", fields: [id_merchandise], references: [id_merchandise], map: "fk_detail_redeem_to_merchandise")
+  redeem_merch RedeemMerchandise @relation("DetailRedeemToRedeemMerch", fields: [id_redeem_merch], references: [id_redeem_merch], map: "fk_detail_redeem_to_redeem_merch", onUpdate: Cascade, onDelete: Cascade)
+  merchandise Merchandise @relation("DetailRedeemToMerchandise", fields: [id_merchandise], references: [id_merchandise], map: "fk_detail_redeem_to_merchandise", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("dtl_redeem_merch") // awalnya dtl_redeemmerch
 }
@@ -221,7 +221,7 @@ model Barang {
   donasi Donasi? @relation("DonasiToBarang")
   detail_penitipan DetailPenitipan? @relation("DetailPenitipanToBarang")
 
-  kategori Kategori @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], map: "fk_barang_to_kategori")
+  kategori Kategori @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], map: "fk_barang_to_kategori", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("barang")
 }
@@ -233,8 +233,8 @@ model Diskusi {
   id_barang Int // jadi integer
   id_user Int // jadi integer
 
-  barang Barang @relation("DiskusiToBarang", fields: [id_barang], references: [id_barang], map: "fk_diskusi_to_barang")
-  user User @relation("DiskusiToUser", fields: [id_user], references: [id_user], map: "fk_diskusi_to_user")
+  barang Barang @relation("DiskusiToBarang", fields: [id_barang], references: [id_barang], map: "fk_diskusi_to_barang", onUpdate: Cascade, onDelete: Cascade)
+  user User @relation("DiskusiToUser", fields: [id_user], references: [id_user], map: "fk_diskusi_to_user", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("diskusi")
 }
@@ -256,7 +256,7 @@ model Transaksi {
   detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
   pengiriman Pengiriman? @relation("PengirimanToTransaksi")
 
-  pembeli Pembeli @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_transaksi_to_pembeli")
+  pembeli Pembeli @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_transaksi_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("transaksi")
 }
@@ -267,8 +267,8 @@ model DetailTransaksi {
   id_transaksi Int
   is_rating Boolean @default(false)
 
-  barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang")
-  transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi")
+  barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang", onUpdate: Cascade, onDelete: Cascade)
+  transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("dtl_transaksi")
 }
@@ -278,8 +278,8 @@ model Keranjang {
   id_barang Int // jadi integer
   id_pembeli Int // ini int awalnya String
 
-  barang Barang @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], map: "fk_keranjang_to_barang")
-  pembeli Pembeli @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_keranjang_to_pembeli")
+  barang Barang @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], map: "fk_keranjang_to_barang", onUpdate: Cascade, onDelete: Cascade)
+  pembeli Pembeli @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_keranjang_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("keranjang")
 }
@@ -292,7 +292,7 @@ model RequestDonasi {
   id_organisasi Int
   donasi Donasi? @relation("DonasiToRequestDonasi")
 
-  organisasi Organisasi @relation("RequestDonasiToOrganisasi", fields: [id_organisasi], references: [id_organisasi], map: "fk_request_donasi_to_organisasi")
+  organisasi Organisasi @relation("RequestDonasiToOrganisasi", fields: [id_organisasi], references: [id_organisasi], map: "fk_request_donasi_to_organisasi", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("request_donasi") // awalnya requestdonasi
 }
@@ -304,8 +304,8 @@ model Donasi {
   id_barang Int @unique // jadi integer
   id_request Int @unique
 
-  barang Barang @relation("DonasiToBarang", fields: [id_barang], references: [id_barang], map: "fk_donasi_to_barang")
-  request RequestDonasi? @relation("DonasiToRequestDonasi", fields: [id_request], references: [id_request], map: "fk_donasi_to_request")
+  barang Barang @relation("DonasiToBarang", fields: [id_barang], references: [id_barang], map: "fk_donasi_to_barang", onUpdate: Cascade, onDelete: Cascade)
+  request RequestDonasi? @relation("DonasiToRequestDonasi", fields: [id_request], references: [id_request], map: "fk_donasi_to_request", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("donasi")
 }
@@ -322,9 +322,9 @@ model Penitipan {
   id_pegawai_qc Int // ini integer
   detail_penitipan DetailPenitipan[] @relation("DetailPenitipanToPenitipan")
 
-  penitip Penitip @relation("PenitipanToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_penitipan_to_penitip")
-  hunter Pegawai? @relation("PenitipanToHunter", fields: [id_hunter], references: [id_pegawai], map: "fk_penitipan_to_hunter")
-  pegawai_qc Pegawai @relation("PenitipanToPegawaiQC", fields: [id_pegawai_qc], references: [id_pegawai], map: "fk_penitipan_to_qc")
+  penitip Penitip @relation("PenitipanToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_penitipan_to_penitip", onUpdate: Cascade, onDelete: Cascade)
+  hunter Pegawai? @relation("PenitipanToHunter", fields: [id_hunter], references: [id_pegawai], map: "fk_penitipan_to_hunter", onUpdate: Cascade, onDelete: Cascade)
+  pegawai_qc Pegawai @relation("PenitipanToPegawaiQC", fields: [id_pegawai_qc], references: [id_pegawai], map: "fk_penitipan_to_qc", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("penitipan")
 }
@@ -334,8 +334,8 @@ model DetailPenitipan {
   id_penitipan Int
   id_barang Int @unique // jadi one to one ke barang dan integer
   
-  penitipan Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], map: "fk_detail_penitipan_to_penitipan")
-  barang Barang @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_penitipan_to_barang")
+  penitipan Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], map: "fk_detail_penitipan_to_penitipan", onUpdate: Cascade, onDelete: Cascade)
+  barang Barang @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_penitipan_to_barang", onUpdate: Cascade, onDelete: Cascade)
   
   @@map("dtl_penitipan")
 }
@@ -348,9 +348,9 @@ model Pengiriman {
   id_alamat Int?
   id_transaksi Int @unique
 
-  kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir")
-  alamat Alamat? @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat")
-  transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi")
+  kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir", onUpdate: Cascade, onDelete: Cascade)
+  alamat Alamat? @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat", onUpdate: Cascade, onDelete: Cascade)
+  transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("pengiriman")
 }
