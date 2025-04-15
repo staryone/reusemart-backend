@@ -354,9 +354,3 @@ model Pengiriman {
 
   @@map("pengiriman")
 }
-
-model session {
-  id_session String @id @db.VarChar(255)
-  createAt DateTime @default(now())
-  expiredAt DateTime
-}

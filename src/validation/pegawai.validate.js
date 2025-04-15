@@ -20,11 +20,8 @@ const updatePegawaiValidation = Joi.object({
   id_jabatan: Joi.number().optional(),
 });
 
-const deletePegawaiValidation = Joi.string().max(100).required();
-
 export {
   createPegawaiValidation,
   getPegawaiValidation,
   updatePegawaiValidation,
-  deletePegawaiValidation,
 };

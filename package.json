@@ -7,7 +7,11 @@
   "type": "module",
   "main": "src/main.js",
   "scripts": {
-    "test": "jest -i"
+    "test": "jest -i",
+    "dev": "node src/main.js",
+    "seed": "node prisma/seed.js",
+    "reset": "npx prisma migrate reset",
+    "migrate": "npx prisma migrate dev"
   },
   "jest": {
     "transform": {

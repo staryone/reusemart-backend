@@ -2,17 +2,16 @@ import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 import {
   createPegawaiValidation,
-  deletePegawaiValidation,
   getPegawaiValidation,
   updatePegawaiValidation,
 } from "../validation/pegawai.validate.js";
 import { validate } from "../validation/validate.js";
-import { logger } from "../application/logging.js";
+import bcrypt from "bcrypt";
 
 const create = async (request) => {
   const pegawai = validate(createPegawaiValidation, request);
 
-  return await prismaClient.pegawai.create({
+  return prismaClient.pegawai.create({
     data: pegawai,
   });
 };
@@ -118,7 +117,7 @@ const update = async (request) => {
 };
 
 const destroy = async (email) => {
-  email = validate(deletePegawaiValidation, email);
+  email = validate(getPegawaiValidation, email);
 
   const user = await prismaClient.user.findFirst({
     where: {

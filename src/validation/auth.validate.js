@@ -11,4 +11,13 @@ const registerAuthValidation = Joi.object({
   role: Joi.string().valid("PEGAWAI", "ORGANISASI", "PEMBELI", "PENITIP"),
 });
 
-export { loginAuthValidation, registerAuthValidation };
+const updatePasswordAuthValidation = Joi.object({
+  email: Joi.string().max(100).required(),
+  password: Joi.string().max(100).required(),
+});
+
+export {
+  loginAuthValidation,
+  registerAuthValidation,
+  updatePasswordAuthValidation,
+};

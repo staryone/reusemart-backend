@@ -3,6 +3,7 @@ import { ResponseError } from "../errors/response.error.js";
 import {
   loginAuthValidation,
   registerAuthValidation,
+  updatePasswordAuthValidation,
 } from "../validation/auth.validate.js";
 import { validate } from "../validation/validate.js";
 import bcrypt from "bcrypt";
@@ -96,4 +97,27 @@ const logout = async (email) => {
   });
 };
 
-export default { login, register, logout };
+const updatePassword = async (email, newPassword) => {
+  newPassword = validate(updatePasswordAuthValidation, newPassword);
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "User tidak ditemukan!");
+  }
+
+  user.password = bcrypt.hash(newPassword, 10);
+
+  return prismaClient.user.update({
+    where: {
+      email: email,
+    },
+    data: user,
+  });
+};
+
+export default { login, register, logout, updatePassword };
