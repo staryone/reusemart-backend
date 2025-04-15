@@ -46,7 +46,7 @@ const get = async (email) => {
   return pegawai;
 };
 
-const getAll = async () => {
+const getList = async () => {
   const listPegawai = await prismaClient.user.findMany({
     where: {
       role: "PEGAWAI",
@@ -187,4 +187,4 @@ const search = async (keyword) => {
   return filteredListPegawai;
 };
 
-export default { create, get, getAll, update, destroy, search };
+export default { create, get, getList, update, destroy, search };

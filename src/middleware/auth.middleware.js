@@ -1,40 +1,87 @@
 import { prismaClient } from "../application/database.js";
+import "dotenv/config";
+import jwt from "jsonwebtoken";
 
 export const authPegawaiMiddleware = async (req, res, next) => {
-  const token = req.get("Authorization");
-  if (!token) {
-    res
-      .status(401)
-      .json({
-        errors: "Akses ditolak!",
-      })
-      .end();
-  } else {
-    const user = await prismaClient.user.findFirst({
+  try {
+    const token = req.get("Authorization");
+    jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    const session = await prismaClient.session.findFirst({
       where: {
         token: token,
       },
+      select: {
+        expiresAt: true,
+        user: true,
+      },
     });
 
-    if (!user) {
-      res
+    if (!session || session.expiresAt < Date.now()) {
+      if (session.expiresAt < Date.now()) {
+        await prismaClient.session.delete({
+          where: {
+            token: token,
+          },
+        });
+      }
+
+      return res
         .status(401)
         .json({
-          errors: "Akses ditolak!",
+          errors: "Akses ditolak, silahkan login ulang!",
         })
         .end();
-    } else {
-      if (user.role !== "PEGAWAI") {
-        res
-          .status(401)
-          .json({
-            errors: "Akses ditolak!",
-          })
-          .end();
-      } else {
-        req.user = user;
-        next();
-      }
     }
+
+    if (session.user.role !== "PEGAWAI") {
+      return res
+        .status(401)
+        .json({
+          errors: "Akses ditolak, Anda bukan pegawai!",
+        })
+        .end();
+    }
+
+    req.session = session;
+    next();
+  } catch (e) {
+    res
+      .status(401)
+      .json({
+        errors: "Akses ditolak, token salah!",
+      })
+      .end();
+  }
+};
+
+export const authAdminMiddleware = async (req, res, next) => {
+  try {
+    const user = req.session.user;
+
+    const pegawai = await prismaClient.pegawai.findFirst({
+      where: {
+        AND: [
+          { id_user: user.id_user },
+          {
+            jabatan: {
+              nama_jabatan: "ADMIN",
+            },
+          },
+        ],
+      },
+    });
+
+    if (!pegawai) {
+      throw new Error();
+    }
+    next();
+  } catch (e) {
+    res
+      .status(401)
+      .json({
+        errors: "Akses ditolak, Anda bukan admin!",
+      })
+      .end();
   }
 };

@@ -7,7 +7,8 @@ import {
 } from "../validation/auth.validate.js";
 import { validate } from "../validation/validate.js";
 import bcrypt from "bcrypt";
-import { v4 as uuid } from "uuid";
+import jwt from "jsonwebtoken";
+import "dotenv/config";
 
 const login = async (request) => {
   const loginRequest = validate(loginAuthValidation, request);
@@ -17,8 +18,10 @@ const login = async (request) => {
       email: loginRequest.email,
     },
     select: {
+      id_user: true,
       email: true,
       password: true,
+      role: true,
     },
   });
 
@@ -35,13 +38,19 @@ const login = async (request) => {
     throw new ResponseError(401, "Email atau password salah!");
   }
 
-  const token = uuid().toString();
-  return prismaClient.user.update({
+  const token = jwt.sign(
+    { email: user.email, role: user.role },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "7d",
+    }
+  );
+
+  return prismaClient.session.create({
     data: {
+      id_user: user.id_user,
       token: token,
-    },
-    where: {
-      email: user.email,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
     select: {
       token: true,
@@ -73,36 +82,20 @@ const register = async (user) => {
   });
 };
 
-const logout = async (email) => {
-  const user = await prismaClient.user.findUnique({
+const logout = async (token) => {
+  return prismaClient.session.delete({
     where: {
-      email: email,
-    },
-  });
-
-  if (!user) {
-    throw new ResponseError(404, "User tidak ditemukan!");
-  }
-
-  return prismaClient.user.update({
-    where: {
-      email: email,
-    },
-    data: {
-      token: null,
-    },
-    select: {
-      email: true,
+      token: token,
     },
   });
 };
 
-const updatePassword = async (email, newPassword) => {
-  newPassword = validate(updatePasswordAuthValidation, newPassword);
+const updatePassword = async (request) => {
+  const data = validate(updatePasswordAuthValidation, request);
 
   const user = await prismaClient.user.findUnique({
     where: {
-      email: email,
+      email: data.email,
     },
   });
 
@@ -110,11 +103,11 @@ const updatePassword = async (email, newPassword) => {
     throw new ResponseError(404, "User tidak ditemukan!");
   }
 
-  user.password = bcrypt.hash(newPassword, 10);
+  user.password = await bcrypt.hash(data.password, 10);
 
   return prismaClient.user.update({
     where: {
-      email: email,
+      email: data.email,
     },
     data: user,
   });

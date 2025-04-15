@@ -58,13 +58,13 @@ model User {
   role Role @default(PEMBELI) // ini diganti enum, awalnya varchar
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  token String? @db.VarChar(255) // ini awalnya ga ada
   diskusi Diskusi[] @relation("DiskusiToUser")
   
   pegawai Pegawai? @relation("PegawaiToUser")
   organisasi Organisasi? @relation("OrganisasiToUser")
   penitip Penitip? @relation("PenitipToUser")
   pembeli Pembeli? @relation("PembeliToUser")
+  session Session[] @relation("SessionToUser")
 
   @@map("users")
 }
@@ -354,3 +354,16 @@ model Pengiriman {
 
   @@map("pengiriman")
 }
+
+model Session {
+  id_session Int @id @default(autoincrement())
+  token String @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime? 
+  id_user Int
+
+  user User @relation("SessionToUser",fields: [id_user], references: [id_user], map:"fk_session_to_user", onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("sessions")
+}
+

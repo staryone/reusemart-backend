@@ -47,7 +47,7 @@ const login = async (req, res, next) => {
 
 const get = async (req, res, next) => {
   try {
-    const email = req.user.email;
+    const email = req.session.user.email;
     const result = await pegawaiService.get(email);
 
     res.status(200).json({
@@ -60,11 +60,11 @@ const get = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const email = req.user.email;
-    await authService.logout(email);
+    const token = req.session.token;
+    await authService.logout(token);
 
     res.status(200).json({
-      data: "OK",
+      data: "Logout berhasil!",
     });
   } catch (e) {
     next(e);
@@ -73,11 +73,11 @@ const logout = async (req, res, next) => {
 
 const changePassword = async (req, res, next) => {
   try {
-    req.body.email = req.user.email;
-    await pegawaiService.updatePassword(req.body);
+    req.body.email = req.session.user.email;
+    await authService.updatePassword(req.body);
 
     res.status(200).json({
-      data: "OK",
+      data: "Ubah password berhasil!",
     });
   } catch (e) {
     next(e);
@@ -86,14 +86,34 @@ const changePassword = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    await pegawaiService.updatePassword(req.body);
+    await authService.updatePassword(req.body);
 
     res.status(200).json({
-      data: "OK",
+      data: "Reset password berhasil!",
     });
   } catch (e) {
     next(e);
   }
 };
 
-export default { register, get, login, logout, changePassword };
+const getList = async (req, res, next) => {
+  try {
+    const listPegawai = await pegawaiService.getList();
+
+    res.status(200).json({
+      data: listPegawai,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export default {
+  register,
+  get,
+  login,
+  logout,
+  changePassword,
+  resetPassword,
+  getList,
+};
