@@ -48,7 +48,6 @@ const login = async (req, res, next) => {
 const logout = async (req, res, next) => {
   try {
     const id = req.session.id_session;
-    console.log(id);
     await authService.logout(id);
 
     res.status(200).json({
@@ -74,11 +73,23 @@ const profile = async (req, res, next) => {
 
 const get = async (req, res, next) => {
   try {
-    const email = req.session.user.email;
-    const result = await pegawaiService.get(email);
+    const id = req.params.id;
+    const result = await pegawaiService.get(id);
 
     res.status(200).json({
       data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const getList = async (req, res, next) => {
+  try {
+    const listPegawai = await pegawaiService.getList(req.query);
+
+    res.status(200).json({
+      data: listPegawai,
     });
   } catch (e) {
     next(e);
@@ -89,7 +100,7 @@ const update = async (req, res, next) => {
   try {
     req.body.id_pegawai = req.params.id;
     const result = await pegawaiService.update(req.body);
-    result.email = req.body.email;
+    console.log(result);
 
     res.status(200).json({
       data: result,
@@ -135,19 +146,6 @@ const resetPassword = async (req, res, next) => {
 
     res.status(200).json({
       data: "Reset password berhasil!",
-    });
-  } catch (e) {
-    next(e);
-  }
-};
-
-const getList = async (req, res, next) => {
-  try {
-    console.log("sini... 5");
-    const listPegawai = await pegawaiService.getList(req.query);
-
-    res.status(200).json({
-      data: listPegawai,
     });
   } catch (e) {
     next(e);

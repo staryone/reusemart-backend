@@ -67,6 +67,19 @@ const options = {
             },
           },
         },
+        Jabatan: {
+          type: "object",
+          properties: {
+            id_jabatan: {
+              type: "integer",
+              example: 1,
+            },
+            nama_jabatan: {
+              type: "string",
+              example: "Kurir",
+            },
+          },
+        },
       },
     },
   },

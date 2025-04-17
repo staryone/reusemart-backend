@@ -222,7 +222,16 @@ const update = async (request) => {
     data.id_jabatan = updateRequest.id_jabatan;
   }
 
-  console.log(data);
+  if (updateRequest.email) {
+    await prismaClient.user.update({
+      where: {
+        id_user: data.id_user,
+      },
+      data: {
+        email: updateRequest.email,
+      },
+    });
+  }
 
   const updatedPegawai = await prismaClient.pegawai.update({
     where: {

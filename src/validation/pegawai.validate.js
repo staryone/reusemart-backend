@@ -19,6 +19,7 @@ const updatePegawaiValidation = Joi.object({
     .max(10)
     .pattern(/^[Pp]\d+$/, "P followed by numbers")
     .required(),
+  email: Joi.string().max(100).optional(),
   nama: Joi.string().max(100).optional(),
   nomor_telepon: Joi.string().max(15).optional(),
   komisi: Joi.number(),
