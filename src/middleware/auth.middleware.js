@@ -2,16 +2,19 @@ import { prismaClient } from "../application/database.js";
 import "dotenv/config";
 import jwt from "jsonwebtoken";
 
-export const authPegawaiMiddleware = async (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   try {
     const token = req.get("Authorization");
-    jwt.verify(token, process.env.JWT_SECRET_KEY);
+    jwt.verify(token, process.env.JWT_SECRET_KEY, () => {
+      
+    });
 
-    const session = await prismaClient.session.findFirst({
+    const session = await prismaClient.session.findUnique({
       where: {
         token: token,
       },
       select: {
+        id_session: true,
         expiresAt: true,
         user: true,
       },
@@ -34,13 +37,15 @@ export const authPegawaiMiddleware = async (req, res, next) => {
         .end();
     }
 
-    if (session.user.role !== "PEGAWAI") {
-      return res
-        .status(401)
-        .json({
-          errors: "Akses ditolak, Anda bukan pegawai!",
-        })
-        .end();
+    if (session.user.role === "PEGAWAI") {
+      session.user.pegawai = await prismaClient.pegawai.findUnique({
+        where: {
+          id_user: session.user.id_user,
+        },
+        select: {
+          jabatan: true,
+        },
+      });
     }
 
     req.session = session;
@@ -50,37 +55,6 @@ export const authPegawaiMiddleware = async (req, res, next) => {
       .status(401)
       .json({
         errors: "Akses ditolak, token salah!",
-      })
-      .end();
-  }
-};
-
-export const authAdminMiddleware = async (req, res, next) => {
-  try {
-    const user = req.session.user;
-
-    const pegawai = await prismaClient.pegawai.findFirst({
-      where: {
-        AND: [
-          { id_user: user.id_user },
-          {
-            jabatan: {
-              nama_jabatan: "ADMIN",
-            },
-          },
-        ],
-      },
-    });
-
-    if (!pegawai) {
-      throw new Error();
-    }
-    next();
-  } catch (e) {
-    res
-      .status(401)
-      .json({
-        errors: "Akses ditolak, Anda bukan admin!",
       })
       .end();
   }

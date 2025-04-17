@@ -1,41 +1,70 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
+import { idToInteger, idToString } from "../utils/id_formater.util.js";
+import { getIdAuthValidation } from "../validation/auth.validate.js";
 import {
   createPegawaiValidation,
-  getPegawaiValidation,
+  getIdPegawaiValidation,
   updatePegawaiValidation,
 } from "../validation/pegawai.validate.js";
 import { validate } from "../validation/validate.js";
-import bcrypt from "bcrypt";
+import authService from "./auth.service.js";
+
+const login = async (request) => {
+  const loginUser = await authService.login(request);
+
+  if (loginUser.user.role !== "PEGAWAI") {
+    await authService.logout(loginUser.token);
+    throw new ResponseError(401, "Login gagal, Anda bukan pegawai!");
+  }
+
+  return {
+    token: loginUser.token,
+  };
+};
 
 const create = async (request) => {
   const pegawai = validate(createPegawaiValidation, request);
 
-  return prismaClient.pegawai.create({
+  const createdPegawai = await prismaClient.pegawai.create({
     data: pegawai,
-  });
-};
-
-const get = async (email) => {
-  email = validate(getPegawaiValidation, email);
-
-  const pegawai = await prismaClient.user.findUnique({
-    where: {
-      email: email,
-    },
-    select: {
-      email: true,
-      pegawai: {
+    include: {
+      user: {
         select: {
-          prefix: true,
-          id_pegawai: true,
-          nama: true,
-          nomor_telepon: true,
-          komisi: true,
-          tgl_lahir: true,
-          jabatan: true,
+          email: true,
         },
       },
+      jabatan: true,
+    },
+  });
+
+  const formattedPegawai = {
+    id_pegawai: idToString(createdPegawai.prefix, createdPegawai.id_pegawai),
+    email: createdPegawai.user.email,
+    nama: createdPegawai.nama,
+    nomor_telepon: createdPegawai.nomor_telepon,
+    komisi: createdPegawai.komisi,
+    tgl_lahir: createdPegawai.tgl_lahir,
+    jabatan: createdPegawai.jabatan,
+  };
+
+  return formattedPegawai;
+};
+
+const profile = async (id) => {
+  const id_user = validate(getIdAuthValidation, id);
+
+  const pegawai = await prismaClient.pegawai.findUnique({
+    where: {
+      id_user: id_user,
+    },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+      jabatan: true,
     },
   });
 
@@ -43,87 +72,197 @@ const get = async (email) => {
     throw new ResponseError(404, "Pegawai tidak ditemukan");
   }
 
-  return pegawai;
+  const formattedPegawai = {
+    id_pegawai: idToString(pegawai.prefix, pegawai.id_pegawai),
+    email: pegawai.user.email,
+    nama: pegawai.nama,
+    nomor_telepon: pegawai.nomor_telepon,
+    komisi: pegawai.komisi,
+    tgl_lahir: pegawai.tgl_lahir,
+    jabatan: pegawai.jabatan,
+  };
+
+  return formattedPegawai;
 };
 
-const getList = async () => {
-  const listPegawai = await prismaClient.user.findMany({
+const get = async (id) => {
+  id = validate(getIdPegawaiValidation, id);
+  const id_pegawai = idToInteger(id);
+
+  const pegawai = await prismaClient.pegawai.findUnique({
     where: {
-      role: "PEGAWAI",
+      id_pegawai: id_pegawai,
     },
-    select: {
-      email: true,
-      pegawai: {
+    include: {
+      user: {
         select: {
-          prefix: true,
-          id_pegawai: true,
-          nama: true,
-          nomor_telepon: true,
-          komisi: true,
-          tgl_lahir: true,
-          jabatan: true,
+          email: true,
         },
       },
+      jabatan: true,
     },
   });
 
-  if (!listPegawai) {
-    throw new ResponseError(404, "Tidak ada pegawai yang ditemukan!");
+  if (!pegawai) {
+    throw new ResponseError(404, "Pegawai tidak ditemukan");
   }
 
-  return listPegawai;
+  const formattedPegawai = {
+    id_pegawai: idToString(pegawai.prefix, pegawai.id_pegawai),
+    email: pegawai.user.email,
+    nama: pegawai.nama,
+    nomor_telepon: pegawai.nomor_telepon,
+    komisi: pegawai.komisi,
+    tgl_lahir: pegawai.tgl_lahir,
+    jabatan: pegawai.jabatan,
+  };
+
+  return formattedPegawai;
+};
+
+const getList = async (request) => {
+  let listPegawai;
+  const page = parseInt(request.page) || 1;
+  const limit = parseInt(request.limit) || 10;
+  const skip = (page - 1) * limit;
+  const q = request.search || null;
+  if (q !== null) {
+    listPegawai = await prismaClient.pegawai.findMany({
+      where: {
+        OR: [
+          {
+            nama: {
+              contains: q,
+            },
+          },
+          {
+            user: {
+              email: {
+                contains: q,
+              },
+            },
+            jabatan: {
+              nama_jabatan: {
+                contains: q,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+        jabatan: true,
+      },
+      skip: skip,
+      take: limit,
+    });
+  } else {
+    listPegawai = await prismaClient.pegawai.findMany({
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+        jabatan: true,
+      },
+      skip: skip,
+      take: limit,
+    });
+  }
+
+  const formattedPegawai = listPegawai.map((p) => ({
+    id_pegawai: idToString(p.prefix, p.id_pegawai),
+    email: p.user.email,
+    nama: p.nama,
+    nomor_telepon: p.nomor_telepon,
+    komisi: p.komisi,
+    tgl_lahir: p.tgl_lahir,
+    jabatan: p.jabatan,
+  }));
+
+  return formattedPegawai;
 };
 
 const update = async (request) => {
   const updateRequest = validate(updatePegawaiValidation, request);
+  const id = idToInteger(updateRequest.id_pegawai);
 
-  const data = await prismaClient.user.findUnique({
+  const data = await prismaClient.pegawai.findUnique({
     where: {
-      email: updateRequest.email,
-    },
-    select: {
-      pegawai: true,
+      id_pegawai: id,
     },
   });
 
-  console.log(data);
+  if (!data) {
+    throw new ResponseError(404, "Pegawai tidak ditemukan!");
+  }
 
   if (updateRequest.nama) {
-    data.pegawai.nama = updateRequest.nama;
+    data.nama = updateRequest.nama;
   }
 
   if (updateRequest.nomor_telepon) {
-    data.pegawai.nomor_telepon = updateRequest.nomor_telepon;
+    data.nomor_telepon = updateRequest.nomor_telepon;
   }
 
   if (updateRequest.komisi) {
-    data.pegawai.komisi = updateRequest.komisi;
+    data.komisi = updateRequest.komisi;
   }
 
   if (updateRequest.tgl_lahir) {
-    data.pegawai.tgl_lahir = updateRequest.tgl_lahir;
+    data.tgl_lahir = updateRequest.tgl_lahir;
   }
 
   if (updateRequest.id_jabatan) {
-    data.pegawai.id_jabatan = updateRequest.id_jabatan;
+    data.id_jabatan = updateRequest.id_jabatan;
   }
 
-  return prismaClient.pegawai.update({
+  console.log(data);
+
+  const updatedPegawai = await prismaClient.pegawai.update({
     where: {
-      id_pegawai: data.pegawai.id_pegawai,
+      id_pegawai: id,
     },
-    data: data.pegawai,
+    data: data,
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+      jabatan: true,
+    },
   });
+
+  const formattedPegawai = {
+    id_pegawai: idToString(updatedPegawai.prefix, updatedPegawai.id_pegawai),
+    email: updatedPegawai.user.email,
+    nama: updatedPegawai.nama,
+    nomor_telepon: updatedPegawai.nomor_telepon,
+    komisi: updatedPegawai.komisi,
+    tgl_lahir: updatedPegawai.tgl_lahir,
+    jabatan: updatedPegawai.jabatan,
+  };
+
+  return formattedPegawai;
 };
 
-const destroy = async (email) => {
-  email = validate(getPegawaiValidation, email);
+const destroy = async (id) => {
+  id = validate(getIdPegawaiValidation, id);
+  const id_pegawai = idToInteger(id);
 
   const user = await prismaClient.user.findFirst({
     where: {
-      email: email,
+      pegawai: {
+        id_pegawai: id_pegawai,
+      },
     },
-    select: {
+    include: {
       pegawai: true,
     },
   });
@@ -140,51 +279,19 @@ const destroy = async (email) => {
 
   const deletedUser = prismaClient.user.delete({
     where: {
-      email: email,
+      id_user: user.id_user,
     },
   });
 
   return prismaClient.$transaction([deletedPegawai, deletedUser]);
 };
 
-const search = async (keyword) => {
-  const listPegawai = await prismaClient.user.findMany({
-    where: {
-      role: "PEGAWAI",
-    },
-    select: {
-      email: true,
-      pegawai: {
-        where: {
-          OR: [
-            {
-              nama: {
-                contains: keyword,
-              },
-            },
-          ],
-        },
-        select: {
-          prefix: true,
-          id_pegawai: true,
-          nama: true,
-          nomor_telepon: true,
-          komisi: true,
-          tgl_lahir: true,
-        },
-      },
-    },
-  });
-
-  if (!listPegawai) {
-    throw new ResponseError(404, "Tidak ada pegawai yang ditemukan!");
-  }
-
-  const filteredListPegawai = listPegawai.filter((item) => {
-    return item.pegawai !== null;
-  });
-
-  return filteredListPegawai;
+export default {
+  login,
+  create,
+  profile,
+  get,
+  getList,
+  update,
+  destroy,
 };
-
-export default { create, get, getList, update, destroy, search };

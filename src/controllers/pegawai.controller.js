@@ -1,6 +1,6 @@
 import authService from "../services/auth.service.js";
 import pegawaiService from "../services/pegawai.service.js";
-import { formatStringDate } from "../utils/date_util.js";
+import { formatStringDate } from "../utils/date.util.js";
 
 const register = async (req, res, next) => {
   try {
@@ -36,7 +36,34 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const result = await authService.login(req.body);
+    const result = await pegawaiService.login(req.body);
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const logout = async (req, res, next) => {
+  try {
+    const id = req.session.id_session;
+    console.log(id);
+    await authService.logout(id);
+
+    res.status(200).json({
+      data: "Logout berhasil!",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const profile = async (req, res, next) => {
+  try {
+    const id = req.session.user.id_user;
+    const result = await pegawaiService.profile(id);
+
     res.status(200).json({
       data: result,
     });
@@ -58,13 +85,25 @@ const get = async (req, res, next) => {
   }
 };
 
-const logout = async (req, res, next) => {
+const update = async (req, res, next) => {
   try {
-    const token = req.session.token;
-    await authService.logout(token);
+    req.body.id_pegawai = req.params.id;
+    const result = await pegawaiService.update(req.body);
+    result.email = req.body.email;
 
     res.status(200).json({
-      data: "Logout berhasil!",
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const destroy = async (req, res, next) => {
+  try {
+    await pegawaiService.destroy(req.params.id);
+    res.status(200).json({
+      data: "Hapus pegawai berhasil!",
     });
   } catch (e) {
     next(e);
@@ -75,6 +114,7 @@ const changePassword = async (req, res, next) => {
   try {
     req.body.email = req.session.user.email;
     await authService.updatePassword(req.body);
+    await authService.resetAllSession(req.body.email);
 
     res.status(200).json({
       data: "Ubah password berhasil!",
@@ -86,7 +126,12 @@ const changePassword = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
+    const user = await pegawaiService.get(req.params.id);
+    req.body.email = user.email;
+    req.body.password = formatStringDate(user.tgl_lahir);
+
     await authService.updatePassword(req.body);
+    await authService.resetAllSession(req.body.email);
 
     res.status(200).json({
       data: "Reset password berhasil!",
@@ -98,7 +143,8 @@ const resetPassword = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    const listPegawai = await pegawaiService.getList();
+    console.log("sini... 5");
+    const listPegawai = await pegawaiService.getList(req.query);
 
     res.status(200).json({
       data: listPegawai,
@@ -110,9 +156,12 @@ const getList = async (req, res, next) => {
 
 export default {
   register,
-  get,
   login,
   logout,
+  get,
+  profile,
+  update,
+  destroy,
   changePassword,
   resetPassword,
   getList,

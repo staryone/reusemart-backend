@@ -16,8 +16,13 @@ const updatePasswordAuthValidation = Joi.object({
   password: Joi.string().max(100).required(),
 });
 
+const getAuthValidation = Joi.string().max(100).required();
+const getIdAuthValidation = Joi.number().required();
+
 export {
   loginAuthValidation,
   registerAuthValidation,
   updatePasswordAuthValidation,
+  getAuthValidation,
+  getIdAuthValidation
 };

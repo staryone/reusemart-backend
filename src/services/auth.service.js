@@ -1,6 +1,7 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 import {
+  getAuthValidation,
   loginAuthValidation,
   registerAuthValidation,
   updatePasswordAuthValidation,
@@ -54,6 +55,11 @@ const login = async (request) => {
     },
     select: {
       token: true,
+      user: {
+        select: {
+          role: true,
+        },
+      },
     },
   });
 };
@@ -82,10 +88,10 @@ const register = async (user) => {
   });
 };
 
-const logout = async (token) => {
+const logout = async (id) => {
   return prismaClient.session.delete({
     where: {
-      token: token,
+      id_session: id,
     },
   });
 };
@@ -113,4 +119,27 @@ const updatePassword = async (request) => {
   });
 };
 
-export default { login, register, logout, updatePassword };
+const resetAllSession = async (email) => {
+  email = validate(getAuthValidation, email);
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email: email,
+    },
+    select: {
+      id_user: true,
+    },
+  });
+
+  if (!user) {
+    throw new ResponseError(404, "User tidak ditemukan!");
+  }
+
+  return prismaClient.session.deleteMany({
+    where: {
+      id_user: user.id_user,
+    },
+  });
+};
+
+export default { login, register, logout, updatePassword, resetAllSession };
