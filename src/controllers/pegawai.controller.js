@@ -9,6 +9,9 @@ const register = async (req, res, next) => {
       password: req.body.tgl_lahir
         ? formatStringDate(req.body.tgl_lahir)
         : undefined,
+      confirm_password: req.body.tgl_lahir
+        ? formatStringDate(req.body.tgl_lahir)
+        : undefined,
       role: "PEGAWAI",
     };
 
@@ -24,7 +27,6 @@ const register = async (req, res, next) => {
     };
 
     let result = await pegawaiService.create(pegawai);
-    result.email = createdUser.email;
 
     res.status(200).json({
       data: result,

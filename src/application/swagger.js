@@ -80,6 +80,35 @@ const options = {
             },
           },
         },
+        Organsasi: {
+          properties: {
+            id_organisasi: {
+              type: "integer",
+              example: 1,
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "organization@example.com",
+            },
+            nama_organisasi: {
+              type: "string",
+              example: "Komunitas Peduli Kundang",
+            },
+            alamat: {
+              type: "string",
+              example: "Jl. Kecambang no 2",
+            },
+            nomor_telepon: {
+              type: "string",
+              example: "02746642721",
+            },
+            deskripsi: {
+              type: "string",
+              example: "Organisasi bantuan dan kondang",
+            },
+          },
+        },
       },
     },
   },

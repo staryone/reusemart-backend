@@ -263,6 +263,10 @@ pegawaiRouter.get(
  *           schema:
  *             type: object
  *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: updateemployee@example.com
  *               nama:
  *                 type: string
  *                 example: Jane Doe

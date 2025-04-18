@@ -9,6 +9,8 @@ import {
 import { validate } from "../validation/validate.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 import "dotenv/config";
 
 const login = async (request) => {
@@ -77,10 +79,12 @@ const register = async (user) => {
     throw new ResponseError(400, "Email sudah terdaftar!");
   }
 
-  user.password = await bcrypt.hash(user.password, 10);
+  delete registerRequest.confirm_password;
+
+  registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
 
   return prismaClient.user.create({
-    data: user,
+    data: registerRequest,
     select: {
       id_user: true,
       email: true,
@@ -119,6 +123,56 @@ const updatePassword = async (request) => {
   });
 };
 
+const forgotPassword = async (email) => {
+  email = validate(getAuthValidation, email);
+
+  const countUser = await prismaClient.user.count({
+    where: {
+      email: email,
+    },
+  });
+
+  if (countUser !== 1) {
+    throw new ResponseError(404, "User tidak ditemukan!");
+  }
+
+  const token = crypto.randomBytes(20).toString("hex");
+
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: process.env.SENDER_EMAIL,
+      pass: process.env.SENDER_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: "reusemart.my.id@gmail.com",
+    to: email,
+    subject: "Password Reset",
+    text: `Click the following link to reset your password: http://localhost:3000/reset-password/${token}`,
+  };
+
+  const result = transporter.sendMail(mailOptions, (err) => {
+    if (err) {
+      throw new ResponseError(500, err.message);
+    }
+
+    return `Email berhasil dikirim: ${info.response}`;
+  });
+
+  await prismaClient.user.update({
+    where: {
+      email: email,
+    },
+    data: {
+      token: token,
+    },
+  });
+
+  return result;
+};
+
 const resetAllSession = async (email) => {
   email = validate(getAuthValidation, email);
 
@@ -142,4 +196,11 @@ const resetAllSession = async (email) => {
   });
 };
 
-export default { login, register, logout, updatePassword, resetAllSession };
+export default {
+  login,
+  register,
+  logout,
+  updatePassword,
+  forgotPassword,
+  resetAllSession,
+};
