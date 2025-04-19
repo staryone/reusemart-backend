@@ -1,6 +1,5 @@
 import authService from "../services/auth.service.js";
 import organisasiService from "../services/organisasi.service.js";
-import { formatStringDate } from "../utils/date.util.js";
 
 const register = async (req, res, next) => {
   try {
@@ -99,7 +98,6 @@ const update = async (req, res, next) => {
   try {
     req.body.id_organisasi = req.params.id;
     const result = await organisasiService.update(req.body);
-    console.log(result);
 
     res.status(200).json({
       data: result,
@@ -134,19 +132,6 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-const forgotPassword = async (req, res, next) => {
-  try {
-    console.log("test");
-    const result = await authService.forgotPassword(req.body.email);
-
-    res.status(200).json({
-      data: result,
-    });
-  } catch (e) {
-    next(e);
-  }
-};
-
 export default {
   register,
   login,
@@ -156,6 +141,5 @@ export default {
   update,
   destroy,
   changePassword,
-  forgotPassword,
   getList,
 };

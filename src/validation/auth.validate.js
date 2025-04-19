@@ -24,7 +24,20 @@ const updatePasswordAuthValidation = Joi.object({
   password: Joi.string().max(100).required(),
 });
 
-const getAuthValidation = Joi.string().max(100).required();
+const resetPasswordAuthValidation = Joi.object({
+  token: Joi.string().max(255).required(),
+  new_password: Joi.string().max(100).required(),
+  confirm_new_password: Joi.string()
+    .valid(Joi.ref("new_password"))
+    .required()
+    .messages({
+      "string.empty": "Confirm password is required",
+      "any.only": "Confirm password does not match password",
+      "any.required": "Confirm password is required",
+    }),
+});
+
+const getAuthValidation = Joi.string().email().required();
 const getIdAuthValidation = Joi.number().required();
 
 export {
@@ -33,4 +46,5 @@ export {
   updatePasswordAuthValidation,
   getAuthValidation,
   getIdAuthValidation,
+  resetPasswordAuthValidation,
 };

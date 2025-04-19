@@ -13,9 +13,8 @@ export const restrictTo = (...allowedRoles) => {
         .end();
     }
 
-    if (req.session.user.pegawai.jabatan && allowedRoles.length > 1) {
+    if (req.session.user.pegawai && allowedRoles.length > 1) {
       const jabatan = req.session.user.pegawai.jabatan.nama_jabatan;
-
       if (!allowedRoles.includes(String(jabatan).toUpperCase())) {
         return res
           .status(401)

@@ -100,7 +100,7 @@ organisasiRouter.delete(
  */
 organisasiRouter.get(
   "/api/organisasi/lists",
-  restrictTo("ORGANISASI"),
+  restrictTo("PEGAWAI", "ADMIN"),
   organisasiController.getList
 );
 
@@ -137,7 +137,7 @@ organisasiRouter.get(
  */
 organisasiRouter.get(
   "/api/organisasi/:id",
-  restrictTo("ORGANISASI"),
+  restrictTo("PEGAWAI", "ADMIN"),
   organisasiController.get
 );
 
@@ -197,7 +197,7 @@ organisasiRouter.get(
  */
 organisasiRouter.patch(
   "/api/organisasi/:id",
-  restrictTo("ORGANISASI"),
+  restrictTo("PEGAWAI", "ADMIN"),
   organisasiController.update
 );
 
@@ -235,7 +235,7 @@ organisasiRouter.patch(
  */
 organisasiRouter.delete(
   "/api/organisasi/:id",
-  restrictTo("ORGANISASI"),
+  restrictTo("PEGAWAI", "ADMIN"),
   organisasiController.destroy
 );
 

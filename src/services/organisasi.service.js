@@ -1,5 +1,6 @@
 import { prismaClient } from "../application/database.js";
-import { idToString } from "../utils/id_formater.util.js";
+import { ResponseError } from "../errors/response.error.js";
+import { idOrgToInteger, idToString } from "../utils/id_formater.util.js";
 import { getIdAuthValidation } from "../validation/auth.validate.js";
 import {
   createOrganisasiValidation,
@@ -82,7 +83,7 @@ const profile = async (id) => {
 
 const get = async (id) => {
   id = validate(getOrganisasiValidation, id);
-  const id_organisasi = idToInteger(id);
+  const id_organisasi = idOrgToInteger(id);
 
   const organisasi = await prismaClient.organisasi.findUnique({
     where: {
@@ -180,7 +181,7 @@ const getList = async (request) => {
 
 const update = async (request) => {
   const updateRequest = validate(updateOrganisasiValidation, request);
-  const id = idToInteger(updateRequest.id_organisasi);
+  const id = idOrgToInteger(updateRequest.id_organisasi);
 
   const data = await prismaClient.organisasi.findUnique({
     where: {
@@ -192,11 +193,11 @@ const update = async (request) => {
     throw new ResponseError(404, "Organisasi tidak ditemukan!");
   }
 
-  if (updateRequest.nama) {
+  if (updateRequest.nama_organisasi) {
     data.nama_organisasi = updateRequest.nama_organisasi;
   }
 
-  if (updateRequest.komisi) {
+  if (updateRequest.alamat) {
     data.alamat = updateRequest.alamat;
   }
 
@@ -204,7 +205,7 @@ const update = async (request) => {
     data.nomor_telepon = updateRequest.nomor_telepon;
   }
 
-  if (updateRequest.tgl_lahir) {
+  if (updateRequest.deskripsi) {
     data.deskripsi = updateRequest.deskripsi;
   }
 
@@ -239,11 +240,10 @@ const update = async (request) => {
       updatedOrganisasi.id_organisasi
     ),
     email: updatedOrganisasi.user.email,
-    nama: updatedOrganisasi.nama,
+    nama_organisasi: updatedOrganisasi.nama_organisasi,
+    alamat: updatedOrganisasi.alamat,
     nomor_telepon: updatedOrganisasi.nomor_telepon,
-    komisi: updatedOrganisasi.komisi,
-    tgl_lahir: updatedOrganisasi.tgl_lahir,
-    jabatan: updatedOrganisasi.jabatan,
+    deskripsi: updatedOrganisasi.deskripsi,
   };
 
   return formattedOrganisasi;
@@ -251,7 +251,7 @@ const update = async (request) => {
 
 const destroy = async (id) => {
   id = validate(getOrganisasiValidation, id);
-  const id_organisasi = idToInteger(id);
+  const id_organisasi = idOrgToInteger(id);
 
   const org = await prismaClient.organisasi.findUnique({
     where: {
@@ -262,7 +262,7 @@ const destroy = async (id) => {
     },
   });
 
-  if (!user) {
+  if (!org) {
     throw new ResponseError(404, "Organisasi tidak ditemukan!");
   }
 

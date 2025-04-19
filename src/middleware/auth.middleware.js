@@ -4,10 +4,13 @@ import jwt from "jsonwebtoken";
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.get("Authorization");
-    jwt.verify(token, process.env.JWT_SECRET_KEY, () => {
-      
-    });
+    let token = req.get("Authorization");
+
+    if (token && String(token).startsWith("Bearer ")) {
+      token = String(token).slice(7);
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET_KEY, () => {});
 
     const session = await prismaClient.session.findUnique({
       where: {

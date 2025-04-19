@@ -4,6 +4,7 @@ import {
   getAuthValidation,
   loginAuthValidation,
   registerAuthValidation,
+  resetPasswordAuthValidation,
   updatePasswordAuthValidation,
 } from "../validation/auth.validate.js";
 import { validate } from "../validation/validate.js";
@@ -123,17 +124,51 @@ const updatePassword = async (request) => {
   });
 };
 
+const resetPassword = async (request) => {
+  const data = validate(resetPasswordAuthValidation, request);
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      token: data.token,
+    },
+  });
+
+  if (!user) {
+    throw new ResponseError(
+      404,
+      "Reset password gagal, token tidak ditemukan!"
+    );
+  }
+
+  user.password = await bcrypt.hash(data.new_password, 10);
+  user.token = null;
+
+  return prismaClient.user.update({
+    where: {
+      token: data.token,
+    },
+    data: user,
+    select: {
+      email: true,
+    },
+  });
+};
+
 const forgotPassword = async (email) => {
   email = validate(getAuthValidation, email);
 
-  const countUser = await prismaClient.user.count({
+  const user = await prismaClient.user.findUnique({
     where: {
       email: email,
     },
   });
 
-  if (countUser !== 1) {
+  if (!user) {
     throw new ResponseError(404, "User tidak ditemukan!");
+  }
+
+  if (user.role === "PEGAWAI") {
+    throw new ResponseError(403, "Akses ditolak!");
   }
 
   const token = crypto.randomBytes(20).toString("hex");
@@ -150,16 +185,10 @@ const forgotPassword = async (email) => {
     from: "reusemart.my.id@gmail.com",
     to: email,
     subject: "Password Reset",
-    text: `Click the following link to reset your password: http://localhost:3000/reset-password/${token}`,
+    text: `Click the following link to reset your password: http://localhost:3001/api/reset-password/${token}`,
   };
 
-  const result = transporter.sendMail(mailOptions, (err) => {
-    if (err) {
-      throw new ResponseError(500, err.message);
-    }
-
-    return `Email berhasil dikirim: ${info.response}`;
-  });
+  await transporter.sendMail(mailOptions);
 
   await prismaClient.user.update({
     where: {
@@ -170,7 +199,7 @@ const forgotPassword = async (email) => {
     },
   });
 
-  return result;
+  return "OK";
 };
 
 const resetAllSession = async (email) => {
@@ -202,5 +231,6 @@ export default {
   logout,
   updatePassword,
   forgotPassword,
+  resetPassword,
   resetAllSession,
 };

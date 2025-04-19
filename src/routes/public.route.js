@@ -1,6 +1,7 @@
 import express from "express";
 import pegawaiController from "../controllers/pegawai.controller.js";
 import organisasiController from "../controllers/organisasi.controller.js";
+import authController from "../controllers/auth.controller.js";
 
 const publicRouter = new express.Router();
 
@@ -150,10 +151,10 @@ publicRouter.post("/api/organisasi/login", organisasiController.login);
 
 /**
  * @swagger
- * /api/organisasi/forgot-password:
+ * /api/forgot-password:
  *   post:
- *     summary: Send a forgot password link to organization
- *     tags: [Organisasi]
+ *     summary: Send a forgot password link to user
+ *     tags: [User]
  *     requestBody:
  *       required: true
  *       content:
@@ -166,7 +167,7 @@ publicRouter.post("/api/organisasi/login", organisasiController.login);
  *               email:
  *                 type: string
  *                 format: email
- *                 example: organization@example.com
+ *                 example: email@example.com
  *     responses:
  *       200:
  *         description: Successful send email
@@ -185,9 +186,55 @@ publicRouter.post("/api/organisasi/login", organisasiController.login);
  *         description: Invalid credentials
  */
 
-publicRouter.post(
-  "/api/organisasi/forgot-password",
-  organisasiController.forgotPassword
-);
+publicRouter.post("/api/forgot-password", authController.forgotPassword);
+
+/**
+ * @swagger
+ * /api/reset-password/{token}:
+ *   post:
+ *     summary: Reset password user
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token ID (e.g., 437b05af3fe10d69...)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - new_password
+ *               - confirm_new_password
+ *             properties:
+ *               new_password:
+ *                 type: string
+ *                 example: newPassword123
+ *               confirm_new_password:
+ *                 type: string
+ *                 example: newPassword123
+ *     responses:
+ *       200:
+ *         description: Successful reset password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: Email sent to gmail.com
+ *       401:
+ *         description: Invalid credentials
+ */
+
+publicRouter.post("/api/reset-password/:token", authController.resetPassword);
 
 export { publicRouter };
