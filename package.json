@@ -24,6 +24,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
+    "image-size": "^2.0.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.10.1",
