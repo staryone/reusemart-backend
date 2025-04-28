@@ -25,35 +25,38 @@ const login = async (request) => {
 };
 
 const create = async (request) => {
-  const penitip = validate(createPenitipValidation, request);
 
-  const createdPenitip = await prismaClient.penitip.create({
-    data: penitip,
-    include: {
-      user: {
-        select: {
-          email: true,
-        },
-      },
-    },
-  });
+  
 
-  const formattedPenitip = {
-    id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),
-    email: createdPenitip.user.email,
-    nomor_ktp: createdPenitip.nomor_ktp,
-    nama: createdPenitip.nama,
-    alamat: createdPenitip.alamat,
-    nomor_telepon: createdPenitip.nomor_telepon,
-    saldo: createdPenitip.saldo,
-    rating: createdPenitip.rating,
-    total_review: createdPenitip.total_review,
-    jumlah_review: createdPenitip.jumlah_review,
-    is_top_seller: createdPenitip.is_top_seller,
-    poin: createdPenitip.poin,
-  };
+  // const penitip = validate(createPenitipValidation, request);
 
-  return formattedPenitip;
+  // const createdPenitip = await prismaClient.penitip.create({
+  //   data: penitip,
+  //   include: {
+  //     user: {
+  //       select: {
+  //         email: true,
+  //       },
+  //     },
+  //   },
+  // });
+
+  // const formattedPenitip = {
+  //   id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),
+  //   email: createdPenitip.user.email,
+  //   nomor_ktp: createdPenitip.nomor_ktp,
+  //   nama: createdPenitip.nama,
+  //   alamat: createdPenitip.alamat,
+  //   nomor_telepon: createdPenitip.nomor_telepon,
+  //   saldo: createdPenitip.saldo,
+  //   rating: createdPenitip.rating,
+  //   total_review: createdPenitip.total_review,
+  //   jumlah_review: createdPenitip.jumlah_review,
+  //   is_top_seller: createdPenitip.is_top_seller,
+  //   poin: createdPenitip.poin,
+  // };
+
+  // return formattedPenitip;
 };
 
 const profile = async (id) => {
