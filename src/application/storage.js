@@ -22,10 +22,10 @@ const r2Client = new AWS.S3({
   },
 });
 
-export const getUrl = async (key) => {
+export const getUrlFile = async (key) => {
   try {
     return String(
-      getSignedUrl(
+      await getSignedUrl(
         r2Client,
         new GetObjectCommand({
           Bucket: BUCKET_NAME,
@@ -44,24 +44,27 @@ export const uploadFile = async (file, folder) => {
     await r2Client.send(
       new PutObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: `${folder}/${file.filename}`,
-        Body: file,
+        Key: `${folder}/${file.fieldname}.${String(file.mimetype).slice(6)}`,
+        Body: file.buffer,
         ContentType: file.mimetype,
       })
     );
 
-    return await getUrl(`${folder}/${file.filename}`);
+    return getUrlFile(
+      `${folder}/${file.fieldname}.${String(file.mimetype).slice(6)}`
+    );
   } catch (error) {
+    console.log(error);
     throw new ResponseError(400, "Upload file gagal!");
   }
 };
 
-export const deleteFile = async (file, folder) => {
+export const deleteFile = async (key) => {
   try {
     await r2Client.send(
       new DeleteObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: `${folder}/${file.filename}`,
+        Key: key,
       })
     );
 

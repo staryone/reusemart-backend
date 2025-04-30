@@ -1,40 +1,52 @@
 import authService from "../services/auth.service.js";
-import organisasiService from "../services/organisasi.service.js";
+import penitipService from "../services/penitip.service.js";
+import { formatStringDate } from "../utils/date.util.js";
+import { fileTypeFromBuffer } from "file-type";
 
 const register = async (req, res, next) => {
   try {
     const user = {
       email: req.body.email,
-      password: req.body.password ? req.body.password : undefined,
-      confirm_password: req.body.confirm_password
-        ? req.body.confirm_password
-        : undefined,
-      role: "ORGANISASI",
+      password: req.body.password,
+      confirm_password: req.body.confirm_password,
+      role: "PENITIP",
     };
 
     const createdUser = await authService.register(user);
 
-    const organisasi = {
-      nama_organisasi: req.body.nama_organisasi,
+    const fileType = await fileTypeFromBuffer(req.file.buffer);
+    req.file.mimetype = fileType.mime;
+
+    const penitip = {
+      id_user: createdUser.id_user,
+      nomor_ktp: req.body.nomor_ktp,
+      foto_ktp: req.file,
+      nama: req.body.nama,
       alamat: req.body.alamat,
       nomor_telepon: req.body.nomor_telepon,
-      deskripsi: req.body.deskripsi,
-      id_user: createdUser.id_user,
+      saldo: 0,
+      rating: 0,
+      total_review: 0,
+      jumlah_review: 0,
+      total_per_bulan: 0,
+      is_top_seller: false,
+      poin: 0,
     };
 
-    let result = await organisasiService.create(organisasi);
+    let result = await penitipService.create(penitip);
 
     res.status(200).json({
       data: result,
     });
   } catch (e) {
+    console.log(e);
     next(e);
   }
 };
 
 const login = async (req, res, next) => {
   try {
-    const result = await organisasiService.login(req.body);
+    const result = await penitipService.login(req.body);
     res.status(200).json({
       data: result,
     });
@@ -59,7 +71,7 @@ const logout = async (req, res, next) => {
 const profile = async (req, res, next) => {
   try {
     const id = req.session.user.id_user;
-    const result = await organisasiService.profile(id);
+    const result = await penitipService.profile(id);
 
     res.status(200).json({
       data: result,
@@ -72,7 +84,7 @@ const profile = async (req, res, next) => {
 const get = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const result = await organisasiService.get(id);
+    const result = await penitipService.get(id);
 
     res.status(200).json({
       data: result,
@@ -84,10 +96,10 @@ const get = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    const listOrganisasi = await organisasiService.getList(req.query);
+    const listPenitip = await penitipService.getList(req.query);
 
     res.status(200).json({
-      data: listOrganisasi,
+      data: listPenitip,
     });
   } catch (e) {
     next(e);
@@ -96,9 +108,9 @@ const getList = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    req.body.id_organisasi = req.params.id;
-    const result = await organisasiService.update(req.body);
-
+    req.body.id_penitip = req.params.id;
+    const result = await penitipService.update(req.body);
+    console.log(req.body);
     res.status(200).json({
       data: result,
     });
@@ -109,9 +121,9 @@ const update = async (req, res, next) => {
 
 const destroy = async (req, res, next) => {
   try {
-    await organisasiService.destroy(req.params.id);
+    await penitipService.destroy(req.params.id);
     res.status(200).json({
-      data: "Hapus organisasi berhasil!",
+      data: "Hapus penitip berhasil!",
     });
   } catch (e) {
     next(e);

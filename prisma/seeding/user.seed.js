@@ -452,6 +452,15 @@ async function generateUserList() {
       createdAt: new Date("2025-04-09 06:24:38.429"),
       updatedAt: new Date("2025-04-09 06:24:38.429"),
     },
+    {
+      id_user: 61,
+      email: "dedikurniawan@gmail.com",
+      plainPassword: "$2b$10$examplehash18",
+      role: "PENITIP",
+      token: null,
+      createdAt: new Date("2025-04-09 06:24:38.429"),
+      updatedAt: new Date("2025-04-09 06:24:38.429"),
+    },
   ];
 
   const listUser = await Promise.all(

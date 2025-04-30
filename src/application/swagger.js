@@ -83,8 +83,8 @@ const options = {
         Organsasi: {
           properties: {
             id_organisasi: {
-              type: "integer",
-              example: 1,
+              type: "string",
+              example: "ORG1",
             },
             email: {
               type: "string",
@@ -106,6 +106,67 @@ const options = {
             deskripsi: {
               type: "string",
               example: "Organisasi bantuan dan kondang",
+            },
+          },
+        },
+        Penitip: {
+          properties: {
+            id_penitip: {
+              type: "string",
+              example: "T1",
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "organization@example.com",
+            },
+            nomor_ktp: {
+              type: "string",
+              example: "340211....",
+            },
+            foto_ktp: {
+              type: "string",
+              example: "foto_ktp/nomor_ktp.png",
+            },
+            nama: {
+              type: "string",
+              example: "Joko Waluyo",
+            },
+            alamat: {
+              type: "string",
+              example: "Jl. Kecambang no 2",
+            },
+            nomor_telepon: {
+              type: "string",
+              example: "02746642721",
+            },
+            saldo: {
+              type: "integer",
+              example: 10000,
+            },
+            rating: {
+              type: "float",
+              example: 4.8,
+            },
+            total_review: {
+              type: "integer",
+              example: 5,
+            },
+            jumlah_review: {
+              type: "float",
+              example: 24,
+            },
+            is_top_seller: {
+              type: "boolean",
+              example: false,
+            },
+            total_per_bulan: {
+              type: "integer",
+              example: 24000,
+            },
+            poin: {
+              type: "integer",
+              example: 240,
             },
           },
         },

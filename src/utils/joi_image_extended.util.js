@@ -11,8 +11,8 @@ export const JoiImage = Joi.extend((joi) => {
       originalname: Joi.string().required(),
       encoding: Joi.string().required(),
       mimetype: Joi.string().required(),
-      buffer: Joi.binary().required(),
       size: Joi.number().positive().required(),
+      buffer: Joi.binary().required(),
     }),
     messages: {
       "image.allowedTypes":
@@ -30,42 +30,74 @@ export const JoiImage = Joi.extend((joi) => {
     },
     rules: {
       allowedTypes: {
-        params: {
-          allowedTypes: Joi.array().items(Joi.string()).min(1).required(),
+        method(allowedTypes) {
+          return this.$_addRule({
+            name: "allowedTypes",
+            args: { allowedTypes },
+          });
         },
-        validate(value, helpers, params) {
+        args: [
+          {
+            name: "allowedTypes",
+            assert: Joi.array().items(Joi.string()).min(1).required(),
+            message: "must be an array of strings with at least one item",
+          },
+        ],
+        validate(value, helpers, args) {
           const mimeToExtension = {
             "image/jpeg": ["jpg", "jpeg"],
             "image/png": ["png"],
           };
           const extension = mimeToExtension[value.mimetype]?.[0];
-          if (!extension || !params.allowedTypes.includes(extension)) {
+          if (!extension || !args.allowedTypes.includes(extension)) {
             return helpers.error("image.allowedTypes", {
-              allowedTypes: params.allowedTypes.join(", "),
+              allowedTypes: args.allowedTypes.join(", "),
             });
           }
           return value;
         },
       },
       maxSize: {
-        params: {
-          maxSize: Joi.number().positive().required(),
+        method(maxSize) {
+          return this.$_addRule({
+            name: "maxSize",
+            args: { maxSize },
+          });
         },
-        validate(value, helpers, params) {
-          if (value.size > params.maxSize) {
-            return helpers.error("image.maxSize", { maxSize: params.maxSize });
+        args: [
+          {
+            name: "maxSize",
+            assert: Joi.number().positive().required(),
+            message: "must be a positive number",
+          },
+        ],
+        validate(value, helpers, args) {
+          if (value.size > args.maxSize) {
+            return helpers.error("image.maxSize", { maxSize: args.maxSize });
           }
           return value;
         },
       },
       minWidth: {
-        params: { minWidth: dimensionSchema },
-        validate(value, helpers, params) {
+        method(minWidth) {
+          return this.$_addRule({
+            name: "minWidth",
+            args: { minWidth },
+          });
+        },
+        args: [
+          {
+            name: "minWidth",
+            assert: dimensionSchema,
+            message: "must be a positive number",
+          },
+        ],
+        validate(value, helpers, args) {
           try {
             const dimensions = imageSize(value.buffer);
-            if (dimensions.width < params.minWidth) {
+            if (dimensions.width < args.minWidth) {
               return helpers.error("image.minWidth", {
-                minWidth: params.minWidth,
+                minWidth: args.minWidth,
               });
             }
             return value;
@@ -75,13 +107,25 @@ export const JoiImage = Joi.extend((joi) => {
         },
       },
       maxWidth: {
-        params: { maxWidth: dimensionSchema },
-        validate(value, helpers, params) {
+        method(maxWidth) {
+          return this.$_addRule({
+            name: "maxWidth",
+            args: { maxWidth },
+          });
+        },
+        args: [
+          {
+            name: "maxWidth",
+            assert: dimensionSchema,
+            message: "must be a positive number",
+          },
+        ],
+        validate(value, helpers, args) {
           try {
             const dimensions = imageSize(value.buffer);
-            if (dimensions.width > params.maxWidth) {
+            if (dimensions.width > args.maxWidth) {
               return helpers.error("image.maxWidth", {
-                maxWidth: params.maxWidth,
+                maxWidth: args.maxWidth,
               });
             }
             return value;
@@ -91,13 +135,25 @@ export const JoiImage = Joi.extend((joi) => {
         },
       },
       minHeight: {
-        params: { minHeight: dimensionSchema },
-        validate(value, helpers, params) {
+        method(minHeight) {
+          return this.$_addRule({
+            name: "minHeight",
+            args: { minHeight },
+          });
+        },
+        args: [
+          {
+            name: "minHeight",
+            assert: dimensionSchema,
+            message: "must be a positive number",
+          },
+        ],
+        validate(value, helpers, args) {
           try {
             const dimensions = imageSize(value.buffer);
-            if (dimensions.height < params.minHeight) {
+            if (dimensions.height < args.minHeight) {
               return helpers.error("image.minHeight", {
-                minHeight: params.minHeight,
+                minHeight: args.minHeight,
               });
             }
             return value;
@@ -107,13 +163,25 @@ export const JoiImage = Joi.extend((joi) => {
         },
       },
       maxHeight: {
-        params: { maxHeight: dimensionSchema },
-        validate(value, helpers, params) {
+        method(maxHeight) {
+          return this.$_addRule({
+            name: "maxHeight",
+            args: { maxHeight },
+          });
+        },
+        args: [
+          {
+            name: "maxHeight",
+            assert: dimensionSchema,
+            message: "must be a positive number",
+          },
+        ],
+        validate(value, helpers, args) {
           try {
             const dimensions = imageSize(value.buffer);
-            if (dimensions.height > params.maxHeight) {
+            if (dimensions.height > args.maxHeight) {
               return helpers.error("image.maxHeight", {
-                maxHeight: params.maxHeight,
+                maxHeight: args.maxHeight,
               });
             }
             return value;

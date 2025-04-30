@@ -118,6 +118,7 @@ model Penitip {
   id_penitip Int @id @default(autoincrement()) // ubah ke integer
   id_user Int @unique // tambah id_user fk
   nomor_ktp String @db.VarChar(32) @unique
+  foto_ktp String @db.VarChar(255)
   nama String @db.VarChar(255)
   alamat String @db.VarChar(255)
   nomor_telepon String @db.VarChar(15)

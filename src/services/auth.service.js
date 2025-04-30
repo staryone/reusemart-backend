@@ -33,6 +33,27 @@ const login = async (request) => {
     throw new ResponseError(401, "Email atau password salah!");
   }
 
+  const dataToEncode = {
+    role: user.role,
+  };
+
+  if (user.role === "PEGAWAI") {
+    const pegawai = await prismaClient.pegawai.findUnique({
+      where: {
+        id_user: user.id_user,
+      },
+      select: {
+        jabatan: {
+          select: {
+            nama_jabatan: true,
+          },
+        },
+      },
+    });
+
+    dataToEncode.jabatan = pegawai.jabatan.nama_jabatan;
+  }
+
   const isPasswordValid = await bcrypt.compare(
     loginRequest.password,
     user.password
@@ -42,13 +63,9 @@ const login = async (request) => {
     throw new ResponseError(401, "Email atau password salah!");
   }
 
-  const token = jwt.sign(
-    { email: user.email, role: user.role },
-    process.env.JWT_SECRET_KEY,
-    {
-      expiresIn: "7d",
-    }
-  );
+  const token = jwt.sign(dataToEncode, process.env.JWT_SECRET_KEY, {
+    expiresIn: "7d",
+  });
 
   return prismaClient.session.create({
     data: {

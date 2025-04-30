@@ -2,6 +2,7 @@ import express from "express";
 import pegawaiController from "../controllers/pegawai.controller.js";
 import organisasiController from "../controllers/organisasi.controller.js";
 import authController from "../controllers/auth.controller.js";
+import penitipController from "../controllers/penitip.controller.js";
 
 const publicRouter = new express.Router();
 
@@ -62,6 +63,8 @@ publicRouter.post("/api/pegawai/login", pegawaiController.login);
  *             type: object
  *             required:
  *               - email
+ *               - password
+ *               - confirm_password
  *               - nama
  *               - nomor_telepon
  *               - tgl_lahir
@@ -148,6 +151,49 @@ publicRouter.post("/api/organisasi", organisasiController.register);
  */
 
 publicRouter.post("/api/organisasi/login", organisasiController.login);
+
+/**
+ * @swagger
+ * /api/penitip/login:
+ *   post:
+ *     summary: Log in an penitip
+ *     tags: [Penitip]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: penitiptest@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: test1234
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
+ *         description: Invalid credentials
+ */
+
+publicRouter.post("/api/penitip/login", penitipController.login);
 
 /**
  * @swagger

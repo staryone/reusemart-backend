@@ -1,4 +1,5 @@
 import { prismaClient } from "../application/database.js";
+import { deleteFile, getUrlFile, uploadFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
 import { idToInteger, idToString } from "../utils/id_formater.util.js";
 import { getIdAuthValidation } from "../validation/auth.validate.js";
@@ -25,38 +26,48 @@ const login = async (request) => {
 };
 
 const create = async (request) => {
+  const penitip = validate(createPenitipValidation, request);
 
-  
+  const foto_ktp = penitip.foto_ktp;
+  penitip.foto_ktp =
+    "foto_ktp/" +
+    penitip.nomor_ktp +
+    "." +
+    String(penitip.foto_ktp.mimetype).slice(6);
 
-  // const penitip = validate(createPenitipValidation, request);
+  const createdPenitip = await prismaClient.penitip.create({
+    data: penitip,
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
 
-  // const createdPenitip = await prismaClient.penitip.create({
-  //   data: penitip,
-  //   include: {
-  //     user: {
-  //       select: {
-  //         email: true,
-  //       },
-  //     },
-  //   },
-  // });
+  foto_ktp.fieldname = createdPenitip.nomor_ktp;
 
-  // const formattedPenitip = {
-  //   id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),
-  //   email: createdPenitip.user.email,
-  //   nomor_ktp: createdPenitip.nomor_ktp,
-  //   nama: createdPenitip.nama,
-  //   alamat: createdPenitip.alamat,
-  //   nomor_telepon: createdPenitip.nomor_telepon,
-  //   saldo: createdPenitip.saldo,
-  //   rating: createdPenitip.rating,
-  //   total_review: createdPenitip.total_review,
-  //   jumlah_review: createdPenitip.jumlah_review,
-  //   is_top_seller: createdPenitip.is_top_seller,
-  //   poin: createdPenitip.poin,
-  // };
+  const resultUrlFotoKTP = await uploadFile(foto_ktp, "foto_ktp");
 
-  // return formattedPenitip;
+  const formattedPenitip = {
+    id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),
+    email: createdPenitip.user.email,
+    nomor_ktp: createdPenitip.nomor_ktp,
+    foto_ktp: resultUrlFotoKTP,
+    nama: createdPenitip.nama,
+    alamat: createdPenitip.alamat,
+    nomor_telepon: createdPenitip.nomor_telepon,
+    saldo: createdPenitip.saldo,
+    rating: createdPenitip.rating,
+    total_review: createdPenitip.total_review,
+    jumlah_review: createdPenitip.jumlah_review,
+    is_top_seller: createdPenitip.is_top_seller,
+    total_per_bulan: createdPenitip.total_per_bulan,
+    poin: createdPenitip.poin,
+  };
+
+  return formattedPenitip;
 };
 
 const profile = async (id) => {
@@ -72,7 +83,6 @@ const profile = async (id) => {
           email: true,
         },
       },
-      jabatan: true,
     },
   });
 
@@ -83,18 +93,25 @@ const profile = async (id) => {
   const formattedPenitip = {
     id_penitip: idToString(penitip.prefix, penitip.id_penitip),
     email: penitip.user.email,
+    nomor_ktp: penitip.nomor_ktp,
+    foto_ktp: penitip.foto_ktp,
     nama: penitip.nama,
+    alamat: penitip.alamat,
     nomor_telepon: penitip.nomor_telepon,
-    komisi: penitip.komisi,
-    tgl_lahir: penitip.tgl_lahir,
-    jabatan: penitip.jabatan,
+    saldo: penitip.saldo,
+    rating: penitip.rating,
+    total_review: penitip.total_review,
+    jumlah_review: penitip.jumlah_review,
+    is_top_seller: penitip.is_top_seller,
+    total_per_bulan: penitip.total_per_bulan,
+    poin: penitip.poin,
   };
 
   return formattedPenitip;
 };
 
 const get = async (id) => {
-  id = validate(getIdPenitipValidation, id);
+  id = validate(getPenitipValidation, id);
   const id_penitip = idToInteger(id);
 
   const penitip = await prismaClient.penitip.findUnique({
@@ -107,7 +124,6 @@ const get = async (id) => {
           email: true,
         },
       },
-      jabatan: true,
     },
   });
 
@@ -115,14 +131,23 @@ const get = async (id) => {
     throw new ResponseError(404, "Penitip tidak ditemukan");
   }
 
+  const urlKTP = await getUrlFile(penitip.foto_ktp);
+
   const formattedPenitip = {
     id_penitip: idToString(penitip.prefix, penitip.id_penitip),
     email: penitip.user.email,
+    nomor_ktp: penitip.nomor_ktp,
+    foto_ktp: urlKTP,
     nama: penitip.nama,
+    alamat: penitip.alamat,
     nomor_telepon: penitip.nomor_telepon,
-    komisi: penitip.komisi,
-    tgl_lahir: penitip.tgl_lahir,
-    jabatan: penitip.jabatan,
+    saldo: penitip.saldo,
+    rating: penitip.rating,
+    total_review: penitip.total_review,
+    jumlah_review: penitip.jumlah_review,
+    is_top_seller: penitip.is_top_seller,
+    total_per_bulan: penitip.total_per_bulan,
+    poin: penitip.poin,
   };
 
   return formattedPenitip;
@@ -149,10 +174,10 @@ const getList = async (request) => {
                 contains: q,
               },
             },
-            jabatan: {
-              nama_jabatan: {
-                contains: q,
-              },
+          },
+          {
+            nomor_ktp: {
+              contains: q,
             },
           },
         ],
@@ -163,7 +188,6 @@ const getList = async (request) => {
             email: true,
           },
         },
-        jabatan: true,
       },
       skip: skip,
       take: limit,
@@ -176,24 +200,30 @@ const getList = async (request) => {
             email: true,
           },
         },
-        jabatan: true,
       },
       skip: skip,
       take: limit,
     });
   }
 
-  const formattedPenitip = listPenitip.map((p) => ({
-    id_penitip: idToString(p.prefix, p.id_penitip),
-    email: p.user.email,
-    nama: p.nama,
-    nomor_telepon: p.nomor_telepon,
-    komisi: p.komisi,
-    tgl_lahir: p.tgl_lahir,
-    jabatan: p.jabatan,
-  }));
-
-  return formattedPenitip;
+  return Promise.all(
+    listPenitip.map(async (p) => ({
+      id_penitip: idToString(p.prefix, p.id_penitip),
+      email: p.user.email,
+      nomor_ktp: p.nomor_ktp,
+      foto_ktp: await getUrlFile(p.foto_ktp),
+      nama: p.nama,
+      alamat: p.alamat,
+      nomor_telepon: p.nomor_telepon,
+      saldo: p.saldo,
+      rating: p.rating,
+      total_review: p.total_review,
+      jumlah_review: p.jumlah_review,
+      is_top_seller: p.is_top_seller,
+      total_per_bulan: p.total_per_bulan,
+      poin: p.poin,
+    }))
+  );
 };
 
 const update = async (request) => {
@@ -210,24 +240,38 @@ const update = async (request) => {
     throw new ResponseError(404, "Penitip tidak ditemukan!");
   }
 
+  if (updateRequest.nomor_ktp || updateRequest.foto_ktp) {
+    if (!updateRequest.foto_ktp) {
+      throw new ResponseError(404, "Wajib menyertakan foto ktp!");
+    }
+
+    if (!updateRequest.nomor_ktp) {
+      throw new ResponseError(404, "Wajib menyertakan nomor ktp!");
+    }
+
+    await deleteFile(data.foto_ktp);
+
+    updateRequest.foto_ktp.fieldname = data.nomor_ktp;
+
+    await uploadFile(updateRequest.foto_ktp, "foto_ktp");
+
+    data.foto_ktp =
+      "foto_ktp/" +
+      updateRequest.nomor_ktp +
+      "." +
+      String(updateRequest.foto_ktp.mimetype).slice(6);
+  }
+
   if (updateRequest.nama) {
     data.nama = updateRequest.nama;
   }
 
+  if (updateRequest.alamat) {
+    data.alamat = updateRequest.alamat;
+  }
+
   if (updateRequest.nomor_telepon) {
     data.nomor_telepon = updateRequest.nomor_telepon;
-  }
-
-  if (updateRequest.komisi) {
-    data.komisi = updateRequest.komisi;
-  }
-
-  if (updateRequest.tgl_lahir) {
-    data.tgl_lahir = updateRequest.tgl_lahir;
-  }
-
-  if (updateRequest.id_jabatan) {
-    data.id_jabatan = updateRequest.id_jabatan;
   }
 
   if (updateRequest.email) {
@@ -252,53 +296,61 @@ const update = async (request) => {
           email: true,
         },
       },
-      jabatan: true,
     },
   });
+
+  const urlKTP = await getUrlFile(updatedPenitip.foto_ktp);
 
   const formattedPenitip = {
     id_penitip: idToString(updatedPenitip.prefix, updatedPenitip.id_penitip),
     email: updatedPenitip.user.email,
+    nomor_ktp: updatedPenitip.nomor_ktp,
+    foto_ktp: urlKTP,
     nama: updatedPenitip.nama,
+    alamat: updatedPenitip.alamat,
     nomor_telepon: updatedPenitip.nomor_telepon,
-    komisi: updatedPenitip.komisi,
-    tgl_lahir: updatedPenitip.tgl_lahir,
-    jabatan: updatedPenitip.jabatan,
+    saldo: updatedPenitip.saldo,
+    rating: updatedPenitip.rating,
+    total_review: updatedPenitip.total_review,
+    jumlah_review: updatedPenitip.jumlah_review,
+    is_top_seller: updatedPenitip.is_top_seller,
+    total_per_bulan: updatedPenitip.total_per_bulan,
+    poin: updatedPenitip.poin,
   };
 
   return formattedPenitip;
 };
 
 const destroy = async (id) => {
-  id = validate(getIdPenitipValidation, id);
+  id = validate(getPenitipValidation, id);
   const id_penitip = idToInteger(id);
 
-  const user = await prismaClient.user.findFirst({
+  const penitip = await prismaClient.penitip.findUnique({
     where: {
-      penitip: {
-        id_penitip: id_penitip,
-      },
+      id_penitip: id_penitip,
     },
     include: {
-      penitip: true,
+      user: true,
     },
   });
 
-  if (!user) {
+  if (!penitip) {
     throw new ResponseError(404, "Penitip tidak ditemukan!");
   }
 
   const deletedPenitip = prismaClient.penitip.delete({
     where: {
-      id_penitip: user.penitip.id_penitip,
+      id_penitip: penitip.id_penitip,
     },
   });
 
   const deletedUser = prismaClient.user.delete({
     where: {
-      id_user: user.id_user,
+      id_user: penitip.user.id_user,
     },
   });
+
+  await deleteFile(penitip.foto_ktp);
 
   return prismaClient.$transaction([deletedPenitip, deletedUser]);
 };
