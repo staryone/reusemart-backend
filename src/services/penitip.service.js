@@ -83,6 +83,7 @@ const profile = async (id) => {
           email: true,
         },
       },
+      
     },
   });
 
