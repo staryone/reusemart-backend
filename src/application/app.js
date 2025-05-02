@@ -10,11 +10,14 @@ import { jabatanRouter } from "../routes/jabatan.route.js";
 import { organisasiRouter } from "../routes/organisasi.route.js";
 import { penitipRouter } from "../routes/penitip.route.js";
 import "dotenv/config";
+import { uploadMulter } from "./multer.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(uploadMulter.any());
 
 app.use(
   "/api-docs",

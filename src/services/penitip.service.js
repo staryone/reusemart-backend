@@ -28,27 +28,27 @@ const login = async (request) => {
 const create = async (request) => {
   const penitip = validate(createPenitipValidation, request);
 
-  const foto_ktp = penitip.foto_ktp;
+  const foto_ktp = penitip.foto_ktp[0];
   penitip.foto_ktp =
     "foto_ktp/" +
     penitip.nomor_ktp +
     "." +
     String(penitip.foto_ktp.mimetype).slice(6);
+  foto_ktp.fieldname = penitip.nomor_ktp;
 
-  const createdPenitip = await prismaClient.penitip.create({
-    data: penitip,
-    include: {
-      user: {
-        select: {
-          email: true,
+  const [createdPenitip, resultUrlFotoKTP] = await Promise.all([
+    prismaClient.penitip.create({
+      data: penitip,
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
         },
       },
-    },
-  });
-
-  foto_ktp.fieldname = createdPenitip.nomor_ktp;
-
-  const resultUrlFotoKTP = await uploadFile(foto_ktp, "foto_ktp");
+    }),
+    uploadFile(foto_ktp, "foto_ktp"),
+  ]);
 
   const formattedPenitip = {
     id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),

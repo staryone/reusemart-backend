@@ -14,13 +14,13 @@ const register = async (req, res, next) => {
 
     const createdUser = await authService.register(user);
 
-    const fileType = await fileTypeFromBuffer(req.file.buffer);
-    req.file.mimetype = fileType.mime;
+    const fileType = await fileTypeFromBuffer(req.files[0].buffer);
+    req.files[0].mimetype = fileType.mime;
 
     const penitip = {
       id_user: createdUser.id_user,
       nomor_ktp: req.body.nomor_ktp,
-      foto_ktp: req.file,
+      foto_ktp: req.files,
       nama: req.body.nama,
       alamat: req.body.alamat,
       nomor_telepon: req.body.nomor_telepon,
@@ -39,7 +39,6 @@ const register = async (req, res, next) => {
       data: result,
     });
   } catch (e) {
-    console.log(e);
     next(e);
   }
 };

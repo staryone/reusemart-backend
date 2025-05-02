@@ -68,7 +68,6 @@ const penitipRouter = new express.Router();
  */
 penitipRouter.post(
   "/api/penitip",
-  uploadMulter.single("foto_ktp"),
   restrictTo("PEGAWAI", "CS"),
   penitipController.register
 );
@@ -229,10 +228,10 @@ penitipRouter.get(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
- *             multipart/form-data:
+ *             properties:
  *               email:
  *                 type: string
  *                 format: email
@@ -266,7 +265,6 @@ penitipRouter.get(
  */
 penitipRouter.patch(
   "/api/penitip/:id",
-  uploadMulter.any(),
   restrictTo("PEGAWAI", "CS"),
   penitipController.update
 );

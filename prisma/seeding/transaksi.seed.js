@@ -5,16 +5,15 @@ const listTransaksi = [
     total_harga: 75000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-01-10T10:15:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-01-10T10:06:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-01-10T10:06:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_1",
-    poin: 75000 / 10000,
+    poin: 7.5,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 75000,
     id_pembeli: 1,
+    id_alamat: null 
   },
   {
     id_transaksi: 2,
@@ -22,16 +21,15 @@ const listTransaksi = [
     total_harga: 700000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-02-11T09:11:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-02-11T09:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-02-11T09:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_2",
-    poin: 700000 / 10000,
+    poin: 70,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 700000,
     id_pembeli: 2,
+    id_alamat: null 
   },
   {
     id_transaksi: 3,
@@ -39,16 +37,15 @@ const listTransaksi = [
     total_harga: 1200000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-03-12T14:35:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-03-12T14:30:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-03-12T14:30:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_3",
-    poin: 1200000 / 10000,
+    poin: 120,
     potongan_poin: 0,
     metode_pengiriman: "DIKIRIM",
     ongkos_kirim: 100000,
     total_akhir: 1300000,
     id_pembeli: 3,
+    id_alamat: 9 
   },
   {
     id_transaksi: 4,
@@ -56,16 +53,15 @@ const listTransaksi = [
     total_harga: 65000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-04-13T11:11:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-04-13T11:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-04-13T11:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_4",
-    poin: 65000 / 10000,
+    poin: 6.5,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 65000,
     id_pembeli: 4,
+    id_alamat: null 
   },
   {
     id_transaksi: 5,
@@ -73,16 +69,15 @@ const listTransaksi = [
     total_harga: 445000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-04-14T13:25:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-04-14T13:20:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-04-14T13:20:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_5",
-    poin: 445000 / 10000,
+    poin: 44.5,
     potongan_poin: 0,
     metode_pengiriman: "DIKIRIM",
     ongkos_kirim: 100000,
     total_akhir: 545000,
     id_pembeli: 5,
+    id_alamat: 8 
   },
   {
     id_transaksi: 6,
@@ -90,16 +85,15 @@ const listTransaksi = [
     total_harga: 120000,
     status_Pembayaran: "DIBATALKAN",
     tanggal_pembayaran: new Date("2025-05-15T16:09:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-05-15T16:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-05-15T16:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_6",
-    poin: 120000 / 10000,
+    poin: 12,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 120000,
     id_pembeli: 6,
+    id_alamat: null 
   },
   {
     id_transaksi: 7,
@@ -107,16 +101,15 @@ const listTransaksi = [
     total_harga: 50000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-06-16T11:00:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-06-16T10:55:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-06-16T10:55:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_7",
-    poin: 50000 / 10000,
+    poin: 5,
     potongan_poin: 0,
     metode_pengiriman: "DIKIRIM",
     ongkos_kirim: 100000,
     total_akhir: 150000,
     id_pembeli: 7,
+    id_alamat: 10 
   },
   {
     id_transaksi: 8,
@@ -124,16 +117,15 @@ const listTransaksi = [
     total_harga: 45000,
     status_Pembayaran: "DIBATALKAN",
     tanggal_pembayaran: new Date("2025-07-17T12:43:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-07-17T12:30:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-07-17T12:30:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_8",
-    poin: 45000 / 10000,
+    poin: 4.5,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 45000,
     id_pembeli: 8,
+    id_alamat: null 
   },
   {
     id_transaksi: 9,
@@ -141,16 +133,15 @@ const listTransaksi = [
     total_harga: 4100000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-08-18T15:12:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-08-18T15:10:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-08-18T15:10:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_9",
-    poin: 4100000 / 10000,
+    poin: 410,
     potongan_poin: 0,
     metode_pengiriman: "DIKIRIM",
     ongkos_kirim: 0,
     total_akhir: 4100000,
     id_pembeli: 9,
+    id_alamat: 16 
   },
   {
     id_transaksi: 10,
@@ -158,16 +149,15 @@ const listTransaksi = [
     total_harga: 175000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-09-19T17:04:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-09-19T17:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-09-19T17:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_10",
-    poin: 175000 / 10000,
+    poin: 17.5,
     potongan_poin: 0,
     metode_pengiriman: "DIKIRIM",
     ongkos_kirim: 100000,
     total_akhir: 275000,
     id_pembeli: 10,
+    id_alamat: 18 
   },
   {
     id_transaksi: 11,
@@ -175,16 +165,15 @@ const listTransaksi = [
     total_harga: 120000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-10-19T20:12:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-10-19T20:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-10-19T20:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_11",
-    poin: 120000 / 10000,
+    poin: 12,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 120000,
     id_pembeli: 3,
+    id_alamat: null 
   },
   {
     id_transaksi: 12,
@@ -192,16 +181,15 @@ const listTransaksi = [
     total_harga: 88000,
     status_Pembayaran: "DITERIMA",
     tanggal_pembayaran: new Date("2025-11-22T17:05:00"),
-    batas_pembayaran: new Date(
-      new Date("2025-11-22T17:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2025-11-22T17:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_12",
-    poin: 88000 / 10000,
+    poin: 8.8,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 88000,
     id_pembeli: 4,
+    id_alamat: null 
   },
   {
     id_transaksi: 13,
@@ -209,16 +197,15 @@ const listTransaksi = [
     total_harga: 590000,
     status_Pembayaran: "BELUM_DIBAYAR",
     tanggal_pembayaran: null,
-    batas_pembayaran: new Date(
-      new Date("2024-12-17T15:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2024-12-17T15:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_13",
-    poin: 590000 / 10000,
+    poin: 59,
     potongan_poin: 0,
     metode_pengiriman: "DIKIRIM",
     ongkos_kirim: 100000,
     total_akhir: 690000,
     id_pembeli: 8,
+    id_alamat: null 
   },
   {
     id_transaksi: 14,
@@ -226,23 +213,22 @@ const listTransaksi = [
     total_harga: 35000,
     status_Pembayaran: "SUDAH_DIBAYAR",
     tanggal_pembayaran: new Date("2023-08-22T12:10:00"),
-    batas_pembayaran: new Date(
-      new Date("2023-08-22T12:00:00").getTime() + 15 * 60000
-    ),
+    batas_pembayaran: new Date(new Date("2023-08-22T12:00:00").getTime() + 15 * 60000),
     bukti_transfer: "path_bukti_14",
-    poin: 35000 / 10000,
+    poin: 3.5,
     potongan_poin: 0,
     metode_pengiriman: "DIAMBIL",
     ongkos_kirim: 0,
     total_akhir: 35000,
     id_pembeli: 1,
+    id_alamat: null
   },
   {
     id_transaksi: 15,
-    tanggal_transaksi: new Date("2025-04-20 09:00:00.000"),
+    tanggal_transaksi: new Date("2025-04-20T09:00:00"),
     total_harga: 3500000,
     status_Pembayaran: "DITERIMA",
-    tanggal_pembayaran: new Date("2025-04-20 09:10:00.000"),
+    tanggal_pembayaran: new Date("2025-04-20T09:10:00"),
     bukti_transfer: "path_bukti_15",
     poin: 420,
     potongan_poin: 0,
@@ -250,14 +236,15 @@ const listTransaksi = [
     ongkos_kirim: 100000,
     total_akhir: 3600000,
     id_pembeli: 11,
-    batas_pembayaran: new Date("2025-04-20 09:15:00.000"),
+    batas_pembayaran: new Date("2025-04-20T09:15:00"),
+    id_alamat: 26
   },
   {
     id_transaksi: 16,
-    tanggal_transaksi: new Date("2025-04-21 10:00:00.000"),
+    tanggal_transaksi: new Date("2025-04-21T10:00:00"),
     total_harga: 200000,
     status_Pembayaran: "DITERIMA",
-    tanggal_pembayaran: new Date("2025-04-21 10:05:00.000"),
+    tanggal_pembayaran: new Date("2025-04-21T10:05:00"),
     bukti_transfer: "path_bukti_16",
     poin: 20,
     potongan_poin: 0,
@@ -265,14 +252,15 @@ const listTransaksi = [
     ongkos_kirim: 0,
     total_akhir: 200000,
     id_pembeli: 12,
-    batas_pembayaran: new Date("2025-04-21 10:15:00.000"),
+    batas_pembayaran: new Date("2025-04-21T10:15:00"),
+    id_alamat: null 
   },
   {
     id_transaksi: 17,
-    tanggal_transaksi: new Date("2025-04-22 11:00:00.000"),
+    tanggal_transaksi: new Date("2025-04-22T11:00:00"),
     total_harga: 50000,
     status_Pembayaran: "DITERIMA",
-    tanggal_pembayaran: new Date("2025-04-22 11:10:00.000"),
+    tanggal_pembayaran: new Date("2025-04-22T11:10:00"),
     bukti_transfer: "path_bukti_17",
     poin: 5,
     potongan_poin: 0,
@@ -280,14 +268,15 @@ const listTransaksi = [
     ongkos_kirim: 100000,
     total_akhir: 150000,
     id_pembeli: 13,
-    batas_pembayaran: new Date("2025-04-22 11:15:00.000"),
+    batas_pembayaran: new Date("2025-04-22T11:15:00"),
+    id_alamat: 28
   },
   {
     id_transaksi: 18,
-    tanggal_transaksi: new Date("2025-04-23 12:00:00.000"),
+    tanggal_transaksi: new Date("2025-04-23T12:00:00"),
     total_harga: 80000,
     status_Pembayaran: "SUDAH_DIBAYAR",
-    tanggal_pembayaran: new Date("2025-04-23 12:05:00.000"),
+    tanggal_pembayaran: new Date("2025-04-23T12:05:00"),
     bukti_transfer: "path_bukti_18",
     poin: 8,
     potongan_poin: 0,
@@ -295,11 +284,12 @@ const listTransaksi = [
     ongkos_kirim: 0,
     total_akhir: 80000,
     id_pembeli: 14,
-    batas_pembayaran: new Date("2025-04-23 12:15:00.000"),
+    batas_pembayaran: new Date("2025-04-23T12:15:00"),
+    id_alamat: null 
   },
   {
     id_transaksi: 19,
-    tanggal_transaksi: new Date("2025-04-24 13:00:00.000"),
+    tanggal_transaksi: new Date("2025-04-24T13:00:00"),
     total_harga: 1500000,
     status_Pembayaran: "BELUM_DIBAYAR",
     tanggal_pembayaran: null,
@@ -310,8 +300,9 @@ const listTransaksi = [
     ongkos_kirim: 100000,
     total_akhir: 1600000,
     id_pembeli: 15,
-    batas_pembayaran: new Date("2025-04-24 13:15:00.000"),
-  },
+    batas_pembayaran: new Date("2025-04-24T13:15:00"),
+    id_alamat: 33 
+  }
 ];
 
 export async function transaksiSeeding(prismaClient) {

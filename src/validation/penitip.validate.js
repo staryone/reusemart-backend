@@ -3,9 +3,13 @@ import { JoiImage } from "../utils/joi_image_extended.util.js";
 
 const createPenitipValidation = Joi.object({
   nomor_ktp: Joi.string().max(255).required(),
-  foto_ktp: JoiImage.image()
-    .allowedTypes(["jpg", "png", "jpeg"])
-    .maxSize(5 * 1024 * 1024)
+  foto_ktp: Joi.array()
+    .items(
+      JoiImage.image()
+        .allowedTypes(["jpg", "png", "jpeg"])
+        .maxSize(2 * 1024 * 1024)
+    )
+    .max(1)
     .required(),
   nama: Joi.string().max(255).required(),
   alamat: Joi.string().max(255).required(),
@@ -32,9 +36,13 @@ const updatePenitipValidation = Joi.object({
     .required(),
   email: Joi.string().max(100).optional(),
   nomor_ktp: Joi.string().max(255).optional(),
-  foto_ktp: JoiImage.image()
-    .allowedTypes(["jpg", "png", "jpeg"])
-    .maxSize(5 * 1024 * 1024)
+  foto_ktp: Joi.array()
+    .items(
+      JoiImage.image()
+        .allowedTypes(["jpg", "png", "jpeg"])
+        .maxSize(2 * 1024 * 1024)
+    )
+    .max(1)
     .optional(),
   nama: Joi.string().max(255).optional(),
   alamat: Joi.string().max(255).optional(),
