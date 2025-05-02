@@ -58,13 +58,14 @@ model User {
   role Role @default(PEMBELI) // ini diganti enum, awalnya varchar
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @default(now())
-  token String? @db.VarChar(255) // ini awalnya ga ada
+  token String? @unique
   diskusi Diskusi[] @relation("DiskusiToUser")
   
   pegawai Pegawai? @relation("PegawaiToUser")
   organisasi Organisasi? @relation("OrganisasiToUser")
   penitip Penitip? @relation("PenitipToUser")
   pembeli Pembeli? @relation("PembeliToUser")
+  session Session[] @relation("SessionToUser")
 
   @@map("users")
 }
@@ -116,7 +117,8 @@ model Penitip {
   prefix String @db.Char(1) @default("T") // tambahkan prefix
   id_penitip Int @id @default(autoincrement()) // ubah ke integer
   id_user Int @unique // tambah id_user fk
-  nomor_ktp String @db.VarChar(32)
+  nomor_ktp String @db.VarChar(32) @unique
+  foto_ktp String @db.VarChar(255)
   nama String @db.VarChar(255)
   alamat String @db.VarChar(255)
   nomor_telepon String @db.VarChar(15)
@@ -128,6 +130,7 @@ model Penitip {
   is_top_seller Boolean @default(false)
   poin Int
   penitipan Penitipan[] @relation("PenitipanToPenitip")
+  all_rating Rating[] @relation("RatingToPenitip")
 
   user User @relation("PenitipToUser", fields: [id_user], references: [id_user], map: "fk_penitip_to_user", onUpdate: Cascade, onDelete: Cascade)
 
@@ -156,7 +159,7 @@ model Alamat {
   detail_alamat String @db.VarChar(255)
   status_default Boolean @default(false)
   id_pembeli Int // ganti jadi int
-  pengiriman Pengiriman[] @relation("PengirimanToAlamat")
+  transaksi Transaksi[] @relation("TransaksiToAlamat")
 
   pembeli Pembeli @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_alamat_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
 
@@ -213,17 +216,30 @@ model Barang {
   status StatusBarang @default(TERSEDIA) // jadi enum
   garansi DateTime? // bisa null
   berat Float
-  path_gambar String @db.VarChar(255) // tambah atribut ini dibarang
   id_kategori Int
   diskusi Diskusi[] @relation("DiskusiToBarang")
   keranjang Keranjang[] @relation("KeranjangToBarang")
   detail_transaksi DetailTransaksi? @relation("DetailTransaksiToBarang")
   donasi Donasi? @relation("DonasiToBarang")
   detail_penitipan DetailPenitipan? @relation("DetailPenitipanToBarang")
+  gambar GambarBarang[] @relation("GambarBarangToBarang")
 
   kategori Kategori @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], map: "fk_barang_to_kategori", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("barang")
+}
+
+model GambarBarang {
+  id_gambar Int @id @default(autoincrement())
+  url_gambar String @db.VarChar(255)
+  is_primary Boolean @default(false)
+  order_number Int @default(0)
+  created_at DateTime @default(now())
+  id_barang Int
+
+  barang Barang @relation("GambarBarangToBarang", fields: [id_barang], references: [id_barang], map: "fk_gambar_barang_to_barang", onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("gambar_barang")
 }
 
 model Diskusi {
@@ -241,22 +257,24 @@ model Diskusi {
 
 model Transaksi {
   id_transaksi Int @id @default(autoincrement())
-  tanggal_transaksi DateTime
+  tanggal_transaksi DateTime @default(now())
   total_harga Float
   status_Pembayaran StatusPembayaran @default(BELUM_DIBAYAR) // ini jadi enum
   tanggal_pembayaran DateTime? // ini menjadi nullable
   batas_pembayaran DateTime // menambah atribut ini
   bukti_transfer String @db.VarChar(255)
   poin Int
-  potongan_poin Int
+  potongan_poin Int @default(0)
   metode_pengiriman MetodePengiriman @default(DIAMBIL) // ini jadi enum
-  ongkos_kirim Float
+  ongkos_kirim Float @default(0)
   total_akhir Float
   id_pembeli Int // jadi integer
+  id_alamat Int?
   detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
   pengiriman Pengiriman? @relation("PengirimanToTransaksi")
 
   pembeli Pembeli @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_transaksi_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
+  alamat Alamat? @relation("TransaksiToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_transaksi_to_alamat", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("transaksi")
 }
@@ -267,6 +285,7 @@ model DetailTransaksi {
   id_transaksi Int
   is_rating Boolean @default(false)
 
+  rating Rating? @relation("RatingToDetailTransaksi")
   barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang", onUpdate: Cascade, onDelete: Cascade)
   transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi", onUpdate: Cascade, onDelete: Cascade)
 
@@ -345,12 +364,37 @@ model Pengiriman {
   tanggal DateTime?
   status_pengiriman StatusPengiriman @default(DIPROSES) // jadi enum
   id_kurir Int?  // awalnya id_pegawai dan dijadikan bisa null, ini int
-  id_alamat Int?
   id_transaksi Int @unique
+  created_at DateTime @default(now())
 
   kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir", onUpdate: Cascade, onDelete: Cascade)
-  alamat Alamat? @relation("PengirimanToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_pengiriman_to_alamat", onUpdate: Cascade, onDelete: Cascade)
   transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi", onUpdate: Cascade, onDelete: Cascade)
 
   @@map("pengiriman")
 }
+
+model Session {
+  id_session Int @id @default(autoincrement())
+  token String @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime? 
+  id_user Int
+
+  user User @relation("SessionToUser",fields: [id_user], references: [id_user], map:"fk_session_to_user", onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Rating {
+  id_rating Int @id @default(autoincrement())
+  rating Int 
+  id_penitip Int
+  id_dtl_transaksi Int @unique
+  created_at DateTime @default(now())
+
+  penitip Penitip @relation("RatingToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_rating_to_penitip", onUpdate: Cascade, onDelete: Cascade)
+  dtl_transaksi DetailTransaksi @relation("RatingToDetailTransaksi", fields: [id_dtl_transaksi], references: [id_dtl_transaksi], map: "fk_rating_to_dtl_transaksi", onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("rating")
+}
+
