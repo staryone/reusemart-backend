@@ -1,7 +1,6 @@
 import express from "express";
 import penitipController from "../controllers/penitip.controller.js";
 import { restrictTo } from "../middleware/restrictTo.middleware.js";
-import { uploadMulter } from "../application/multer.js";
 
 const penitipRouter = new express.Router();
 
