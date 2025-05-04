@@ -49,10 +49,6 @@ export const uploadFile = async (file, folder) => {
         ContentType: file.mimetype,
       })
     );
-
-    return getUrlFile(
-      `${folder}/${file.fieldname}.${String(file.mimetype).slice(6)}`
-    );
   } catch (error) {
     console.log(error);
     throw new ResponseError(400, "Upload file gagal!");

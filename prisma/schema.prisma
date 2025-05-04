@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,6 +5,377 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id_user    Int         @id @default(autoincrement())
+  email      String      @unique
+  password   String
+  role       Role        @default(PEMBELI)
+  createdAt  DateTime    @default(now())
+  token      String?     @unique
+  updatedAt  DateTime    @default(now()) @db.DateTime(0)
+  diskusi    Diskusi[]   @relation("DiskusiToUser")
+  organisasi Organisasi? @relation("OrganisasiToUser")
+  pegawai    Pegawai?    @relation("PegawaiToUser")
+  pembeli    Pembeli?    @relation("PembeliToUser")
+  penitip    Penitip?    @relation("PenitipToUser")
+  session    Session[]   @relation("SessionToUser")
+
+  @@map("users")
+}
+
+model Jabatan {
+  id_jabatan   Int       @id @default(autoincrement())
+  nama_jabatan String    @db.VarChar(32)
+  createdAt    DateTime  @default(now())
+  pegawai      Pegawai[] @relation("PegawaiToJabatan")
+
+  @@map("jabatan")
+}
+
+model Pegawai {
+  prefix           String       @default("P") @db.Char(1)
+  id_pegawai       Int          @id @default(autoincrement())
+  id_user          Int          @unique
+  nama             String       @db.VarChar(255)
+  nomor_telepon    String       @db.VarChar(15)
+  komisi           Float
+  tgl_lahir        DateTime
+  id_jabatan       Int
+  created_at       DateTime     @default(now())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @default(now()) @db.DateTime(0)
+  user             User         @relation("PegawaiToUser", fields: [id_user], references: [id_user], map: "fk_pegawai_to_user")
+  jabatan          Jabatan      @relation("PegawaiToJabatan", fields: [id_jabatan], references: [id_jabatan])
+  pengiriman_kurir Pengiriman[] @relation("PengirimanToKurir")
+  penitipan_hunter Penitipan[]  @relation("PenitipanToHunter")
+  penitipan_qc     Penitipan[]  @relation("PenitipanToPegawaiQC")
+
+  @@index([id_jabatan], map: "pegawai_id_jabatan_fkey")
+  @@map("pegawai")
+}
+
+model Organisasi {
+  prefix          String          @default("ORG") @db.Char(3)
+  id_organisasi   Int             @id @default(autoincrement())
+  id_user         Int             @unique
+  nama_organisasi String          @db.VarChar(255)
+  alamat          String          @db.Text
+  nomor_telepon   String          @db.VarChar(15)
+  deskripsi       String          @db.VarChar(255)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @default(now()) @db.DateTime(0)
+  user            User            @relation("OrganisasiToUser", fields: [id_user], references: [id_user], map: "fk_organisasi_to_user")
+  request_donasi  RequestDonasi[] @relation("RequestDonasiToOrganisasi")
+
+  @@map("organisasi")
+}
+
+model Penitip {
+  prefix          String      @default("T") @db.Char(1)
+  id_penitip      Int         @id @default(autoincrement())
+  id_user         Int         @unique
+  nomor_ktp       String      @unique @db.VarChar(32)
+  foto_ktp        String      @db.VarChar(255)
+  nama            String      @db.VarChar(255)
+  alamat          String      @db.VarChar(255)
+  nomor_telepon   String      @db.VarChar(15)
+  saldo           Float
+  rating          Float
+  total_review    Float
+  jumlah_review   Int
+  total_per_bulan Float
+  is_top_seller   Boolean     @default(false)
+  poin            Int
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now()) @db.DateTime(0)
+  user            User        @relation("PenitipToUser", fields: [id_user], references: [id_user], onDelete: Cascade, map: "fk_penitip_to_user")
+  penitipan       Penitipan[] @relation("PenitipanToPenitip")
+  all_rating      Rating[]    @relation("RatingToPenitip")
+
+  @@map("penitip")
+}
+
+model Pembeli {
+  id_pembeli     Int                 @id @default(autoincrement())
+  id_user        Int                 @unique
+  nama           String              @db.VarChar(255)
+  nomor_telepon  String              @db.VarChar(15)
+  poin_loyalitas Int
+  alamat         Alamat[]            @relation("AlamatToPembeli")
+  keranjang      Keranjang[]         @relation("KeranjangToPembeli")
+  user           User                @relation("PembeliToUser", fields: [id_user], references: [id_user], onDelete: Cascade, map: "fk_pembeli_to_user")
+  redeem_merch   RedeemMerchandise[] @relation("RedeemMerchToPembeli")
+  transaksi      Transaksi[]         @relation("TransaksiToPembeli")
+
+  @@map("pembeli")
+}
+
+model Alamat {
+  id_alamat      Int         @id @default(autoincrement())
+  nama_alamat    String      @db.VarChar(255)
+  detail_alamat  String      @db.VarChar(255)
+  status_default Boolean     @default(false)
+  id_pembeli     Int
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @default(now()) @db.DateTime(0)
+  pembeli        Pembeli     @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_alamat_to_pembeli")
+  transaksi      Transaksi[] @relation("TransaksiToAlamat")
+
+  @@index([id_pembeli], map: "fk_alamat_to_pembeli")
+  @@map("alamat")
+}
+
+model RedeemMerchandise {
+  id_redeem_merch Int                       @id @default(autoincrement())
+  tanggal_redeem  DateTime                  @default(now())
+  id_pembeli      Int
+  detail_redeem   DetailRedeemMerchandise[] @relation("DetailRedeemToRedeemMerch")
+  pembeli         Pembeli                   @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_redeem_merch_to_pembeli")
+
+  @@index([id_pembeli], map: "fk_redeem_merch_to_pembeli")
+  @@map("redeem_merchandise")
+}
+
+model Merchandise {
+  id_merchandise Int                       @id @default(autoincrement())
+  nama_merch     String                    @db.VarChar(255)
+  harga_poin     Int
+  stok           Int
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @default(now()) @db.DateTime(0)
+  detail_redeem  DetailRedeemMerchandise[] @relation("DetailRedeemToMerchandise")
+
+  @@map("merchandise")
+}
+
+model DetailRedeemMerchandise {
+  id_dtl_redeem_merch Int               @id @default(autoincrement())
+  jumlah_merch        Int
+  id_redeem_merch     Int
+  id_merchandise      Int
+  merchandise         Merchandise       @relation("DetailRedeemToMerchandise", fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade, map: "fk_detail_redeem_to_merchandise")
+  redeem_merch        RedeemMerchandise @relation("DetailRedeemToRedeemMerch", fields: [id_redeem_merch], references: [id_redeem_merch], onDelete: Cascade, map: "fk_detail_redeem_to_redeem_merch")
+
+  @@index([id_merchandise], map: "fk_detail_redeem_to_merchandise")
+  @@index([id_redeem_merch], map: "fk_detail_redeem_to_redeem_merch")
+  @@map("dtl_redeem_merch")
+}
+
+model Kategori {
+  id_kategori   Int      @id @default(autoincrement())
+  nama_kategori String   @db.VarChar(255)
+  barang        Barang[] @relation("BarangToKategori")
+
+  @@map("kategori")
+}
+
+model Barang {
+  prefix           String           @db.Char(1)
+  id_barang        Int              @id @default(autoincrement())
+  nama_barang      String           @db.VarChar(255)
+  deskripsi        String           @db.VarChar(255)
+  harga            Float
+  status           StatusBarang     @default(TERSEDIA)
+  garansi          DateTime?
+  berat            Float
+  id_kategori      Int
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now()) @db.DateTime(0)
+  kategori         Kategori         @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], onDelete: Cascade, map: "fk_barang_to_kategori")
+  diskusi          Diskusi[]        @relation("DiskusiToBarang")
+  donasi           Donasi?          @relation("DonasiToBarang")
+  detail_penitipan DetailPenitipan? @relation("DetailPenitipanToBarang")
+  detail_transaksi DetailTransaksi? @relation("DetailTransaksiToBarang")
+  gambar           GambarBarang[]   @relation("GambarBarangToBarang")
+  keranjang        Keranjang[]      @relation("KeranjangToBarang")
+
+  @@index([id_kategori], map: "fk_barang_to_kategori")
+  @@map("barang")
+}
+
+model GambarBarang {
+  id_gambar    Int      @id @default(autoincrement())
+  url_gambar   String   @db.VarChar(255)
+  is_primary   Boolean  @default(false)
+  order_number Int      @default(0)
+  id_barang    Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @db.DateTime(0)
+  barang       Barang   @relation("GambarBarangToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_gambar_barang_to_barang")
+
+  @@index([id_barang], map: "fk_gambar_barang_to_barang")
+  @@map("gambar_barang")
+}
+
+model Diskusi {
+  id_diskusi      Int      @id @default(autoincrement())
+  tanggal_diskusi DateTime @default(now())
+  pesan           String   @db.VarChar(255)
+  id_barang       Int
+  id_user         Int
+  barang          Barang   @relation("DiskusiToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_diskusi_to_barang")
+  user            User     @relation("DiskusiToUser", fields: [id_user], references: [id_user], onDelete: Cascade, map: "fk_diskusi_to_user")
+
+  @@index([id_barang], map: "fk_diskusi_to_barang")
+  @@index([id_user], map: "fk_diskusi_to_user")
+  @@map("diskusi")
+}
+
+model Transaksi {
+  id_transaksi       Int               @id @default(autoincrement())
+  tanggal_transaksi  DateTime          @default(now())
+  total_harga        Float
+  status_Pembayaran  StatusPembayaran  @default(BELUM_DIBAYAR)
+  tanggal_pembayaran DateTime?
+  batas_pembayaran   DateTime
+  bukti_transfer     String            @db.VarChar(255)
+  total_poin         Int
+  potongan_poin      Int               @default(0)
+  metode_pengiriman  MetodePengiriman  @default(DIAMBIL)
+  ongkos_kirim       Float             @default(0)
+  total_akhir        Float
+  id_pembeli         Int
+  id_alamat          Int?
+  updatedAt          DateTime          @default(now()) @db.DateTime(0)
+  detail_transaksi   DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
+  pengiriman         Pengiriman?       @relation("PengirimanToTransaksi")
+  alamat             Alamat?           @relation("TransaksiToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_transaksi_to_alamat")
+  pembeli            Pembeli           @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_transaksi_to_pembeli")
+
+  @@index([id_alamat], map: "fk_transaksi_to_alamat")
+  @@index([id_pembeli], map: "fk_transaksi_to_pembeli")
+  @@map("transaksi")
+}
+
+model DetailTransaksi {
+  id_dtl_transaksi Int       @id @default(autoincrement())
+  id_barang        Int       @unique
+  id_transaksi     Int?
+  is_rating        Boolean   @default(false)
+  poin             Int
+  komisi_hunter    Float     @default(0)
+  komisi_reusemart Float     @default(0)
+  komisi_penitip   Float     @default(0)      
+  createdAt        DateTime  @default(now())
+  barang           Barang    @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_detail_transaksi_to_barang")
+  transaksi        Transaksi? @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], onDelete: Cascade, map: "fk_detail_transaksi_to_transaksi")
+  rating           Rating?   @relation("RatingToDetailTransaksi")
+
+  @@index([id_transaksi], map: "fk_detail_transaksi_to_transaksi")
+  @@map("dtl_transaksi")
+}
+
+model Keranjang {
+  id_keranjang Int      @id @default(autoincrement())
+  id_barang    Int
+  id_pembeli   Int
+  createdAt    DateTime @default(now())
+  barang       Barang   @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_keranjang_to_barang")
+  pembeli      Pembeli  @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_keranjang_to_pembeli")
+
+  @@index([id_barang], map: "fk_keranjang_to_barang")
+  @@index([id_pembeli], map: "fk_keranjang_to_pembeli")
+  @@map("keranjang")
+}
+
+model RequestDonasi {
+  id_request      Int                 @id @default(autoincrement())
+  deskripsi       String              @db.VarChar(255)
+  tanggal_request DateTime            @default(now())
+  status          StatusRequestDonasi @default(MENUNGGU)
+  id_organisasi   Int
+  donasi          Donasi?             @relation("DonasiToRequestDonasi")
+  organisasi      Organisasi          @relation("RequestDonasiToOrganisasi", fields: [id_organisasi], references: [id_organisasi], onDelete: Cascade, map: "fk_request_donasi_to_organisasi")
+
+  @@index([id_organisasi], map: "fk_request_donasi_to_organisasi")
+  @@map("request_donasi")
+}
+
+model Donasi {
+  id_donasi      Int           @id @default(autoincrement())
+  tanggal_donasi DateTime      @default(now())
+  nama_penerima  String        @db.VarChar(255)
+  poin_penitip   Int           @default(0)
+  id_barang      Int           @unique
+  id_request     Int           @unique
+  barang         Barang        @relation("DonasiToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_donasi_to_barang")
+  request        RequestDonasi @relation("DonasiToRequestDonasi", fields: [id_request], references: [id_request], onDelete: Cascade, map: "fk_donasi_to_request")
+
+  @@map("donasi")
+}
+
+model Penitipan {
+  id_penitipan     Int               @id @default(autoincrement())
+  tanggal_masuk    DateTime          @default(now())
+  tanggal_akhir    DateTime
+  tanggal_laku     DateTime?
+  batas_ambil      DateTime
+  is_perpanjang    Boolean           @default(false)
+  id_penitip       Int
+  id_hunter        Int?
+  id_pegawai_qc    Int
+  detail_penitipan DetailPenitipan[] @relation("DetailPenitipanToPenitipan")
+  hunter           Pegawai?          @relation("PenitipanToHunter", fields: [id_hunter], references: [id_pegawai], onDelete: Cascade, map: "fk_penitipan_to_hunter")
+  penitip          Penitip           @relation("PenitipanToPenitip", fields: [id_penitip], references: [id_penitip], onDelete: Cascade, map: "fk_penitipan_to_penitip")
+  pegawai_qc       Pegawai           @relation("PenitipanToPegawaiQC", fields: [id_pegawai_qc], references: [id_pegawai], onDelete: Cascade, map: "fk_penitipan_to_qc")
+
+  @@index([id_hunter], map: "fk_penitipan_to_hunter")
+  @@index([id_penitip], map: "fk_penitipan_to_penitip")
+  @@index([id_pegawai_qc], map: "fk_penitipan_to_qc")
+  @@map("penitipan")
+}
+
+model DetailPenitipan {
+  id_dtl_penitipan Int       @id @default(autoincrement())
+  id_penitipan     Int
+  id_barang        Int       @unique
+  barang           Barang    @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_detail_penitipan_to_barang")
+  penitipan        Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], onDelete: Cascade, map: "fk_detail_penitipan_to_penitipan")
+
+  @@index([id_penitipan], map: "fk_detail_penitipan_to_penitipan")
+  @@map("dtl_penitipan")
+}
+
+model Pengiriman {
+  id_pengiriman     Int              @id @default(autoincrement())
+  tanggal           DateTime?
+  status_pengiriman StatusPengiriman @default(DIPROSES)
+  id_kurir          Int?
+  id_transaksi      Int              @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @default(now()) @db.DateTime(0)
+  kurir             Pegawai?         @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], onDelete: Cascade, map: "fk_pengiriman_to_kurir")
+  transaksi         Transaksi        @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], onDelete: Cascade, map: "fk_pengiriman_to_transaksi")
+
+  @@index([id_kurir], map: "fk_pengiriman_to_kurir")
+  @@map("pengiriman")
+}
+
+model Session {
+  id_session Int       @id @default(autoincrement())
+  token      String    @unique
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime?
+  id_user    Int
+  user       User      @relation("SessionToUser", fields: [id_user], references: [id_user], onDelete: Cascade, map: "fk_session_to_user")
+
+  @@index([id_user], map: "fk_session_to_user")
+  @@map("session")
+}
+
+model Rating {
+  id_rating        Int             @id @default(autoincrement())
+  rating           Int
+  id_penitip       Int
+  id_dtl_transaksi Int             @unique
+  createdAt        DateTime        @default(now())
+  dtl_transaksi    DetailTransaksi @relation("RatingToDetailTransaksi", fields: [id_dtl_transaksi], references: [id_dtl_transaksi], onDelete: Cascade, map: "fk_rating_to_dtl_transaksi")
+  penitip          Penitip         @relation("RatingToPenitip", fields: [id_penitip], references: [id_penitip], onDelete: Cascade, map: "fk_rating_to_penitip")
+
+  @@index([id_penitip], map: "fk_rating_to_penitip")
+  @@map("rating")
 }
 
 enum Role {
@@ -50,351 +415,3 @@ enum StatusRequestDonasi {
   MENUNGGU
   DISETUJUI
 }
-
-model User {
-  id_user Int @id @default(autoincrement())
-  email String @unique
-  password String
-  role Role @default(PEMBELI) // ini diganti enum, awalnya varchar
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
-  token String? @unique
-  diskusi Diskusi[] @relation("DiskusiToUser")
-  
-  pegawai Pegawai? @relation("PegawaiToUser")
-  organisasi Organisasi? @relation("OrganisasiToUser")
-  penitip Penitip? @relation("PenitipToUser")
-  pembeli Pembeli? @relation("PembeliToUser")
-  session Session[] @relation("SessionToUser")
-
-  @@map("users")
-}
-
-model Jabatan {
-  id_jabatan Int @id @default(autoincrement())
-  nama_jabatan String @db.VarChar(32)
-
-  pegawai Pegawai[] @relation("PegawaiToJabatan")
-
-  @@map("jabatan")
-}
-
-model Pegawai {
-  prefix String @db.Char(1) @default("P") // tambahkan prefix
-  id_pegawai Int @id @default(autoincrement()) // diganti ke int
-  id_user Int @unique // tambah id_user fk
-  nama String @db.VarChar(255)
-  nomor_telepon String @db.VarChar(15)
-  komisi Float
-  tgl_lahir DateTime
-  id_jabatan Int 
-  penitipan_hunter Penitipan[] @relation("PenitipanToHunter")
-  penitipan_qc Penitipan[] @relation("PenitipanToPegawaiQC")
-  pengiriman_kurir Pengiriman[] @relation("PengirimanToKurir")
-
-  user User @relation("PegawaiToUser", fields: [id_user], references: [id_user], map: "fk_pegawai_to_user")
-  jabatan Jabatan @relation("PegawaiToJabatan", fields: [id_jabatan], references: [id_jabatan])
-
-  @@map("pegawai")
-}
-
-model Organisasi {
-  prefix String @db.Char(3) @default("ORG") // tambahkan prefix
-  id_organisasi Int @id @default(autoincrement()) // ubah ke integer
-  id_user Int @unique // tambah id_user fk
-  nama_organisasi String @db.VarChar(255)
-  alamat String @db.Text
-  nomor_telepon String @db.VarChar(15)
-  deskripsi String @db.VarChar(255)
-  request_donasi RequestDonasi[] @relation("RequestDonasiToOrganisasi")
-
-  user User @relation("OrganisasiToUser", fields: [id_user], references: [id_user], map: "fk_organisasi_to_user")
-
-  @@map("organisasi")
-}
-
-model Penitip {
-  prefix String @db.Char(1) @default("T") // tambahkan prefix
-  id_penitip Int @id @default(autoincrement()) // ubah ke integer
-  id_user Int @unique // tambah id_user fk
-  nomor_ktp String @db.VarChar(32) @unique
-  foto_ktp String @db.VarChar(255)
-  nama String @db.VarChar(255)
-  alamat String @db.VarChar(255)
-  nomor_telepon String @db.VarChar(15)
-  saldo Float
-  rating Float
-  total_review Float
-  jumlah_review Int
-  total_per_bulan Float
-  is_top_seller Boolean @default(false)
-  poin Int
-  penitipan Penitipan[] @relation("PenitipanToPenitip")
-  all_rating Rating[] @relation("RatingToPenitip")
-
-  user User @relation("PenitipToUser", fields: [id_user], references: [id_user], map: "fk_penitip_to_user", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("penitip")
-}
-
-model Pembeli {
-  id_pembeli Int @id @default(autoincrement()) // tetap integer
-  id_user Int @unique // tambah id_user fk
-  nama String @db.VarChar(255)
-  nomor_telepon String @db.VarChar(15)
-  poin_loyalitas Int
-  alamat Alamat[] @relation("AlamatToPembeli")
-  transaksi Transaksi[] @relation("TransaksiToPembeli")
-  keranjang Keranjang[] @relation("KeranjangToPembeli")
-
-  user User @relation("PembeliToUser", fields: [id_user], references: [id_user], map: "fk_pembeli_to_user", onUpdate: Cascade, onDelete: Cascade)
-  redeem_merch RedeemMerchandise[] @relation("RedeemMerchToPembeli")
-
-  @@map("pembeli")
-}
-
-model Alamat {
-  id_alamat Int @id @default(autoincrement())
-  nama_alamat String @db.VarChar(255)
-  detail_alamat String @db.VarChar(255)
-  status_default Boolean @default(false)
-  id_pembeli Int // ganti jadi int
-  transaksi Transaksi[] @relation("TransaksiToAlamat")
-
-  pembeli Pembeli @relation("AlamatToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_alamat_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("alamat")
-}
-
-model RedeemMerchandise {
-  id_redeem_merch Int @id @default(autoincrement()) // ini juga diganti
-  tanggal_redeem DateTime
-  id_pembeli Int // jadi integer
-  detail_redeem DetailRedeemMerchandise[] @relation("DetailRedeemToRedeemMerch")
-
-  pembeli Pembeli @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_redeem_merch_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("redeem_merchandise") // awalnya redeemmerchandise
-}
-
-model Merchandise {
-  id_merchandise Int @id @default(autoincrement())
-  nama_merch String @db.VarChar(255)
-  harga_poin Int
-  stok Int
-  detail_redeem DetailRedeemMerchandise[] @relation("DetailRedeemToMerchandise")
-
-  @@map("merchandise")
-}
-
-model DetailRedeemMerchandise {
-  id_dtl_redeem_merch Int @id @default(autoincrement()) // ini juga diganti namanya
-  jumlah_merch Int
-  id_redeem_merch Int 
-  id_merchandise Int
-
-  redeem_merch RedeemMerchandise @relation("DetailRedeemToRedeemMerch", fields: [id_redeem_merch], references: [id_redeem_merch], map: "fk_detail_redeem_to_redeem_merch", onUpdate: Cascade, onDelete: Cascade)
-  merchandise Merchandise @relation("DetailRedeemToMerchandise", fields: [id_merchandise], references: [id_merchandise], map: "fk_detail_redeem_to_merchandise", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("dtl_redeem_merch") // awalnya dtl_redeemmerch
-}
-
-model Kategori {
-  id_kategori Int @id @default(autoincrement())
-  nama_kategori String @db.VarChar(255)
-  barang Barang[] @relation("BarangToKategori")
-
-  @@map("kategori")
-}
-
-model Barang {
-  prefix String @db.Char(1)
-  id_barang Int @id @default(autoincrement()) // jadi integer
-  nama_barang String @db.VarChar(255)
-  deskripsi String @db.VarChar(255)
-  harga Float
-  status StatusBarang @default(TERSEDIA) // jadi enum
-  garansi DateTime? // bisa null
-  berat Float
-  id_kategori Int
-  diskusi Diskusi[] @relation("DiskusiToBarang")
-  keranjang Keranjang[] @relation("KeranjangToBarang")
-  detail_transaksi DetailTransaksi? @relation("DetailTransaksiToBarang")
-  donasi Donasi? @relation("DonasiToBarang")
-  detail_penitipan DetailPenitipan? @relation("DetailPenitipanToBarang")
-  gambar GambarBarang[] @relation("GambarBarangToBarang")
-
-  kategori Kategori @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], map: "fk_barang_to_kategori", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("barang")
-}
-
-model GambarBarang {
-  id_gambar Int @id @default(autoincrement())
-  url_gambar String @db.VarChar(255)
-  is_primary Boolean @default(false)
-  order_number Int @default(0)
-  created_at DateTime @default(now())
-  id_barang Int
-
-  barang Barang @relation("GambarBarangToBarang", fields: [id_barang], references: [id_barang], map: "fk_gambar_barang_to_barang", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("gambar_barang")
-}
-
-model Diskusi {
-  id_diskusi Int @id @default(autoincrement())
-  tanggal_diskusi DateTime
-  pesan String @db.VarChar(255)
-  id_barang Int // jadi integer
-  id_user Int // jadi integer
-
-  barang Barang @relation("DiskusiToBarang", fields: [id_barang], references: [id_barang], map: "fk_diskusi_to_barang", onUpdate: Cascade, onDelete: Cascade)
-  user User @relation("DiskusiToUser", fields: [id_user], references: [id_user], map: "fk_diskusi_to_user", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("diskusi")
-}
-
-model Transaksi {
-  id_transaksi Int @id @default(autoincrement())
-  tanggal_transaksi DateTime @default(now())
-  total_harga Float
-  status_Pembayaran StatusPembayaran @default(BELUM_DIBAYAR) // ini jadi enum
-  tanggal_pembayaran DateTime? // ini menjadi nullable
-  batas_pembayaran DateTime // menambah atribut ini
-  bukti_transfer String @db.VarChar(255)
-  poin Int
-  potongan_poin Int @default(0)
-  metode_pengiriman MetodePengiriman @default(DIAMBIL) // ini jadi enum
-  ongkos_kirim Float @default(0)
-  total_akhir Float
-  id_pembeli Int // jadi integer
-  id_alamat Int?
-  detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
-  pengiriman Pengiriman? @relation("PengirimanToTransaksi")
-
-  pembeli Pembeli @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_transaksi_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
-  alamat Alamat? @relation("TransaksiToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_transaksi_to_alamat", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("transaksi")
-}
-
-model DetailTransaksi {
-  id_dtl_transaksi Int @id @default(autoincrement()) // awalnya varchar
-  id_barang Int @unique // jadi integer
-  id_transaksi Int
-  is_rating Boolean @default(false)
-
-  rating Rating? @relation("RatingToDetailTransaksi")
-  barang Barang @relation("DetailTransaksiToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_transaksi_to_barang", onUpdate: Cascade, onDelete: Cascade)
-  transaksi Transaksi @relation("DetailTransaksiToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_detail_transaksi_to_transaksi", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("dtl_transaksi")
-}
-
-model Keranjang {
-  id_keranjang Int @id @default(autoincrement()) //awalnya char
-  id_barang Int // jadi integer
-  id_pembeli Int // ini int awalnya String
-
-  barang Barang @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], map: "fk_keranjang_to_barang", onUpdate: Cascade, onDelete: Cascade)
-  pembeli Pembeli @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], map: "fk_keranjang_to_pembeli", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("keranjang")
-}
-
-model RequestDonasi {
-  id_request Int @id @default(autoincrement())
-  deskripsi String @db.VarChar(255)
-  tanggal_request DateTime
-  status StatusRequestDonasi @default(MENUNGGU)
-  id_organisasi Int
-  donasi Donasi? @relation("DonasiToRequestDonasi")
-
-  organisasi Organisasi @relation("RequestDonasiToOrganisasi", fields: [id_organisasi], references: [id_organisasi], map: "fk_request_donasi_to_organisasi", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("request_donasi") // awalnya requestdonasi
-}
-
-model Donasi {
-  id_donasi Int @id @default(autoincrement())
-  tanggal_donasi DateTime
-  nama_penerima String @db.VarChar(255)
-  id_barang Int @unique // jadi integer
-  id_request Int @unique
-
-  barang Barang @relation("DonasiToBarang", fields: [id_barang], references: [id_barang], map: "fk_donasi_to_barang", onUpdate: Cascade, onDelete: Cascade)
-  request RequestDonasi? @relation("DonasiToRequestDonasi", fields: [id_request], references: [id_request], map: "fk_donasi_to_request", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("donasi")
-}
-
-model Penitipan {
-  id_penitipan Int @id @default(autoincrement())
-  tanggal_masuk DateTime @default(now()) // tambah default now
-  tanggal_akhir DateTime
-  tanggal_laku DateTime? // ini dijadikan bisa null
-  batas_ambil DateTime
-  is_perpanjang Boolean @default(false) // awalnya isPerpanjang
-  id_penitip Int // ini integer
-  id_hunter Int? // ini dijadikan bisa null
-  id_pegawai_qc Int // ini integer
-  detail_penitipan DetailPenitipan[] @relation("DetailPenitipanToPenitipan")
-
-  penitip Penitip @relation("PenitipanToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_penitipan_to_penitip", onUpdate: Cascade, onDelete: Cascade)
-  hunter Pegawai? @relation("PenitipanToHunter", fields: [id_hunter], references: [id_pegawai], map: "fk_penitipan_to_hunter", onUpdate: Cascade, onDelete: Cascade)
-  pegawai_qc Pegawai @relation("PenitipanToPegawaiQC", fields: [id_pegawai_qc], references: [id_pegawai], map: "fk_penitipan_to_qc", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("penitipan")
-}
-
-model DetailPenitipan {
-  id_dtl_penitipan Int @id @default(autoincrement())
-  id_penitipan Int
-  id_barang Int @unique // jadi one to one ke barang dan integer
-  
-  penitipan Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], map: "fk_detail_penitipan_to_penitipan", onUpdate: Cascade, onDelete: Cascade)
-  barang Barang @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], map: "fk_detail_penitipan_to_barang", onUpdate: Cascade, onDelete: Cascade)
-  
-  @@map("dtl_penitipan")
-}
-
-model Pengiriman {
-  id_pengiriman Int @id @default(autoincrement()) // awalnya varchar
-  tanggal DateTime?
-  status_pengiriman StatusPengiriman @default(DIPROSES) // jadi enum
-  id_kurir Int?  // awalnya id_pegawai dan dijadikan bisa null, ini int
-  id_transaksi Int @unique
-  created_at DateTime @default(now())
-
-  kurir Pegawai? @relation("PengirimanToKurir", fields: [id_kurir], references: [id_pegawai], map: "fk_pengiriman_to_kurir", onUpdate: Cascade, onDelete: Cascade)
-  transaksi Transaksi @relation("PengirimanToTransaksi", fields: [id_transaksi], references: [id_transaksi], map: "fk_pengiriman_to_transaksi", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("pengiriman")
-}
-
-model Session {
-  id_session Int @id @default(autoincrement())
-  token String @unique
-  createdAt DateTime @default(now())
-  expiresAt DateTime? 
-  id_user Int
-
-  user User @relation("SessionToUser",fields: [id_user], references: [id_user], map:"fk_session_to_user", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("session")
-}
-
-model Rating {
-  id_rating Int @id @default(autoincrement())
-  rating Int 
-  id_penitip Int
-  id_dtl_transaksi Int @unique
-  created_at DateTime @default(now())
-
-  penitip Penitip @relation("RatingToPenitip", fields: [id_penitip], references: [id_penitip], map: "fk_rating_to_penitip", onUpdate: Cascade, onDelete: Cascade)
-  dtl_transaksi DetailTransaksi @relation("RatingToDetailTransaksi", fields: [id_dtl_transaksi], references: [id_dtl_transaksi], map: "fk_rating_to_dtl_transaksi", onUpdate: Cascade, onDelete: Cascade)
-
-  @@map("rating")
-}
-

@@ -19,7 +19,37 @@ export const authMiddleware = async (req, res, next) => {
       select: {
         id_session: true,
         expiresAt: true,
-        user: true,
+        user: {
+          select: {
+            id_user: true,
+            role: true,
+            pegawai: {
+              select: {
+                id_pegawai: true,
+                jabatan: {
+                  select: {
+                    nama_jabatan: true,
+                  },
+                },
+              },
+            },
+            penitip: {
+              select: {
+                id_penitip: true,
+              },
+            },
+            pembeli: {
+              select: {
+                id_pembeli: true,
+              },
+            },
+            organisasi: {
+              select: {
+                id_organisasi: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -38,17 +68,6 @@ export const authMiddleware = async (req, res, next) => {
           errors: "Akses ditolak, silahkan login ulang!",
         })
         .end();
-    }
-
-    if (session.user.role === "PEGAWAI") {
-      session.user.pegawai = await prismaClient.pegawai.findUnique({
-        where: {
-          id_user: session.user.id_user,
-        },
-        select: {
-          jabatan: true,
-        },
-      });
     }
 
     req.session = session;

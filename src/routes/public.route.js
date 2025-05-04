@@ -3,6 +3,7 @@ import pegawaiController from "../controllers/pegawai.controller.js";
 import organisasiController from "../controllers/organisasi.controller.js";
 import authController from "../controllers/auth.controller.js";
 import penitipController from "../controllers/penitip.controller.js";
+import pembeliController from "../controllers/pembeli.controller.js";
 
 const publicRouter = new express.Router();
 
@@ -194,6 +195,102 @@ publicRouter.post("/api/organisasi/login", organisasiController.login);
  */
 
 publicRouter.post("/api/penitip/login", penitipController.login);
+
+/**
+ * @swagger
+ * /api/pembeli:
+ *   post:
+ *     summary: Register a new pembeli
+ *     tags: [Pembeli]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - confirm_password
+ *               - nama
+ *               - alamat
+ *               - nomor_telepon
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: pembelitest@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: test1234
+ *               confirm_password:
+ *                 type: string
+ *                 example: test1234
+ *               nama:
+ *                 type: string
+ *                 example: Joko Waluyo
+ *               nomor_telepon:
+ *                 type: string
+ *                 example: +6281234567890
+ *     responses:
+ *       200:
+ *         description: Pembeli registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Pembeli'
+ *       400:
+ *         description: Invalid input or email already exists
+ *       401:
+ *         description: Unauthorized
+ */
+publicRouter.post("/api/pembeli", pembeliController.register);
+
+/**
+ * @swagger
+ * /api/pembeli/login:
+ *   post:
+ *     summary: Log in an pembeli
+ *     tags: [Pembeli]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: pembelitest@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: test1234
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
+ *         description: Invalid credentials
+ */
+
+publicRouter.post("/api/pembeli/login", pembeliController.login);
 
 /**
  * @swagger

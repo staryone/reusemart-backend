@@ -168,6 +168,83 @@ const options = {
               type: "integer",
               example: 240,
             },
+            transaksi: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id_transaksi: {
+                    type: "integer",
+                    example: 1,
+                  },
+                },
+              },
+            },
+          },
+        },
+        Pembeli: {
+          properties: {
+            id_pembeli: {
+              type: "integer",
+              example: 1,
+            },
+            email: {
+              type: "string",
+              format: "email",
+              example: "pembeli@example.com",
+            },
+            nama: {
+              type: "string",
+              example: "Joko Waluyo",
+            },
+            nomor_telepon: {
+              type: "string",
+              example: "02746642721",
+            },
+            poin_loyalitas: {
+              type: "integer",
+              example: 240,
+            },
+            alamat: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id_alamat: {
+                    type: "integer",
+                    example: 1,
+                  },
+                },
+              },
+            },
+            transaksi: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id_transaksi: {
+                    type: "integer",
+                    example: 1,
+                  },
+                },
+              },
+            },
+          },
+        },
+        Alamat: {
+          properties: {
+            id_alamat: {
+              type: "integer",
+              example: 1,
+            },
+            nama_alamat: {
+              type: "string",
+              example: "Rumah",
+            },
+            detail_alamat: {
+              type: "string",
+              example: "Jl. kaliurang no 2",
+            },
           },
         },
       },

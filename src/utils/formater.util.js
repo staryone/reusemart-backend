@@ -9,3 +9,7 @@ export const idToInteger = (id) => {
 export const idOrgToInteger = (id) => {
   return parseInt(String(id).slice(3));
 };
+
+export const formatImageName = (fieldname) => {
+  return fieldname + "-" + String(Date.now());
+};

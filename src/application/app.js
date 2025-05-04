@@ -11,6 +11,8 @@ import { organisasiRouter } from "../routes/organisasi.route.js";
 import { penitipRouter } from "../routes/penitip.route.js";
 import "dotenv/config";
 import { uploadMulter } from "./multer.js";
+import { pembeliRouter } from "../routes/pembeli.route.js";
+import { alamatRouter } from "../routes/alamat.route.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
@@ -37,4 +39,6 @@ app.use(pegawaiRouter);
 app.use(jabatanRouter);
 app.use(organisasiRouter);
 app.use(penitipRouter);
+app.use(pembeliRouter);
+app.use(alamatRouter);
 app.use(errorMiddleware);
