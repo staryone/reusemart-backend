@@ -1,6 +1,6 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idOrgToInteger, idToString } from "../utils/id_formater.util.js";
+import { idOrgToInteger, idToString } from "../utils/formater.util.js";
 import { getIdAuthValidation } from "../validation/auth.validate.js";
 import {
   createOrganisasiValidation,

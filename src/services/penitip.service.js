@@ -1,7 +1,11 @@
 import { prismaClient } from "../application/database.js";
 import { deleteFile, getUrlFile, uploadFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idToInteger, idToString } from "../utils/id_formater.util.js";
+import {
+  formatImageName,
+  idToInteger,
+  idToString,
+} from "../utils/formater.util.js";
 import { getIdAuthValidation } from "../validation/auth.validate.js";
 import {
   createPenitipValidation,
@@ -29,14 +33,11 @@ const create = async (request) => {
   const penitip = validate(createPenitipValidation, request);
 
   const foto_ktp = penitip.foto_ktp[0];
-  penitip.foto_ktp =
-    "foto_ktp/" +
-    penitip.nomor_ktp +
-    "." +
-    String(penitip.foto_ktp.mimetype).slice(6);
-  foto_ktp.fieldname = penitip.nomor_ktp;
+  penitip.foto_ktp = "foto_ktp/" + formatImageName(penitip.nomor_ktp);
+  "." + String(penitip.foto_ktp.mimetype).slice(6);
+  foto_ktp.fieldname = formatImageName(penitip.nomor_ktp);
 
-  const [createdPenitip, resultUrlFotoKTP] = await Promise.all([
+  const [createdPenitip, _] = await Promise.all([
     prismaClient.penitip.create({
       data: penitip,
       include: {
@@ -54,7 +55,7 @@ const create = async (request) => {
     id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),
     email: createdPenitip.user.email,
     nomor_ktp: createdPenitip.nomor_ktp,
-    foto_ktp: resultUrlFotoKTP,
+    foto_ktp: await getUrlFile(createdPenitip.foto_ktp),
     nama: createdPenitip.nama,
     alamat: createdPenitip.alamat,
     nomor_telepon: createdPenitip.nomor_telepon,
@@ -83,7 +84,27 @@ const profile = async (id) => {
           email: true,
         },
       },
-      
+      penitipan: {
+        select: {
+          detail_penitipan: {
+            select: {
+              barang: {
+                select: {
+                  detail_transaksi: {
+                    select: {
+                      transaksi: {
+                        include: {
+                          pengiriman: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -106,6 +127,13 @@ const profile = async (id) => {
     is_top_seller: penitip.is_top_seller,
     total_per_bulan: penitip.total_per_bulan,
     poin: penitip.poin,
+    transaksi: penitip.penitipan
+      .map((penitipan) => {
+        return penitipan.detail_penitipan.map((dtl_penitipan) => {
+          return dtl_penitipan.barang.detail_transaksi.transaksi;
+        });
+      })
+      .flat(),
   };
 
   return formattedPenitip;
@@ -252,13 +280,13 @@ const update = async (request) => {
 
     await deleteFile(data.foto_ktp);
 
-    updateRequest.foto_ktp.fieldname = data.nomor_ktp;
+    updateRequest.foto_ktp.fieldname = formatImageName(data.nomor_ktp);
 
     await uploadFile(updateRequest.foto_ktp, "foto_ktp");
 
     data.foto_ktp =
       "foto_ktp/" +
-      updateRequest.nomor_ktp +
+      formatImageName(updateRequest.nomor_ktp) +
       "." +
       String(updateRequest.foto_ktp.mimetype).slice(6);
   }
