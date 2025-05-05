@@ -126,6 +126,9 @@ const getList = async (request) => {
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
   const q = request.search || null;
+
+  const countAllPegawai = await prismaClient.pegawai.count();
+
   if (q !== null) {
     listPegawai = await prismaClient.pegawai.findMany({
       where: {
@@ -185,7 +188,7 @@ const getList = async (request) => {
     jabatan: p.jabatan,
   }));
 
-  return formattedPegawai;
+  return [formattedPegawai, countAllPegawai];
 };
 
 const update = async (request) => {
