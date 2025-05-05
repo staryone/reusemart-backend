@@ -144,6 +144,8 @@ const getList = async (request) => {
                 contains: q,
               },
             },
+          },
+          {
             jabatan: {
               nama_jabatan: {
                 contains: q,
