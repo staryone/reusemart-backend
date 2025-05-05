@@ -13,10 +13,12 @@ import "dotenv/config";
 import { uploadMulter } from "./multer.js";
 import { pembeliRouter } from "../routes/pembeli.route.js";
 import { alamatRouter } from "../routes/alamat.route.js";
+import cors from "cors";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(uploadMulter.any());
