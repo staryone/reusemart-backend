@@ -88,10 +88,11 @@ const get = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    const listPegawai = await pegawaiService.getList(req.query);
+    const [listPegawai, countPegawai] = await pegawaiService.getList(req.query);
 
     res.status(200).json({
       data: listPegawai,
+      totalItems: countPegawai,
     });
   } catch (e) {
     next(e);
