@@ -230,7 +230,7 @@ model Transaksi {
   status_Pembayaran  StatusPembayaran  @default(BELUM_DIBAYAR)
   tanggal_pembayaran DateTime?
   batas_pembayaran   DateTime
-  bukti_transfer     String            @db.VarChar(255)
+  bukti_transfer     String?           @db.VarChar(255)
   total_poin         Int
   potongan_poin      Int               @default(0)
   metode_pengiriman  MetodePengiriman  @default(DIAMBIL)
