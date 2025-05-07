@@ -20,7 +20,8 @@ const resetPassword = async (req, res, next) => {
     await authService.resetAllSession(result.email);
 
     res.status(200).json({
-      data: "Reset password berhasil!",
+      data: "OK",
+      message: "Reset password berhasil!",
     });
   } catch (e) {
     next(e);

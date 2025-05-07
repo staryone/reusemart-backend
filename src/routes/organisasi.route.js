@@ -49,6 +49,9 @@ organisasiRouter.get(
  *               properties:
  *                 data:
  *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
  *                   example: Logout berhasil!
  *       401:
  *         description: Unauthorized
@@ -95,6 +98,9 @@ organisasiRouter.delete(
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Organisasi'
+ *                 totalItems:
+ *                   type: integer
+ *                   example: 100
  *       401:
  *         description: Unauthorized
  */
@@ -189,7 +195,11 @@ organisasiRouter.get(
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Organisasi'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Update organisasi berhasil!
  *       401:
  *         description: Unauthorized
  *       404:
@@ -226,6 +236,9 @@ organisasiRouter.patch(
  *               type: object
  *               properties:
  *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
  *                   type: string
  *                   example: Hapus organisasi berhasil!
  *       401:

@@ -102,7 +102,11 @@ publicRouter.post("/api/pegawai/login", pegawaiController.login);
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Organisasi'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Register organisasi berhasil!
  *       400:
  *         description: Invalid input or email already exists
  *       401:
@@ -241,7 +245,11 @@ publicRouter.post("/api/penitip/login", penitipController.login);
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Pembeli'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Register pembeli berhasil!
  *       400:
  *         description: Invalid input or email already exists
  *       401:
@@ -320,11 +328,11 @@ publicRouter.post("/api/pembeli/login", pembeliController.login);
  *               type: object
  *               properties:
  *                 data:
- *                   type: object
- *                   properties:
- *                     token:
- *                       type: string
- *                       example: Email sent to gmail.com
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Email reset password berhasil dikirim!
  *       401:
  *         description: Invalid credentials
  */
@@ -369,11 +377,11 @@ publicRouter.post("/api/forgot-password", authController.forgotPassword);
  *               type: object
  *               properties:
  *                 data:
- *                   type: object
- *                   properties:
- *                     token:
- *                       type: string
- *                       example: Email sent to gmail.com
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Reset password berhasil!
  *       401:
  *         description: Invalid credentials
  */

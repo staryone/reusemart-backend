@@ -49,6 +49,9 @@ pembeliRouter.get(
  *               properties:
  *                 data:
  *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
  *                   example: Logout berhasil!
  *       401:
  *         description: Unauthorized

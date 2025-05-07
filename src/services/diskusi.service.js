@@ -1,15 +1,14 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idToInteger } from "../utils/formater.util.js";
+import { idToInteger, idToString } from "../utils/formater.util.js";
 import {
   createDiskusiValidation,
   getDiskusiValidation,
-  updateDiskusiValidation,
 } from "../validation/diskusi.validate.js";
 import { validate } from "../validation/validate.js";
 
 const create = async (req) => {
-  request = validate(createDiskusiValidation, req);
+  const request = validate(createDiskusiValidation, req);
   request.id_barang = idToInteger(request.id_barang);
 
   return prismaClient.diskusi.create({
@@ -29,6 +28,16 @@ const get = async (id) => {
     },
     include: {
       barang: true,
+      user: {
+        include: {
+          pegawai: {
+            include: {
+              jabatan: true,
+            },
+          },
+          pembeli: true,
+        },
+      },
     },
   });
 
@@ -36,7 +45,24 @@ const get = async (id) => {
     throw new ResponseError(404, "Diskusi tidak ditemukan");
   }
 
-  return diskusi;
+  const formattedDiskusi = {
+    id_diskusi: diskusi.id_diskusi,
+    tanggal_diskusi: diskusi.tanggal_diskusi,
+    pesan: diskusi.pesan,
+    id_barang: idToString(diskusi.barang.prefix, diskusi.barang.id_barang),
+    id_cs: diskusi.user.pegawai
+      ? idToString(diskusi.user.pegawai.prefix, diskusi.user.pegawai.id_pegawai)
+      : null,
+    id_pembeli: diskusi.user.pembeli ? diskusi.user.pembeli.id_pembeli : null,
+    nama: diskusi.user.pegawai
+      ? diskusi.user.pegawai.nama
+      : diskusi.user.pembeli.nama,
+    role: diskusi.user.pegawai
+      ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
+      : diskusi.user.role,
+  };
+
+  return formattedDiskusi;
 };
 
 const getList = async (query) => {
@@ -45,43 +71,73 @@ const getList = async (query) => {
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
   const q = query.search || null;
+
+  const countAllDiskusi = await prismaClient.diskusi.count();
+
   if (q !== null) {
     listDiskusi = await prismaClient.diskusi.findMany({
       where: {
-        OR: [
-          {
-            id_diskusi: {
-              contains: q,
-            },
+        barang: {
+          nama_barang: {
+            contains: q,
           },
-          {
-            barang: {
-              nama_barang: {
-                contains: q,
-              },
-            },
-          },
-          {
-            tanggal_diskusi: {
-              contains: q,
-            },
-          },
-        ],
+        },
       },
       include: {
         barang: true,
+        user: {
+          include: {
+            pegawai: true,
+            pembeli: true,
+          },
+        },
       },
       skip: skip,
       take: limit,
     });
   } else {
     listDiskusi = await prismaClient.diskusi.findMany({
+      include: {
+        barang: true,
+        user: {
+          include: {
+            pegawai: {
+              include: {
+                jabatan: true,
+              },
+            },
+            pembeli: true,
+          },
+        },
+      },
       skip: skip,
       take: limit,
     });
   }
 
-  return listDiskusi;
+  const formattedDiskusi = listDiskusi.map((diskusi) => {
+    return {
+      id_diskusi: diskusi.id_diskusi,
+      tanggal_diskusi: diskusi.tanggal_diskusi,
+      pesan: diskusi.pesan,
+      id_barang: idToString(diskusi.barang.prefix, diskusi.barang.id_barang),
+      id_cs: diskusi.user.pegawai
+        ? idToString(
+            diskusi.user.pegawai.prefix,
+            diskusi.user.pegawai.id_pegawai
+          )
+        : null,
+      id_pembeli: diskusi.user.pembeli ? diskusi.user.pembeli.id_pembeli : null,
+      nama: diskusi.user.pegawai
+        ? diskusi.user.pegawai.nama
+        : diskusi.user.pembeli.nama,
+      role: diskusi.user.pegawai
+        ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
+        : diskusi.user.role,
+    };
+  });
+
+  return [formattedDiskusi, countAllDiskusi];
 };
 
 export default {

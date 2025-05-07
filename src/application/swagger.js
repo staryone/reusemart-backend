@@ -247,6 +247,42 @@ const options = {
             },
           },
         },
+        Diskusi: {
+          properties: {
+            id_diskusi: {
+              type: "integer",
+              example: 1,
+            },
+            tanggal_diskusi: {
+              type: "string",
+              example: "2025-05-07T10:00:00Z",
+            },
+            pesan: {
+              type: "string",
+              example: "Apa kabar barang ini?",
+            },
+            id_barang: {
+              type: "string",
+              example: "M1",
+            },
+            id_cs: {
+              type: "string",
+              example: "T1",
+            },
+            id_pembeli: {
+              type: "integer",
+              example: 1,
+            },
+            nama: {
+              type: "string",
+              example: "John Doe",
+            },
+            role: {
+              type: "string",
+              example: "CS",
+            },
+          },
+        },
       },
     },
   },

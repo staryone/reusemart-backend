@@ -401,6 +401,7 @@ enum StatusBarang {
   TERSEDIA
   KEMBALI
   DIDONASIKAN
+  TERDONASI
   TERJUAL
 }
 

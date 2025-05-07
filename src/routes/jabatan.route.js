@@ -33,7 +33,11 @@ const jabatanRouter = new express.Router();
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Jabatan'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Create jabatan berhasil!
  *       400:
  *         description: Invalid input or jabatan already exists
  *       401:
@@ -163,7 +167,11 @@ jabatanRouter.get(
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Jabatan'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Update jabatan berhasil!
  *       401:
  *         description: Unauthorized
  *       404:
@@ -199,6 +207,9 @@ jabatanRouter.patch(
  *               type: object
  *               properties:
  *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
  *                   type: string
  *                   example: Hapus jabatan berhasil!
  *       400:
