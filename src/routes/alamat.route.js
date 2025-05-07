@@ -37,7 +37,11 @@ const alamatRouter = new express.Router();
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Alamat'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Create alamat berhasil!
  *       400:
  *         description: Invalid input or alamat already exists
  *       401:
@@ -170,7 +174,11 @@ alamatRouter.get(
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Alamat'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Update alamat berhasil!
  *       401:
  *         description: Unauthorized
  *       404:
@@ -206,6 +214,9 @@ alamatRouter.patch(
  *               type: object
  *               properties:
  *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
  *                   type: string
  *                   example: Hapus alamat berhasil!
  *       400:

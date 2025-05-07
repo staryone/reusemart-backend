@@ -51,7 +51,11 @@ const pegawaiRouter = new express.Router();
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Pegawai'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Create pegawai berhasil!
  *       400:
  *         description: Invalid input or email already exists
  *       401:
@@ -108,6 +112,9 @@ pegawaiRouter.get(
  *               properties:
  *                 data:
  *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
  *                   example: Logout berhasil!
  *       401:
  *         description: Unauthorized
@@ -148,7 +155,10 @@ pegawaiRouter.delete(
  *               properties:
  *                 data:
  *                   type: string
- *                   example: Ubah password berhasil!
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Ubah password pegawai berhasil!
  *       401:
  *         description: Unauthorized
  */
@@ -194,6 +204,9 @@ pegawaiRouter.patch(
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Pegawai'
+ *                 totalItems:
+ *                   type: integer
+ *                   example: 100
  *       401:
  *         description: Unauthorized
  */
@@ -292,7 +305,11 @@ pegawaiRouter.get(
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/Pegawai'
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Update pegawai berhasil!
  *       401:
  *         description: Unauthorized
  *       404:
@@ -329,6 +346,9 @@ pegawaiRouter.patch(
  *               type: object
  *               properties:
  *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
  *                   type: string
  *                   example: Hapus pegawai berhasil!
  *       401:
@@ -367,6 +387,9 @@ pegawaiRouter.delete(
  *               type: object
  *               properties:
  *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
  *                   type: string
  *                   example: Reset password berhasil!
  *       401:

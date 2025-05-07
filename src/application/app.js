@@ -14,6 +14,7 @@ import { uploadMulter } from "./multer.js";
 import { pembeliRouter } from "../routes/pembeli.route.js";
 import { alamatRouter } from "../routes/alamat.route.js";
 import cors from "cors";
+import { diskusiRouter } from "../routes/diskusi.route.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
@@ -43,4 +44,5 @@ app.use(organisasiRouter);
 app.use(penitipRouter);
 app.use(pembeliRouter);
 app.use(alamatRouter);
+app.use(diskusiRouter);
 app.use(errorMiddleware);
