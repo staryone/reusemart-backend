@@ -120,6 +120,8 @@ const getList = async (request) => {
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
   const q = request.search || null;
+
+  const countAllOrganisasi = await prismaClient.organisasi.count();
   if (q !== null) {
     listOrganisasi = await prismaClient.organisasi.findMany({
       where: {
@@ -176,7 +178,7 @@ const getList = async (request) => {
     deskripsi: organisasi.deskripsi,
   }));
 
-  return formattedOrganisasi;
+  return [formattedOrganisasi, countAllOrganisasi];
 };
 
 const update = async (request) => {

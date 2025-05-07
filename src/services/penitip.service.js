@@ -55,7 +55,7 @@ const create = async (request) => {
     id_penitip: idToString(createdPenitip.prefix, createdPenitip.id_penitip),
     email: createdPenitip.user.email,
     nomor_ktp: createdPenitip.nomor_ktp,
-    foto_ktp: await getUrlFile(createdPenitip.foto_ktp),
+    foto_ktp: createdPenitip.foto_ktp,
     nama: createdPenitip.nama,
     alamat: createdPenitip.alamat,
     nomor_telepon: createdPenitip.nomor_telepon,
@@ -188,6 +188,8 @@ const getList = async (request) => {
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
   const q = request.search || null;
+
+  const countAllPenitip = await prismaClient.penitip.count();
   if (q !== null) {
     listPenitip = await prismaClient.penitip.findMany({
       where: {
@@ -235,7 +237,7 @@ const getList = async (request) => {
     });
   }
 
-  return Promise.all(
+  const formattedPenitip = Promise.all(
     listPenitip.map(async (p) => ({
       id_penitip: idToString(p.prefix, p.id_penitip),
       email: p.user.email,
@@ -253,6 +255,8 @@ const getList = async (request) => {
       poin: p.poin,
     }))
   );
+
+  return [formattedPenitip, countAllPenitip];
 };
 
 const update = async (request) => {

@@ -19,10 +19,11 @@ const register = async (req, res, next) => {
       poin_loyalitas: 0,
     };
 
-    let result = await pembeliService.create(pembeli);
+    await pembeliService.create(pembeli);
 
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Create pembeli berhasil!",
     });
   } catch (e) {
     next(e);
@@ -46,7 +47,8 @@ const logout = async (req, res, next) => {
     await authService.logout(id);
 
     res.status(200).json({
-      data: "Logout berhasil!",
+      data: "OK",
+      message: "Logout berhasil!",
     });
   } catch (e) {
     next(e);

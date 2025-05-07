@@ -26,10 +26,11 @@ const register = async (req, res, next) => {
       id_user: createdUser.id_user,
     };
 
-    let result = await pegawaiService.create(pegawai);
+    await pegawaiService.create(pegawai);
 
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Create pegawai berhasil!",
     });
   } catch (e) {
     next(e);
@@ -53,7 +54,8 @@ const logout = async (req, res, next) => {
     await authService.logout(id);
 
     res.status(200).json({
-      data: "Logout berhasil!",
+      data: "OK",
+      message: "Logout berhasil!",
     });
   } catch (e) {
     next(e);
@@ -102,11 +104,13 @@ const getList = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     req.body.id_pegawai = req.params.id;
+    console.log(req.body);
     const result = await pegawaiService.update(req.body);
     console.log(result);
 
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Update pegawai berhasil!",
     });
   } catch (e) {
     next(e);
@@ -117,7 +121,8 @@ const destroy = async (req, res, next) => {
   try {
     await pegawaiService.destroy(req.params.id);
     res.status(200).json({
-      data: "Hapus pegawai berhasil!",
+      data: "OK",
+      message: "Hapus pegawai berhasil!",
     });
   } catch (e) {
     next(e);
@@ -131,7 +136,8 @@ const changePassword = async (req, res, next) => {
     await authService.resetAllSession(req.body.email);
 
     res.status(200).json({
-      data: "Ubah password berhasil!",
+      data: "OK",
+      message: "Ubah password pegawai berhasil!",
     });
   } catch (e) {
     next(e);
@@ -148,7 +154,8 @@ const resetPassword = async (req, res, next) => {
     await authService.resetAllSession(req.body.email);
 
     res.status(200).json({
-      data: "Reset password berhasil!",
+      data: "OK",
+      message: "Reset password pegawai berhasil!",
     });
   } catch (e) {
     next(e);

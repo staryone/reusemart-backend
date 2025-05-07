@@ -5,7 +5,8 @@ const forgotPassword = async (req, res, next) => {
     const result = await authService.forgotPassword(req.body.email);
 
     res.status(200).json({
-      data: "Email berhasil dikirim!",
+      data: "OK",
+      message: "Email reset password berhasil dikirim!",
     });
   } catch (e) {
     next(e);
