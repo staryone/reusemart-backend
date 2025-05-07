@@ -22,10 +22,11 @@ const register = async (req, res, next) => {
       id_user: createdUser.id_user,
     };
 
-    let result = await organisasiService.create(organisasi);
+    await organisasiService.create(organisasi);
 
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Create organisasi berhasil!",
     });
   } catch (e) {
     next(e);
@@ -49,7 +50,8 @@ const logout = async (req, res, next) => {
     await authService.logout(id);
 
     res.status(200).json({
-      data: "Logout berhasil!",
+      data: "OK",
+      message: "Logout berhasil!",
     });
   } catch (e) {
     next(e);
@@ -84,10 +86,13 @@ const get = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    const listOrganisasi = await organisasiService.getList(req.query);
+    const [listOrganisasi, totalItems] = await organisasiService.getList(
+      req.query
+    );
 
     res.status(200).json({
       data: listOrganisasi,
+      totalItems: totalItems,
     });
   } catch (e) {
     next(e);
@@ -100,7 +105,8 @@ const update = async (req, res, next) => {
     const result = await organisasiService.update(req.body);
 
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Update organisasi berhasil!",
     });
   } catch (e) {
     next(e);
@@ -111,7 +117,8 @@ const destroy = async (req, res, next) => {
   try {
     await organisasiService.destroy(req.params.id);
     res.status(200).json({
-      data: "Hapus organisasi berhasil!",
+      data: "OK",
+      message: "Hapus organisasi berhasil!",
     });
   } catch (e) {
     next(e);

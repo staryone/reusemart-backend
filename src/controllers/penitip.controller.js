@@ -33,10 +33,11 @@ const register = async (req, res, next) => {
       poin: 0,
     };
 
-    let result = await penitipService.create(penitip);
+    await penitipService.create(penitip);
 
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Create penitip berhasil!",
     });
   } catch (e) {
     next(e);
@@ -60,7 +61,8 @@ const logout = async (req, res, next) => {
     await authService.logout(id);
 
     res.status(200).json({
-      data: "Logout berhasil!",
+      data: "OK",
+      message: "Logout berhasil!",
     });
   } catch (e) {
     next(e);
@@ -95,10 +97,11 @@ const get = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    const listPenitip = await penitipService.getList(req.query);
+    const [listPenitip, totalItems] = await penitipService.getList(req.query);
 
     res.status(200).json({
       data: listPenitip,
+      totalItems: totalItems,
     });
   } catch (e) {
     next(e);
@@ -111,7 +114,8 @@ const update = async (req, res, next) => {
     const result = await penitipService.update(req.body);
     console.log(req.body);
     res.status(200).json({
-      data: result,
+      data: "OK",
+      message: "Update penitip berhasil!",
     });
   } catch (e) {
     next(e);
@@ -122,7 +126,8 @@ const destroy = async (req, res, next) => {
   try {
     await penitipService.destroy(req.params.id);
     res.status(200).json({
-      data: "Hapus penitip berhasil!",
+      data: "OK",
+      message: "Hapus penitip berhasil!",
     });
   } catch (e) {
     next(e);

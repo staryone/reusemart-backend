@@ -51,6 +51,8 @@ const getList = async (query) => {
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
   const q = query.search || null;
+
+  const countAllJabatan = await prismaClient.jabatan.count();
   if (q !== null) {
     listJabatan = await prismaClient.jabatan.findMany({
       where: {
@@ -68,7 +70,7 @@ const getList = async (query) => {
     });
   }
 
-  return listJabatan;
+  return [listJabatan, countAllJabatan];
 };
 
 const update = async (request) => {
