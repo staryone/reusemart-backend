@@ -80,7 +80,7 @@ const options = {
             },
           },
         },
-        Organsasi: {
+        Organisasi: {
           properties: {
             id_organisasi: {
               type: "string",
@@ -336,6 +336,177 @@ const options = {
             id_request: {
               type: "integer",
               example: 1,
+            },
+          },
+        },
+        Barang: {
+          type: "object",
+          properties: {
+            id_barang: {
+              type: "string",
+              example: "M1",
+            },
+            nama_barang: {
+              type: "string",
+              example: "Baju Bekas",
+            },
+            deskripsi: {
+              type: "string",
+              example: "Baju bekas dalam kondisi baik",
+            },
+            harga: {
+              type: "number",
+              format: "float",
+              example: 50000,
+            },
+            status: {
+              type: "string",
+              example: "TERSEDIA",
+            },
+            garansi: {
+              type: "string",
+              nullable: true,
+              example: "1 minggu",
+            },
+            berat: {
+              type: "number",
+              format: "float",
+              example: 0.5,
+            },
+            kategori: {
+              type: "object",
+              properties: {
+                id_kategori: {
+                  type: "integer",
+                  example: 1,
+                },
+                nama_kategori: {
+                  type: "string",
+                  example: "Pakaian",
+                },
+              },
+            },
+            gambar: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id_gambar: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  url_gambar: {
+                    type: "string",
+                    example: "gambar/barang1.png",
+                  },
+                  is_primary: {
+                    type: "boolean",
+                    example: true,
+                  },
+                  order_number: {
+                    type: "integer",
+                    example: 0,
+                  },
+                  id_barang: {
+                    type: "string",
+                    example: "M1",
+                  },
+                  createdAt: {
+                    type: "string",
+                    format: "date-time",
+                    example: "2025-05-07T10:00:00Z",
+                  },
+                  updatedAt: {
+                    type: "string",
+                    format: "date-time",
+                    example: "2025-05-07T10:00:00Z",
+                  },
+                },
+              },
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-05-07T10:00:00Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-05-07T10:00:00Z",
+            },
+            penitip: {
+              type: "object",
+              properties: {
+                id_penitip: {
+                  type: "string",
+                  example: "T1",
+                },
+                nama: {
+                  type: "string",
+                  example: "Joko Waluyo",
+                },
+                is_top_seller: {
+                  type: "boolean",
+                  example: false,
+                },
+                nomor_telepon: {
+                  type: "string",
+                  example: "02746642721",
+                },
+                alamat: {
+                  type: "string",
+                  example: "Jl. Kecambang no 2",
+                },
+                rating: {
+                  type: "number",
+                  format: "float",
+                  example: 4.8,
+                },
+              },
+            },
+            diskusi: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id_diskusi: {
+                    type: "integer",
+                    example: 1,
+                  },
+                  tanggal_d: {
+                    type: "string",
+                    format: "date-time",
+                    example: "2025-05-07T10:00:00Z",
+                  },
+                  pesan: {
+                    type: "string",
+                    example: "Apa kabar barang ini?",
+                  },
+                  id_barang: {
+                    type: "string",
+                    example: "M1",
+                  },
+                  id_cs: {
+                    type: "string",
+                    nullable: true,
+                    example: "P123",
+                  },
+                  id_pembeli: {
+                    type: "integer",
+                    nullable: true,
+                    example: 1,
+                  },
+                  nama: {
+                    type: "string",
+                    example: "John Doe",
+                  },
+                  role: {
+                    type: "string",
+                    example: "CS",
+                  },
+                },
+              },
+              example: [],
             },
           },
         },

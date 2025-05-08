@@ -4,6 +4,7 @@ import organisasiController from "../controllers/organisasi.controller.js";
 import authController from "../controllers/auth.controller.js";
 import penitipController from "../controllers/penitip.controller.js";
 import pembeliController from "../controllers/pembeli.controller.js";
+import barangController from "../controllers/barang.controller.js";
 
 const publicRouter = new express.Router();
 
@@ -299,6 +300,94 @@ publicRouter.post("/api/pembeli", pembeliController.register);
  */
 
 publicRouter.post("/api/pembeli/login", pembeliController.login);
+
+/**
+ * @swagger
+ * /api/barang/lists:
+ *   get:
+ *     summary: Get a list of barang and able to search
+ *     tags: [Barang]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for nama barang or nama penitip or nama kategori
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum:
+ *            - TERSEDIA
+ *            - DIDONASIKAN
+ *            - TERJUAL
+ *            - KEMBALI
+ *            - TERDONASI
+ *         description: Search term for status barang
+ *     responses:
+ *       200:
+ *         description: List of barang
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Barang'
+ *                 totalItems:
+ *                   type: integer
+ *                   example: 100
+ *       401:
+ *         description: Unauthorized
+ */
+publicRouter.get("/api/barang/lists", barangController.getList);
+
+/**
+ * @swagger
+ * /api/barang/{id}:
+ *   get:
+ *     summary: Get an barang by ID
+ *     tags: [Barang]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: ^[A-Za-z]\d+$
+ *         description: Barang ID (e.g., M123)
+ *     responses:
+ *       200:
+ *         description: Barang details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Barang'
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Barang not found
+ */
+publicRouter.get("/api/barang/:id", barangController.get);
 
 /**
  * @swagger

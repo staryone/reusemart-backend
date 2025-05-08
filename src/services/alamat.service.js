@@ -53,43 +53,35 @@ const getList = async (query, id_pembeli) => {
   const page = query.page || 1;
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
-  const q = query.search || null;
-  console.log('ID pembeli',id_pembeli);
-  if (q !== null) {
-    listAlamat = await prismaClient.alamat.findMany({
-      where: {
-        AND: [
-          {
-            id_pembeli: id_pembeli,
-          },
-          {
-            OR: [
-              {
-                nama_alamat: {
-                  contains: q,
+  const q = query.search;
+
+  listAlamat = await prismaClient.alamat.findMany({
+    where: {
+      AND: [
+        {
+          id_pembeli: id_pembeli,
+        },
+        q
+          ? {
+              OR: [
+                {
+                  nama_alamat: {
+                    contains: q,
+                  },
                 },
-              },
-              {
-                detail_alamat: {
-                  contains: q,
+                {
+                  detail_alamat: {
+                    contains: q,
+                  },
                 },
-              },
-            ],
-          },
-        ],
-      },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listAlamat = await prismaClient.alamat.findMany({
-      where: {
-        id_pembeli: id_pembeli,
-      },
-      skip: skip,
-      take: limit,
-    });
-  }
+              ],
+            }
+          : {},
+      ],
+    },
+    skip: skip,
+    take: limit,
+  });
 
   return listAlamat;
 };

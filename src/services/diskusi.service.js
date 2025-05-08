@@ -70,50 +70,41 @@ const getList = async (query) => {
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
-  const q = query.search || null;
+  const q = query.search;
 
-  const countAllDiskusi = await prismaClient.diskusi.count();
-
-  if (q !== null) {
-    listDiskusi = await prismaClient.diskusi.findMany({
-      where: {
-        barang: {
-          nama_barang: {
-            contains: q,
-          },
-        },
-      },
-      include: {
-        barang: true,
-        user: {
-          include: {
-            pegawai: true,
-            pembeli: true,
-          },
-        },
-      },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listDiskusi = await prismaClient.diskusi.findMany({
-      include: {
-        barang: true,
-        user: {
-          include: {
-            pegawai: {
-              include: {
-                jabatan: true,
-              },
+  const countAllDiskusi = await prismaClient.diskusi.count({
+    where: q
+      ? {
+          barang: {
+            nama_barang: {
+              contains: q,
             },
-            pembeli: true,
           },
+        }
+      : {},
+  });
+  listDiskusi = await prismaClient.diskusi.findMany({
+    where: q
+      ? {
+          barang: {
+            nama_barang: {
+              contains: q,
+            },
+          },
+        }
+      : {},
+    include: {
+      barang: true,
+      user: {
+        include: {
+          pegawai: true,
+          pembeli: true,
         },
       },
-      skip: skip,
-      take: limit,
-    });
-  }
+    },
+    skip: skip,
+    take: limit,
+  });
 
   const formattedDiskusi = listDiskusi.map((diskusi) => {
     return {

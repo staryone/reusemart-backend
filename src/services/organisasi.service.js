@@ -115,59 +115,47 @@ const get = async (id) => {
 };
 
 const getList = async (request) => {
-  let listOrganisasi;
   const page = parseInt(request.page) || 1;
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
-  const q = request.search || null;
+  const q = request.search;
 
   const countAllOrganisasi = await prismaClient.organisasi.count();
-  if (q !== null) {
-    listOrganisasi = await prismaClient.organisasi.findMany({
-      where: {
-        OR: [
-          {
-            nama_organisasi: {
-              contains: q,
-            },
-          },
-          {
-            user: {
-              email: {
+
+  const listOrganisasi = await prismaClient.organisasi.findMany({
+    where: q
+      ? {
+          OR: [
+            {
+              nama_organisasi: {
                 contains: q,
               },
             },
-          },
-          {
-            nomor_telepon: {
-              contains: q,
+            {
+              user: {
+                email: {
+                  contains: q,
+                },
+              },
             },
-          },
-        ],
-      },
-      include: {
-        user: {
-          select: {
-            email: true,
-          },
+            {
+              nomor_telepon: {
+                contains: q,
+              },
+            },
+          ],
+        }
+      : {},
+    include: {
+      user: {
+        select: {
+          email: true,
         },
       },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listOrganisasi = await prismaClient.organisasi.findMany({
-      include: {
-        user: {
-          select: {
-            email: true,
-          },
-        },
-      },
-      skip: skip,
-      take: limit,
-    });
-  }
+    },
+    skip: skip,
+    take: limit,
+  });
 
   const formattedOrganisasi = listOrganisasi.map((organisasi) => ({
     id_organisasi: idToString(organisasi.prefix, organisasi.id_organisasi),

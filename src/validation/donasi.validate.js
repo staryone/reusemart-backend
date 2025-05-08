@@ -11,6 +11,13 @@ const updateDonasiValidation = Joi.object({
   id_donasi: Joi.number().required(),
   nama_penerima: Joi.string().max(255).optional(),
   tanggal_donasi: Joi.date().optional() || Joi.string().optional(),
+  status: Joi.valid(
+    "TERSEDIA",
+    "DIDONASIKAN",
+    "TERJUAL",
+    "KEMBALI",
+    "TERDONASI"
+  ).optional(),
 });
 
 export { createDonasiValidation, getDonasiValidation, updateDonasiValidation };

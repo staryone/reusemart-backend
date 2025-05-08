@@ -46,29 +46,31 @@ const get = async (id) => {
 };
 
 const getList = async (query) => {
-  let listJabatan;
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
-  const q = query.search || null;
+  const q = query.search;
 
-  const countAllJabatan = await prismaClient.jabatan.count();
-  if (q !== null) {
-    listJabatan = await prismaClient.jabatan.findMany({
-      where: {
-        nama_jabatan: {
-          contains: q,
-        },
-      },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listJabatan = await prismaClient.jabatan.findMany({
-      skip: skip,
-      take: limit,
-    });
-  }
+  const countAllJabatan = await prismaClient.jabatan.count({
+    where: q
+      ? {
+          nama_jabatan: {
+            contains: q,
+          },
+        }
+      : {},
+  });
+  const listJabatan = await prismaClient.jabatan.findMany({
+    where: q
+      ? {
+          nama_jabatan: {
+            contains: q,
+          },
+        }
+      : {},
+    skip: skip,
+    take: limit,
+  });
 
   return [listJabatan, countAllJabatan];
 };
