@@ -283,6 +283,30 @@ const options = {
             },
           },
         },
+        RequestDonasi: {
+          properties: {
+            id_request: {
+              type: "integer",
+              example: 1,
+            },
+            deskripsi: {
+              type: "string",
+              example: "Rumah",
+            },
+            tanggal_request: {
+              type: "string",
+              example: "2025-05-07T10:00:00Z",
+            },
+            status: {
+              type: "string",
+              example: "MENUNGGU",
+            },
+            id_organisasi: {
+              type: "string",
+              example: "ORG1",
+            },
+          },
+        },
       },
     },
   },

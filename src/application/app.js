@@ -15,6 +15,7 @@ import { pembeliRouter } from "../routes/pembeli.route.js";
 import { alamatRouter } from "../routes/alamat.route.js";
 import cors from "cors";
 import { diskusiRouter } from "../routes/diskusi.route.js";
+import { requestDonasiRouter } from "../routes/request_donasi.route.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
@@ -45,4 +46,5 @@ app.use(penitipRouter);
 app.use(pembeliRouter);
 app.use(alamatRouter);
 app.use(diskusiRouter);
+app.use(requestDonasiRouter);
 app.use(errorMiddleware);

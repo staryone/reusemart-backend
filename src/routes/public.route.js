@@ -74,13 +74,13 @@ publicRouter.post("/api/pegawai/login", pegawaiController.login);
  *               email:
  *                 type: string
  *                 format: email
- *                 example: newemployee@example.com
+ *                 example: organization@example.com
  *               password:
  *                 type: string
- *                 example: newPassword123
+ *                 example: password123
  *               confirm_password:
  *                 type: string
- *                 example: newPassword123
+ *                 example: password123
  *               nama_organisasi:
  *                 type: string
  *                 example: John Doe
