@@ -123,6 +123,66 @@ const getList = async (query, id_organisasi) => {
   return [formattedRequestDonasi, countAllReqDonasi];
 };
 
+const getAllList = async (query) => {
+  let listRequestDonasi;
+  const page = query.page || 1;
+  const limit = query.limit || 10;
+  const skip = (page - 1) * limit;
+  const q = query.search || null;
+
+  const countAllReqDonasi = await prismaClient.requestDonasi.count();
+
+  if (q !== null) {
+    listRequestDonasi = await prismaClient.requestDonasi.findMany({
+      where: {
+        OR: [
+          {
+            deskripsi: {
+              contains: q,
+            },
+          },
+          {
+            status: {
+              contains: q,
+            },
+          },
+          // {
+          //   tanggal_request: {
+          //     gte: q,
+          //   },
+          // },
+        ],
+      },
+      include: {
+        organisasi: true,
+      },
+      skip: skip,
+      take: limit,
+    });
+  } else {
+    listRequestDonasi = await prismaClient.requestDonasi.findMany({
+      include: {
+        organisasi: true,
+      },
+      skip: skip,
+      take: limit,
+    });
+  }
+
+  const formattedRequestDonasi = listRequestDonasi.map((request_donasi) => {
+    request_donasi.id_organisasi = idToString(
+      request_donasi.organisasi.prefix,
+      request_donasi.id_organisasi
+    );
+
+    delete request_donasi.organisasi;
+
+    return request_donasi;
+  });
+
+  return [formattedRequestDonasi, countAllReqDonasi];
+};
+
 const update = async (request) => {
   const updateRequest = validate(updateRequestDonasiValidation, request);
 
@@ -188,6 +248,7 @@ export default {
   create,
   get,
   getList,
+  getAllList,
   update,
   destroy,
 };
