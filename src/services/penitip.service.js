@@ -318,7 +318,7 @@ const update = async (request) => {
     });
   }
 
-  const updatedPenitip = await prismaClient.penitip.update({
+  return await prismaClient.penitip.update({
     where: {
       id_penitip: id,
     },
@@ -331,27 +331,48 @@ const update = async (request) => {
       },
     },
   });
+};
 
-  const urlKTP = await getUrlFile(updatedPenitip.foto_ktp);
+const updateSistem = async (req) => {
+  req = validate(updateSistemPenitipValidation, req);
 
-  const formattedPenitip = {
-    id_penitip: idToString(updatedPenitip.prefix, updatedPenitip.id_penitip),
-    email: updatedPenitip.user.email,
-    nomor_ktp: updatedPenitip.nomor_ktp,
-    foto_ktp: urlKTP,
-    nama: updatedPenitip.nama,
-    alamat: updatedPenitip.alamat,
-    nomor_telepon: updatedPenitip.nomor_telepon,
-    saldo: updatedPenitip.saldo,
-    rating: updatedPenitip.rating,
-    total_review: updatedPenitip.total_review,
-    jumlah_review: updatedPenitip.jumlah_review,
-    is_top_seller: updatedPenitip.is_top_seller,
-    total_per_bulan: updatedPenitip.total_per_bulan,
-    poin: updatedPenitip.poin,
-  };
+  const id_penitip = idToInteger(req.id_penitip);
 
-  return formattedPenitip;
+  const penitip = await prismaClient.penitip.findUnique({
+    where: {
+      id_penitip: id_penitip,
+    },
+  });
+
+  if (req.saldo) {
+    penitip.saldo = penitip.saldo + req.saldo;
+  }
+  if (req.total_review) {
+    penitip.total_review = penitip.total_review + req.total_review;
+  }
+  if (req.jumlah_review) {
+    penitip.jumlah_review = penitip.jumlah_review + req.jumlah_review;
+  }
+
+  if (req.total_per_bulan) {
+    penitip.total_per_bulan = req.total_per_bulan;
+  }
+  if (req.is_top_seller) {
+    penitip.is_top_seller = req.is_top_seller;
+  }
+
+  if (req.poin) {
+    penitip.poin = penitip.poin + req.poin;
+  }
+
+  penitip.rating = penitip.total_review / penitip.jumlah_review;
+
+  return prismaClient.penitip.update({
+    where: {
+      id_penitip: id_penitip,
+    },
+    data: penitip,
+  });
 };
 
 const destroy = async (id) => {
@@ -395,5 +416,6 @@ export default {
   get,
   getList,
   update,
+  updateSistem,
   destroy,
 };

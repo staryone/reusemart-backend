@@ -50,64 +50,77 @@ const get = async (id, id_organisasi) => {
 };
 
 const getList = async (query, id_organisasi) => {
-  let listRequestDonasi;
   const page = query.page || 1;
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
-  const q = query.search || null;
+  const q = query.search;
 
   const countAllReqDonasi = await prismaClient.requestDonasi.count({
     where: {
-      id_organisasi: id_organisasi,
+      AND: [
+        {
+          id_organisasi: id_organisasi,
+        },
+        q
+          ? {
+              OR: [
+                {
+                  deskripsi: {
+                    contains: q,
+                  },
+                },
+                {
+                  status: {
+                    contains: q,
+                  },
+                },
+                // {
+                //   tanggal_request: {
+                //     gte: q,
+                //   },
+                // },
+              ],
+            }
+          : {},
+      ],
     },
   });
 
-  if (q !== null) {
-    listRequestDonasi = await prismaClient.requestDonasi.findMany({
-      where: {
-        AND: [
-          {
-            id_organisasi: id_organisasi,
-          },
-          {
-            OR: [
-              {
-                deskripsi: {
-                  contains: q,
+  const listRequestDonasi = await prismaClient.requestDonasi.findMany({
+    where: {
+      AND: [
+        {
+          id_organisasi: id_organisasi,
+        },
+        q
+          ? {
+              OR: [
+                {
+                  deskripsi: {
+                    contains: q,
+                  },
                 },
-              },
-              {
-                status: {
-                  contains: q,
+                {
+                  status: {
+                    contains: q,
+                  },
                 },
-              },
-              // {
-              //   tanggal_request: {
-              //     gte: q,
-              //   },
-              // },
-            ],
-          },
-        ],
-      },
-      include: {
-        organisasi: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listRequestDonasi = await prismaClient.requestDonasi.findMany({
-      where: {
-        id_organisasi: id_organisasi,
-      },
-      include: {
-        organisasi: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-  }
+                // {
+                //   tanggal_request: {
+                //     gte: q,
+                //   },
+                // },
+              ],
+            }
+          : {},
+      ],
+    },
+    include: {
+      organisasi: true,
+    },
+    skip: skip,
+    take: limit,
+  });
 
   const formattedRequestDonasi = listRequestDonasi.map((request_donasi) => {
     request_donasi.id_organisasi = idToString(
@@ -124,50 +137,63 @@ const getList = async (query, id_organisasi) => {
 };
 
 const getAllList = async (query) => {
-  let listRequestDonasi;
   const page = query.page || 1;
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
-  const q = query.search || null;
+  const q = query.search;
 
-  const countAllReqDonasi = await prismaClient.requestDonasi.count();
+  const countAllReqDonasi = await prismaClient.requestDonasi.count({
+    where: q
+      ? {
+          OR: [
+            {
+              deskripsi: {
+                contains: q,
+              },
+            },
+            {
+              status: {
+                contains: q,
+              },
+            },
+            // {
+            //   tanggal_request: {
+            //     gte: q,
+            //   },
+            // },
+          ],
+        }
+      : {},
+  });
 
-  if (q !== null) {
-    listRequestDonasi = await prismaClient.requestDonasi.findMany({
-      where: {
-        OR: [
-          {
-            deskripsi: {
-              contains: q,
+  const listRequestDonasi = await prismaClient.requestDonasi.findMany({
+    where: q
+      ? {
+          OR: [
+            {
+              deskripsi: {
+                contains: q,
+              },
             },
-          },
-          {
-            status: {
-              contains: q,
+            {
+              status: {
+                contains: q,
+              },
             },
-          },
-          // {
-          //   tanggal_request: {
-          //     gte: q,
-          //   },
-          // },
-        ],
-      },
-      include: {
-        organisasi: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listRequestDonasi = await prismaClient.requestDonasi.findMany({
-      include: {
-        organisasi: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-  }
+            // {
+            //   tanggal_request: {
+            //     gte: q,
+            //   },
+            // },
+          ],
+        }
+      : {},
+    include: {
+      organisasi: true,
+    },
+    skip: skip,
+    take: limit,
+  });
 
   const formattedRequestDonasi = listRequestDonasi.map((request_donasi) => {
     request_donasi.id_organisasi = idToString(

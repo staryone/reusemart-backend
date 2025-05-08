@@ -13,3 +13,7 @@ export const idOrgToInteger = (id) => {
 export const formatImageName = (fieldname) => {
   return fieldname + "-" + String(Date.now());
 };
+
+export const formatNamaGambarBarang = (id_penitip) => {
+  return `user-${id_penitip}-${String(Date.now())}`;
+};

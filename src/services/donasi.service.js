@@ -7,6 +7,7 @@ import {
   updateDonasiValidation,
 } from "../validation/donasi.validate.js";
 import { validate } from "../validation/validate.js";
+import barangService from "./barang.service.js";
 
 const create = async (request) => {
   request = validate(createDonasiValidation, request);
@@ -60,11 +61,10 @@ const get = async (id) => {
 };
 
 const getList = async (query, id_organisasi) => {
-  let listDonasi;
   const page = query.page || 1;
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
-  const q = query.search || null;
+  const q = query.search;
 
   if (typeof id_organisasi !== "string") {
     throw new ResponseError(400, "Id organisasi tidak valid!");
@@ -74,57 +74,63 @@ const getList = async (query, id_organisasi) => {
 
   const countAllReqDonasi = await prismaClient.donasi.count({
     where: {
-      request: {
-        id_organisasi: id_organisasi,
-      },
+      AND: [
+        {
+          request: {
+            id_organisasi: id_organisasi,
+          },
+        },
+        q
+          ? {
+              OR: [
+                {
+                  deskripsi: {
+                    contains: q,
+                  },
+                },
+                {
+                  status: {
+                    contains: q,
+                  },
+                },
+              ],
+            }
+          : {},
+      ],
     },
   });
-
-  if (q !== null) {
-    listDonasi = await prismaClient.donasi.findMany({
-      where: {
-        AND: [
-          {
-            request: {
-              id_organisasi: id_organisasi,
-            },
+  const listDonasi = await prismaClient.donasi.findMany({
+    where: {
+      AND: [
+        {
+          request: {
+            id_organisasi: id_organisasi,
           },
-          {
-            OR: [
-              {
-                deskripsi: {
-                  contains: q,
-                },
-              },
-              {
-                status: {
-                  contains: q,
-                },
-              },
-            ],
-          },
-        ],
-      },
-      include: {
-        barang: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listDonasi = await prismaClient.donasi.findMany({
-      where: {
-        request: {
-          id_organisasi: id_organisasi,
         },
-      },
-      include: {
-        barang: true,
-      },
-      skip: skip,
-      take: limit,
-    });
-  }
+        q
+          ? {
+              OR: [
+                {
+                  deskripsi: {
+                    contains: q,
+                  },
+                },
+                {
+                  status: {
+                    contains: q,
+                  },
+                },
+              ],
+            }
+          : {},
+      ],
+    },
+    include: {
+      barang: true,
+    },
+    skip: skip,
+    take: limit,
+  });
 
   const formattedDonasi = listDonasi.map((donasi) => {
     donasi.id_barang = idToString(donasi.barang.prefix, donasi.id_barang);
@@ -156,6 +162,13 @@ const update = async (request) => {
 
   if (updateRequest.nama_penerima) {
     data.nama_penerima = updateRequest.nama_penerima;
+  }
+
+  if (updateRequest.status) {
+    await barangService.updateStatus({
+      id_barang: data.id_barang,
+      status: updateRequest.status,
+    });
   }
 
   return prismaClient.donasi.update({
