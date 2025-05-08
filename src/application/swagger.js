@@ -245,6 +245,10 @@ const options = {
               type: "string",
               example: "Jl. kaliurang no 2",
             },
+            status_default: {
+              type: "boolean",
+              example: false,
+            },
           },
         },
         Diskusi: {
