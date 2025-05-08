@@ -96,6 +96,51 @@ requestDonasiRouter.get(
 
 /**
  * @swagger
+ * /api/request-donasi/lists:
+ *   get:
+ *     summary: Get a list of request donasi and able to search
+ *     tags: [RequestDonasi]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for deskripsi
+ *     responses:
+ *       200:
+ *         description: All List of request donasi (Owner Only)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/RequestDonasi'
+ *       401:
+ *         description: Unauthorized
+ */
+requestDonasiRouter.get(
+  "/api/request-donasi/allLists",
+  restrictTo("PEGAWAI", "OWNER"),
+  requestDonasiController.getAllList
+);
+
+/**
+ * @swagger
  * /api/request-donasi/{id}:
  *   get:
  *     summary: Get an request donasi by ID
