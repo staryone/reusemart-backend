@@ -1,13 +1,12 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idToString } from "../utils/formater.util.js";
+import { idOrgToInteger, idToString } from "../utils/formater.util.js";
 import {
   createDonasiValidation,
   getDonasiValidation,
   updateDonasiValidation,
 } from "../validation/donasi.validate.js";
 import { validate } from "../validation/validate.js";
-import penitipService from "./penitip.service.js";
 
 const create = async (request) => {
   request = validate(createDonasiValidation, request);
@@ -22,6 +21,15 @@ const create = async (request) => {
   });
 
   request.poin_penitip = barang.harga / 10000;
+
+  await prismaClient.requestDonasi.update({
+    where: {
+      id_request: request.id_request,
+    },
+    data: {
+      status: "DISETUJUI",
+    },
+  });
 
   return prismaClient.donasi.create({
     data: request,
@@ -57,6 +65,12 @@ const getList = async (query, id_organisasi) => {
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
   const q = query.search || null;
+
+  if (typeof id_organisasi !== "string") {
+    throw new ResponseError(400, "Id organisasi tidak valid!");
+  }
+
+  id_organisasi = idOrgToInteger(id_organisasi);
 
   const countAllReqDonasi = await prismaClient.donasi.count({
     where: {
@@ -141,7 +155,7 @@ const update = async (request) => {
   }
 
   if (updateRequest.nama_penerima) {
-    data.nama_penerima = new Date(updateRequest.nama_penerima);
+    data.nama_penerima = updateRequest.nama_penerima;
   }
 
   return prismaClient.donasi.update({
