@@ -17,7 +17,7 @@ const get = async (req, res, next) => {
   try {
     const id_pembeli = req.session.user.pembeli.id_pembeli;
     const id = req.params.id;
-    await alamatService.get(id, id_pembeli);
+    const result = await alamatService.get(id, id_pembeli);
 
     res.status(200).json({
       data: result,
