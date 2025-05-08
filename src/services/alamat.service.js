@@ -54,6 +54,7 @@ const getList = async (query, id_pembeli) => {
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
   const q = query.search || null;
+  console.log('ID pembeli',id_pembeli);
   if (q !== null) {
     listAlamat = await prismaClient.alamat.findMany({
       where: {

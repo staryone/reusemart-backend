@@ -2,7 +2,12 @@ import alamatService from "../services/alamat.service.js";
 
 const create = async (req, res, next) => {
   try {
-    await alamatService.create(req.body);
+    const id_pembeli = req.session.user.pembeli.id_pembeli;
+    const alamatData = {
+      ...req.body,
+      id_pembeli,
+    };
+    await alamatService.create(alamatData);
 
     res.status(200).json({
       data: "OK",
@@ -31,7 +36,7 @@ const getList = async (req, res, next) => {
   try {
     const id_pembeli = req.session.user.pembeli.id_pembeli;
     const listAlamat = await alamatService.getList(req.query, id_pembeli);
-
+    
     res.status(200).json({
       data: listAlamat,
     });
