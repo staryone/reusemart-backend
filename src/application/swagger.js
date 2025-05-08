@@ -311,6 +311,34 @@ const options = {
             },
           },
         },
+        Donasi: {
+          properties: {
+            id_donasi: {
+              type: "integer",
+              example: 1,
+            },
+            tanggal_donasi: {
+              type: "string",
+              example: "2025-05-07T10:00:00Z",
+            },
+            nama_penerima: {
+              type: "string",
+              example: "Joko",
+            },
+            poin_penitip: {
+              type: "integer",
+              example: 20,
+            },
+            id_barang: {
+              type: "string",
+              example: "M1",
+            },
+            id_request: {
+              type: "integer",
+              example: 1,
+            },
+          },
+        },
       },
     },
   },
