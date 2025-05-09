@@ -96,7 +96,7 @@ requestDonasiRouter.get(
 
 /**
  * @swagger
- * /api/request-donasi/lists:
+ * /api/request-donasi/allLists:
  *   get:
  *     summary: Get a list of request donasi and able to search
  *     tags: [RequestDonasi]
