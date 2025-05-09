@@ -135,8 +135,6 @@ const getList = async (query, id_organisasi) => {
   const formattedDonasi = listDonasi.map((donasi) => {
     donasi.id_barang = idToString(donasi.barang.prefix, donasi.id_barang);
 
-    delete donasi.barang;
-
     return donasi;
   });
 
