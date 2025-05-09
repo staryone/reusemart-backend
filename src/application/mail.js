@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 import { ResponseError } from "../errors/response.error.js";
 import "dotenv/config";
 
-// Mendapatkan __dirname di ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
