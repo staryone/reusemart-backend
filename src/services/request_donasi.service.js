@@ -201,6 +201,8 @@ const getAllList = async (query) => {
       request_donasi.id_organisasi
     );
 
+    request_donasi.nama_organisasi = request_donasi.organisasi.nama_organisasi;
+
     delete request_donasi.organisasi;
 
     return request_donasi;
