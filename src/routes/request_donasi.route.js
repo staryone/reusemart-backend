@@ -117,7 +117,12 @@ requestDonasiRouter.get(
  *         name: search
  *         schema:
  *           type: string
- *         description: Search term for deskripsi
+ *         description: Search term for deskripsi and status
+ *       - in: query
+ *         name: searchOrg
+ *         schema:
+ *           type: string
+ *         description: Search term for organisasi
  *     responses:
  *       200:
  *         description: All List of request donasi (Owner Only)

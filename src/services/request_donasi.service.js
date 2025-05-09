@@ -137,57 +137,49 @@ const getList = async (query, id_organisasi) => {
 };
 
 const getAllList = async (query) => {
-  const page = query.page || 1;
-  const limit = query.limit || 10;
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
   const q = query.search;
+  const searchOrg = query.searchOrg;
+
+  // Build the where clause dynamically
+  const whereClause = q || searchOrg
+    ? {
+        OR: [
+          q
+            ? {
+                deskripsi: {
+                  contains: q,
+                },
+              }
+            : null,
+          q
+            ? {
+                status: {
+                  equals: q, // Enum filter for status
+                },
+              }
+            : null,
+          searchOrg
+            ? {
+                organisasi: {
+                  nama_organisasi: {
+                    contains: searchOrg,
+                  },
+                },
+              }
+            : null,
+        ].filter(Boolean), // Remove null entries
+      }
+    : {};
 
   const countAllReqDonasi = await prismaClient.requestDonasi.count({
-    where: q
-      ? {
-          OR: [
-            {
-              deskripsi: {
-                contains: q,
-              },
-            },
-            {
-              status: {
-                contains: q,
-              },
-            },
-            // {
-            //   tanggal_request: {
-            //     gte: q,
-            //   },
-            // },
-          ],
-        }
-      : {},
+    where: whereClause,
   });
 
   const listRequestDonasi = await prismaClient.requestDonasi.findMany({
-    where: q
-      ? {
-          OR: [
-            {
-              deskripsi: {
-                contains: q,
-              },
-            },
-            {
-              status: {
-                contains: q,
-              },
-            },
-            // {
-            //   tanggal_request: {
-            //     gte: q,
-            //   },
-            // },
-          ],
-        }
-      : {},
+    where: whereClause,
     include: {
       organisasi: true,
     },
@@ -200,11 +192,8 @@ const getAllList = async (query) => {
       request_donasi.organisasi.prefix,
       request_donasi.id_organisasi
     );
-
     request_donasi.nama_organisasi = request_donasi.organisasi.nama_organisasi;
-
     delete request_donasi.organisasi;
-
     return request_donasi;
   });
 
