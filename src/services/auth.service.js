@@ -10,9 +10,9 @@ import {
 import { validate } from "../validation/validate.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 import crypto from "crypto";
 import "dotenv/config";
+import { renderMailHtml, sendMail } from "../application/mail.js";
 
 const login = async (request) => {
   const loginRequest = validate(loginAuthValidation, request);
@@ -178,6 +178,11 @@ const forgotPassword = async (email) => {
     where: {
       email: email,
     },
+    include: {
+      organisasi: true,
+      penitip: true,
+      pembeli: true,
+    },
   });
 
   if (!user) {
@@ -188,24 +193,30 @@ const forgotPassword = async (email) => {
     throw new ResponseError(403, "Akses ditolak!");
   }
 
+  if (user.pembeli) {
+    user.name = user.pembeli.nama;
+  } else if (user.organisasi) {
+    user.name = user.organisasi.nama_organisasi;
+  } else {
+    user.name = user.penitip.nama;
+  }
+
   const token = crypto.randomBytes(20).toString("hex");
 
-  const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    auth: {
-      user: process.env.SENDER_EMAIL,
-      pass: process.env.SENDER_PASSWORD,
-    },
+  const contentMail = await renderMailHtml("reset-password-sent.ejs", {
+    name: user.name,
+    email: user.email,
+    resetLink: `http://localhost:3001/api/reset-password/${token}`,
   });
 
   const mailOptions = {
     from: "reusemart.my.id@gmail.com",
     to: email,
     subject: "Password Reset",
-    text: `Click the following link to reset your password: http://localhost:3001/api/reset-password/${token}`,
+    html: String(contentMail),
   };
 
-  await transporter.sendMail(mailOptions);
+  console.log(await sendMail(mailOptions));
 
   await prismaClient.user.update({
     where: {
