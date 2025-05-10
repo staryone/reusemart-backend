@@ -143,7 +143,7 @@ organisasiRouter.get(
  */
 organisasiRouter.get(
   "/api/organisasi/:id",
-  restrictTo("PEGAWAI", "ADMIN"),
+  restrictTo("PEGAWAI", "ADMIN", 'OWNER'),
   organisasiController.get
 );
 
