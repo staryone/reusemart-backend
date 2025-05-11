@@ -226,7 +226,7 @@ requestDonasiRouter.get(
  */
 requestDonasiRouter.patch(
   "/api/request-donasi/:id",
-  restrictTo("ORGANISASI"),
+  restrictTo("ORGANISASI", "OWNER"),
   requestDonasiController.update
 );
 
