@@ -477,4 +477,39 @@ publicRouter.post("/api/forgot-password", authController.forgotPassword);
 
 publicRouter.post("/api/reset-password/:token", authController.resetPassword);
 
+/**
+ * @swagger
+ * /api/reset-password/{token}:
+ *   get:
+ *     summary: Get an barang by ID
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token ID (e.g., 437b05af3fe10d69...)
+ *     responses:
+ *       200:
+ *         description: Check valid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Token valid!
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: token not found
+ */
+
+publicRouter.get("/api/reset-password/:token", authController.checkValidToken);
+
 export { publicRouter };

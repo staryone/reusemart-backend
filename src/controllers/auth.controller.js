@@ -28,4 +28,18 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-export default { forgotPassword, resetPassword };
+const checkValidToken = async (req, res, next) => {
+  try {
+    const token = req.params.token;
+    await authService.checkValidToken(token);
+
+    res.status(200).json({
+      data: "OK",
+      message: "Token valid!",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export default { forgotPassword, resetPassword, checkValidToken };

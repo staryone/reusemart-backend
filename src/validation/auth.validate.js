@@ -24,6 +24,8 @@ const updatePasswordAuthValidation = Joi.object({
   password: Joi.string().max(100).required(),
 });
 
+const tokenResetAuthValidation = Joi.string().max(255).required();
+
 const resetPasswordAuthValidation = Joi.object({
   token: Joi.string().max(255).required(),
   new_password: Joi.string().max(100).required(),
@@ -47,4 +49,5 @@ export {
   getAuthValidation,
   getIdAuthValidation,
   resetPasswordAuthValidation,
+  tokenResetAuthValidation,
 };
