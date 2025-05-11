@@ -1,6 +1,6 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idOrgToInteger, idToString } from "../utils/formater.util.js";
+import { idToInteger, idOrgToInteger, idToString } from "../utils/formater.util.js";
 import {
   createDonasiValidation,
   getDonasiValidation,
@@ -11,7 +11,7 @@ import barangService from "./barang.service.js";
 
 const create = async (request) => {
   request = validate(createDonasiValidation, request);
-
+  request.id_barang = idToInteger(request.id_barang);
   const barang = await prismaClient.barang.findUnique({
     where: {
       id_barang: request.id_barang,
@@ -29,6 +29,15 @@ const create = async (request) => {
     },
     data: {
       status: "DISETUJUI",
+    },
+  });
+
+  await prismaClient.barang.update({
+    where: {
+      id_barang: request.id_barang,
+    },
+    data: {
+      status: "TERDONASI",
     },
   });
 
