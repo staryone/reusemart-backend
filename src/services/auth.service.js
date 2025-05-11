@@ -5,6 +5,7 @@ import {
   loginAuthValidation,
   registerAuthValidation,
   resetPasswordAuthValidation,
+  tokenResetAuthValidation,
   updatePasswordAuthValidation,
 } from "../validation/auth.validate.js";
 import { validate } from "../validation/validate.js";
@@ -206,7 +207,7 @@ const forgotPassword = async (email) => {
   const contentMail = await renderMailHtml("reset-password-sent.ejs", {
     name: user.name,
     email: user.email,
-    resetLink: `http://localhost:3001/api/reset-password/${token}`,
+    resetLink: `http://localhost:3000/reset-password/${token}`,
   });
 
   const mailOptions = {
@@ -228,6 +229,24 @@ const forgotPassword = async (email) => {
   });
 
   return "OK";
+};
+
+const checkValidToken = async (token) => {
+  token = validate(tokenResetAuthValidation, token);
+
+  const countToken = await prismaClient.user.count({
+    where: {
+      token: token,
+    },
+  });
+
+  console.log(countToken);
+
+  if (!countToken) {
+    throw new ResponseError(404, "Token tidak valid!");
+  }
+
+  return true;
 };
 
 const resetAllSession = async (email) => {
@@ -261,4 +280,5 @@ export default {
   forgotPassword,
   resetPassword,
   resetAllSession,
+  checkValidToken,
 };
