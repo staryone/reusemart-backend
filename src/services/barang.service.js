@@ -1,5 +1,5 @@
 import { prismaClient } from "../application/database.js";
-import { uploadFile } from "../application/storage.js";
+import { getUrlFile, uploadFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
 import {
   formatNamaGambarBarang,
@@ -105,6 +105,20 @@ const get = async (idBarang) => {
   );
 
   delete barang.detail_penitipan.penitipan.penitip.prefix;
+
+  barang.gambar = await Promise.all(
+    barang.gambar.map((g) => {
+      return {
+        id_gambar: g.id_gambar,
+        url_gambar: getUrlFile(g.url_gambar),
+        order_number: g.order_number,
+        is_primary: g.is_primary,
+        id_barang: g.id_barang,
+        createdAt: g.createdAt,
+        updatedAt: g.updatedAt,
+      };
+    })
+  );
 
   const formattedBarang = {
     id_barang: idBarang,
@@ -252,23 +266,62 @@ const getList = async (query) => {
     take: limit,
   });
 
-  const formattedBarang = listBarang.map((barang) => {
-    return {
-      id_barang: idToString(barang.prefix, barang.id_barang),
-      nama_barang: barang.nama_barang,
-      deskripsi: barang.deskripsi,
-      harga: barang.harga,
-      status: barang.status,
-      garansi: barang.garansi ? barang.garansi : null,
-      berat: barang.berat,
-      kategori: barang.kategori,
-      gambar: barang.gambar,
-      createdAt: barang.createdAt,
-      updatedAt: barang.updatedAt,
-      penitip: barang.detail_penitipan.penitipan.penitip,
-      diskusi: [],
-    };
-  });
+  const formattedBarang = await Promise.all(
+    listBarang.map(async (barang) => {
+      const gambarPromises = barang.gambar.map(async (g) => {
+        try {
+          const url = await getUrlFile(g.url_gambar);
+          return {
+            id_gambar: g.id_gambar,
+            url_gambar: url,
+            order_number: g.order_number,
+            is_primary: g.is_primary,
+            id_barang: g.id_barang,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          };
+        } catch (error) {
+          console.error(
+            `Gagal mendapatkan URL untuk gambar ${g.id_gambar}:`,
+            error
+          );
+          return {
+            id_gambar: g.id_gambar,
+            url_gambar: null, // atau URL default jika ada
+            order_number: g.order_number,
+            is_primary: g.is_primary,
+            id_barang: g.id_barang,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          };
+        }
+      });
+
+      const gambarResults = await Promise.allSettled(gambarPromises);
+      const gambar = gambarResults.map((result) => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        }
+        return result.reason; // atau sesuaikan dengan struktur error
+      });
+
+      return {
+        id_barang: idToString(barang.prefix, barang.id_barang),
+        nama_barang: barang.nama_barang,
+        deskripsi: barang.deskripsi,
+        harga: barang.harga,
+        status: barang.status,
+        garansi: barang.garansi ? barang.garansi : null,
+        berat: barang.berat,
+        kategori: barang.kategori,
+        gambar: gambar, // Gunakan hasil yang sudah diproses
+        createdAt: barang.createdAt,
+        updatedAt: barang.updatedAt,
+        penitip: barang.detail_penitipan.penitipan.penitip,
+        diskusi: [],
+      };
+    })
+  );
 
   return [formattedBarang, countAllReqBarang];
 };

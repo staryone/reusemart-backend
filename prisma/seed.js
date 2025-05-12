@@ -21,48 +21,50 @@ import { redeemMerchandiseSeeding } from "./seeding/redeem_merchandise.seed.js";
 import { detailRedeemMerchandiseSeeding } from "./seeding/detail_redeem_merchandise.seed.js";
 import { pengirimanSeeding } from "./seeding/pengiriman.seed.js";
 import { detailPenitipanSeeding } from "./seeding/detail_penitipan.seed.js";
+import { gambarBarangSeeding } from "./seeding/gambar_barang.seed.js";
 
 const seedFiles = [
-    { name: "users", seed: userSeeding },
-    { name: "jabatan", seed: jabatanSeeding },
-    { name: "pegawai", seed: pegawaiSeeding },
-    { name: "organisasi", seed: organisasiSeeding },
-    { name: "penitip", seed: penitipSeeding },
-    { name: "pembeli", seed: pembeliSeeding },
-    { name: "alamat", seed: alamatSeeding },
-    { name: "merchandise", seed: merchandiseSeeding },
-    { name: "redeem_merchandise", seed: redeemMerchandiseSeeding },
-    { name: "kategori", seed: kategoriSeeding },
-    { name: "barang", seed: barangSeeding },
-    { name: "diskusi", seed: diskusiSeeding },
-    { name: "transaksi", seed: transaksiSeeding },
-    { name: "keranjang", seed: keranjangSeeding },
-    { name: "request_donasi", seed: requestSeeding },
-    { name: "donasi", seed: donasiSeeding },
-    { name: "penitipan", seed: penitipanSeeding },
-    { name: "dtl_penitipan", seed: detailPenitipanSeeding },
-    { name: "dtl_transaksi", seed: detailTransaksiSeeding },
-    { name: "dtl_redeem_merch", seed: detailRedeemMerchandiseSeeding },
-    { name: "pengiriman", seed: pengirimanSeeding },
+  { name: "users", seed: userSeeding },
+  { name: "jabatan", seed: jabatanSeeding },
+  { name: "pegawai", seed: pegawaiSeeding },
+  { name: "organisasi", seed: organisasiSeeding },
+  { name: "penitip", seed: penitipSeeding },
+  { name: "pembeli", seed: pembeliSeeding },
+  { name: "alamat", seed: alamatSeeding },
+  { name: "merchandise", seed: merchandiseSeeding },
+  { name: "redeem_merchandise", seed: redeemMerchandiseSeeding },
+  { name: "kategori", seed: kategoriSeeding },
+  { name: "barang", seed: barangSeeding },
+  { name: "diskusi", seed: diskusiSeeding },
+  { name: "transaksi", seed: transaksiSeeding },
+  { name: "keranjang", seed: keranjangSeeding },
+  { name: "request_donasi", seed: requestSeeding },
+  { name: "donasi", seed: donasiSeeding },
+  { name: "penitipan", seed: penitipanSeeding },
+  { name: "dtl_penitipan", seed: detailPenitipanSeeding },
+  { name: "dtl_transaksi", seed: detailTransaksiSeeding },
+  { name: "dtl_redeem_merch", seed: detailRedeemMerchandiseSeeding },
+  { name: "pengiriman", seed: pengirimanSeeding },
+  { name: "gambar_barang", seed: gambarBarangSeeding },
 ];
 
 async function main() {
-    try {
-        logger.info("Starting seeding process...");
+  try {
+    logger.info("Starting seeding process...");
 
-        for (const { name, seed } of seedFiles) {
-            logger.info(`Seeding ${name}...`);
-            await seed(prismaClient);
-            logger.info(`${name} seeded successfully`);
-        }
-
-        logger.info("Seeding completed successfully!");
-    } catch (e) {
-        logger.error("Error during seeding:", e);
-        process.exit(1);
-    } finally {
-        await prismaClient.$disconnect();
+    for (const { name, seed } of seedFiles) {
+      logger.info(`Seeding ${name}...`);
+      await seed(prismaClient);
+      logger.info(`${name} seeded successfully`);
     }
+
+    logger.info("Seeding completed successfully!");
+  } catch (e) {
+    logger.error("Error during seeding:", e);
+    process.exit(1);
+  } finally {
+    await prismaClient.$disconnect();
+  }
 }
 
 main();

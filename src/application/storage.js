@@ -6,6 +6,7 @@ import AWS, {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ResponseError } from "../errors/response.error.js";
+const urlCache = new Map();
 
 const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
@@ -23,18 +24,33 @@ const r2Client = new AWS.S3({
 });
 
 export const getUrlFile = async (key) => {
+  if (urlCache.has(key)) {
+    const cached = urlCache.get(key);
+    if (cached.expires > Date.now()) {
+      return cached.url;
+    }
+    urlCache.delete(key);
+  }
+
   try {
-    return String(
-      await getSignedUrl(
-        r2Client,
-        new GetObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: key,
-        }),
-        { expiresIn: 3600 }
-      )
-    ).toString();
+    const url = await getSignedUrl(
+      r2Client,
+      new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+      }),
+      { expiresIn: 3600 }
+    );
+
+    // Simpan ke cache
+    urlCache.set(key, {
+      url,
+      expires: Date.now() + 3600 * 1000,
+    });
+
+    return url;
   } catch (error) {
+    console.error(`Gagal membuat URL untuk kunci ${key}:`, error);
     throw new ResponseError(400, "Url gagal dibuat!");
   }
 };
