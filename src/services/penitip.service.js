@@ -243,7 +243,7 @@ const getList = async (request) => {
     });
   }
 
-  const formattedPenitip = Promise.all(
+  const formattedPenitip = await Promise.all(
     listPenitip.map(async (p) => ({
       id_penitip: idToString(p.prefix, p.id_penitip),
       email: p.user.email,
