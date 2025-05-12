@@ -107,10 +107,10 @@ const get = async (idBarang) => {
   delete barang.detail_penitipan.penitipan.penitip.prefix;
 
   barang.gambar = await Promise.all(
-    barang.gambar.map((g) => {
+    barang.gambar.map(async (g) => {
       return {
         id_gambar: g.id_gambar,
-        url_gambar: getUrlFile(g.url_gambar),
+        url_gambar: await getUrlFile(g.url_gambar),
         order_number: g.order_number,
         is_primary: g.is_primary,
         id_barang: g.id_barang,
