@@ -128,11 +128,17 @@ const profile = async (id) => {
     total_per_bulan: penitip.total_per_bulan,
     poin: penitip.poin,
     transaksi: penitip.penitipan
-      .map((penitipan) => {
-        return penitipan.detail_penitipan.map((dtl_penitipan) => {
-          return dtl_penitipan.barang.detail_transaksi.transaksi;
-        });
-      })
+      .map((penitipan) =>
+        penitipan.detail_penitipan
+          .map((dtl_penitipan) =>
+            // Check if detail_transaksi exists before accessing transaksi
+            dtl_penitipan.barang?.detail_transaksi
+              ? dtl_penitipan.barang.detail_transaksi.transaksi
+              : null
+          )
+          // Filter out null values
+          .filter((transaksi) => transaksi !== null)
+      )
       .flat(),
   };
 

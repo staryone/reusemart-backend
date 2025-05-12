@@ -97,7 +97,11 @@ const getList = async (query) => {
       barang: true,
       user: {
         include: {
-          pegawai: true,
+          pegawai: {
+            include: {
+              jabatan: true, // Include the jabatan relation
+            },
+          },
           pembeli: true,
         },
       },
@@ -123,7 +127,7 @@ const getList = async (query) => {
         ? diskusi.user.pegawai.nama
         : diskusi.user.pembeli.nama,
       role: diskusi.user.pegawai
-        ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
+        ? (diskusi.user.pegawai.jabatan?.nama_jabatan?.toUpperCase() || 'UNKNOWN') // Handle missing jabatan
         : diskusi.user.role,
     };
   });
