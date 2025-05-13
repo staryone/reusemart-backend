@@ -16,6 +16,7 @@ import barangService from "./barang.service.js";
 const create = async (request) => {
   request = validate(createDonasiValidation, request);
   request.id_barang = idToInteger(request.id_barang);
+  
   const barang = await prismaClient.barang.findUnique({
     where: {
       id_barang: request.id_barang,
@@ -25,7 +26,41 @@ const create = async (request) => {
     },
   });
 
+  const penitip = await prismaClient.barang.findUnique({
+    where: {
+      id_barang: request.id_barang,
+    },
+    select: {
+      detail_penitipan: {
+        select: {
+          penitipan: {
+            select: {
+              penitip: {
+                select: {
+                  poin: true,
+                  id_penitip: true,
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+  
   request.poin_penitip = barang.harga / 10000;
+
+  const totalPoin = penitip.detail_penitipan.penitipan.penitip.poin + request.poin_penitip;
+
+  
+  await prismaClient.penitip.update({
+    where: {
+      id_penitip: penitip.detail_penitipan.penitipan.penitip.id_penitip
+    },
+    data: {
+      poin: totalPoin,
+    },
+  });
 
   await prismaClient.requestDonasi.update({
     where: {
