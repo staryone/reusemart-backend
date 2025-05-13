@@ -55,80 +55,81 @@ const getList = async (query, id_organisasi) => {
   const skip = (page - 1) * limit;
   const q = query.search;
 
-  const countAllReqDonasi = await prismaClient.requestDonasi.count({
-    where: {
-      AND: [
-        {
-          id_organisasi: id_organisasi,
-        },
-        q
-          ? {
-              OR: [
-                {
-                  deskripsi: {
-                    contains: q,
+  const [countAllReqDonasi, listRequestDonasi, organisasi] = await Promise.all([
+    prismaClient.requestDonasi.count({
+      where: {
+        AND: [
+          {
+            id_organisasi: id_organisasi,
+          },
+          q
+            ? {
+                OR: [
+                  {
+                    deskripsi: {
+                      contains: q,
+                    },
                   },
-                },
-                {
-                  status: {
-                    contains: q,
+                  {
+                    status: {
+                      contains: q,
+                    },
                   },
-                },
-                // {
-                //   tanggal_request: {
-                //     gte: q,
-                //   },
-                // },
-              ],
-            }
-          : {},
-      ],
-    },
-  });
-
-  const listRequestDonasi = await prismaClient.requestDonasi.findMany({
-    where: {
-      AND: [
-        {
-          id_organisasi: id_organisasi,
-        },
-        q
-          ? {
-              OR: [
-                {
-                  deskripsi: {
-                    contains: q,
+                  // {
+                  //   tanggal_request: {
+                  //     gte: q,
+                  //   },
+                  // },
+                ],
+              }
+            : {},
+        ],
+      },
+    }),
+    prismaClient.requestDonasi.findMany({
+      where: {
+        AND: [
+          {
+            id_organisasi: id_organisasi,
+          },
+          q
+            ? {
+                OR: [
+                  {
+                    deskripsi: {
+                      contains: q,
+                    },
                   },
-                },
-                {
-                  status: {
-                    contains: q,
+                  {
+                    status: {
+                      contains: q,
+                    },
                   },
-                },
-                // {
-                //   tanggal_request: {
-                //     gte: q,
-                //   },
-                // },
-              ],
-            }
-          : {},
-      ],
-    },
-    include: {
-      organisasi: true,
-    },
-    skip: skip,
-    take: limit,
-  });
+                  // {
+                  //   tanggal_request: {
+                  //     gte: q,
+                  //   },
+                  // },
+                ],
+              }
+            : {},
+        ],
+      },
+      skip: skip,
+      take: limit,
+    }),
+    prismaClient.organisasi.findUnique({
+      where: {
+        id_organisasi: id_organisasi,
+      },
+    }),
+  ]);
 
   const formattedRequestDonasi = listRequestDonasi.map((request_donasi) => {
     request_donasi.id_organisasi = idToString(
-      request_donasi.organisasi.prefix,
+      organisasi.prefix,
       request_donasi.id_organisasi
     );
-
-    delete request_donasi.organisasi;
 
     return request_donasi;
   });
@@ -144,35 +145,36 @@ const getAllList = async (query) => {
   const searchOrg = query.searchOrg;
 
   // Build the where clause dynamically
-  const whereClause = q || searchOrg
-    ? {
-        OR: [
-          q
-            ? {
-                deskripsi: {
-                  contains: q,
-                },
-              }
-            : null,
-          q
-            ? {
-                status: {
-                  equals: q, // Enum filter for status
-                },
-              }
-            : null,
-          searchOrg
-            ? {
-                organisasi: {
-                  nama_organisasi: {
-                    contains: searchOrg,
+  const whereClause =
+    q || searchOrg
+      ? {
+          OR: [
+            q
+              ? {
+                  deskripsi: {
+                    contains: q,
                   },
-                },
-              }
-            : null,
-        ].filter(Boolean), // Remove null entries
-      }
-    : {};
+                }
+              : null,
+            q
+              ? {
+                  status: {
+                    equals: q, // Enum filter for status
+                  },
+                }
+              : null,
+            searchOrg
+              ? {
+                  organisasi: {
+                    nama_organisasi: {
+                      contains: searchOrg,
+                    },
+                  },
+                }
+              : null,
+          ].filter(Boolean), // Remove null entries
+        }
+      : {};
 
   const countAllReqDonasi = await prismaClient.requestDonasi.count({
     where: whereClause,
