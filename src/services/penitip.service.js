@@ -89,9 +89,9 @@ const profile = async (id) => {
           detail_penitipan: {
             select: {
               barang: {
-                select: {
+                include: {
                   detail_transaksi: {
-                    select: {
+                    include: {
                       transaksi: {
                         include: {
                           pengiriman: true,
@@ -127,22 +127,76 @@ const profile = async (id) => {
     is_top_seller: penitip.is_top_seller,
     total_per_bulan: penitip.total_per_bulan,
     poin: penitip.poin,
-    transaksi: penitip.penitipan
+    detail_transaksi: penitip.penitipan
       .map((penitipan) =>
         penitipan.detail_penitipan
           .map((dtl_penitipan) =>
-            // Check if detail_transaksi exists before accessing transaksi
             dtl_penitipan.barang?.detail_transaksi
-              ? dtl_penitipan.barang.detail_transaksi.transaksi
+              ? dtl_penitipan.barang.detail_transaksi
               : null
           )
-          // Filter out null values
           .filter((transaksi) => transaksi !== null)
       )
       .flat(),
   };
 
   return formattedPenitip;
+};
+
+const getHistoryPenjualan = async (id) => {
+  const id_user = validate(getIdAuthValidation, id);
+
+  const transactions = await prismaClient.penitip.findUnique({
+    where: {
+      id_user: id_user,
+    },
+    select: {
+      id_penitip: true,
+      nama: true,
+      penitipan: {
+        select: {
+          id_penitipan: true,
+          tanggal_masuk: true,
+          tanggal_laku: true,
+          detail_penitipan: {
+            select: {
+              barang: {
+                select: {
+                  id_barang: true,
+                  nama_barang: true,
+                  harga: true,
+                  detail_transaksi: {
+                    select: {
+                      id_dtl_transaksi: true,
+                      poin: true,
+                      komisi_penitip: true,
+                      transaksi: {
+                        select: {
+                          pengiriman: true,
+                          id_transaksi: true,
+                          tanggal_transaksi: true,
+                          total_harga: true,
+                          status_Pembayaran: true,
+                          total_akhir: true,
+                          pembeli: {
+                            select: {
+                              nama: true,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return transactions;
 };
 
 const get = async (id) => {
@@ -433,6 +487,7 @@ export default {
   profile,
   get,
   getList,
+  getHistoryPenjualan,
   update,
   updateSistem,
   destroy,

@@ -183,6 +183,35 @@ penitipRouter.get(
 
 /**
  * @swagger
+ * /api/penitip/history-penjualan:
+ *   get:
+ *     summary: Get a list transaksi of penitips and able to search
+ *     tags: [Penitip]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of transaksi penitips
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Penitip'
+ *       401:
+ *         description: Unauthorized
+ */
+penitipRouter.get(
+  "/api/penitip/history-penjualan",
+  restrictTo("PENITIP"),
+  penitipController.getHistoryPenjualan
+);
+
+/**
+ * @swagger
  * /api/penitip/{id}:
  *   get:
  *     summary: Get an penitip by ID

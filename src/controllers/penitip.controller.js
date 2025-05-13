@@ -108,6 +108,19 @@ const getList = async (req, res, next) => {
   }
 };
 
+const getHistoryPenjualan = async (req, res, next) => {
+  try {
+    const id = req.session.user.id_user;
+    const listPenjualan = await penitipService.getHistoryPenjualan(id);
+
+    res.status(200).json({
+      data: listPenjualan,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const update = async (req, res, next) => {
   try {
     req.body.id_penitip = req.params.id;
@@ -143,4 +156,5 @@ export default {
   update,
   destroy,
   getList,
+  getHistoryPenjualan,
 };
