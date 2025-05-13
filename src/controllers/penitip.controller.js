@@ -17,6 +17,8 @@ const register = async (req, res, next) => {
     const fileType = await fileTypeFromBuffer(req.files[0].buffer);
     req.files[0].mimetype = fileType.mime;
 
+    console.log(req.files[0]);
+
     const penitip = {
       id_user: createdUser.id_user,
       nomor_ktp: req.body.nomor_ktp,
