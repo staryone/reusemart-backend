@@ -73,26 +73,45 @@ const getList = async (query) => {
   const q = query.search;
 
   const countAllDiskusi = await prismaClient.diskusi.count({
-    where: q
-      ? {
-          barang: {
-            nama_barang: {
-              contains: q,
-            },
+    where: {
+      AND: [
+        {
+          user: {
+            role: "PEMBELI",
           },
-        }
-      : {},
+        },
+        q
+          ? {
+              barang: {
+                nama_barang: {
+                  contains: q,
+                },
+              },
+            }
+          : {},
+      ],
+    },
   });
+
   listDiskusi = await prismaClient.diskusi.findMany({
-    where: q
-      ? {
-          barang: {
-            nama_barang: {
-              contains: q,
-            },
+    where: {
+      AND: [
+        {
+          user: {
+            role: "PEMBELI",
           },
-        }
-      : {},
+        },
+        q
+          ? {
+              barang: {
+                nama_barang: {
+                  contains: q,
+                },
+              },
+            }
+          : {},
+      ],
+    },
     orderBy: [
       {
         tanggal_diskusi: "desc",
@@ -102,11 +121,6 @@ const getList = async (query) => {
       barang: true,
       user: {
         include: {
-          pegawai: {
-            include: {
-              jabatan: true,
-            },
-          },
           pembeli: true,
         },
       },
@@ -121,19 +135,10 @@ const getList = async (query) => {
       tanggal_diskusi: diskusi.tanggal_diskusi,
       pesan: diskusi.pesan,
       id_barang: idToString(diskusi.barang.prefix, diskusi.barang.id_barang),
-      id_cs: diskusi.user.pegawai
-        ? idToString(
-            diskusi.user.pegawai.prefix,
-            diskusi.user.pegawai.id_pegawai
-          )
-        : null,
-      id_pembeli: diskusi.user.pembeli ? diskusi.user.pembeli.id_pembeli : null,
-      nama: diskusi.user.pegawai
-        ? diskusi.user.pegawai.nama
-        : diskusi.user.pembeli.nama,
-      role: diskusi.user.pegawai
-        ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
-        : diskusi.user.role,
+      id_pembeli: diskusi.user.pembeli.id_pembeli,
+      nama_barang: diskusi.barang.nama_barang,
+      nama: diskusi.user.pembeli.nama,
+      role: diskusi.user.role,
     };
   });
 
@@ -145,6 +150,7 @@ const getListByIdBarang = async (query, id_barang) => {
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
+  id_barang = idToInteger(id_barang);
 
   const countAllDiskusi = await prismaClient.diskusi.count({
     where: {
