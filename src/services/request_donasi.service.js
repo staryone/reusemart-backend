@@ -54,6 +54,7 @@ const getList = async (query, id_organisasi) => {
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
   const q = query.search;
+  const status = query.status;
 
   const [countAllReqDonasi, listRequestDonasi, organisasi] = await Promise.all([
     prismaClient.requestDonasi.count({
@@ -62,6 +63,11 @@ const getList = async (query, id_organisasi) => {
           {
             id_organisasi: id_organisasi,
           },
+          status
+            ? {
+                status: status,
+              }
+            : {},
           q
             ? {
                 OR: [
@@ -70,16 +76,6 @@ const getList = async (query, id_organisasi) => {
                       contains: q,
                     },
                   },
-                  {
-                    status: {
-                      contains: q,
-                    },
-                  },
-                  // {
-                  //   tanggal_request: {
-                  //     gte: q,
-                  //   },
-                  // },
                 ],
               }
             : {},
@@ -92,6 +88,11 @@ const getList = async (query, id_organisasi) => {
           {
             id_organisasi: id_organisasi,
           },
+          status
+            ? {
+                status: status,
+              }
+            : {},
           q
             ? {
                 OR: [
@@ -100,16 +101,6 @@ const getList = async (query, id_organisasi) => {
                       contains: q,
                     },
                   },
-                  {
-                    status: {
-                      contains: q,
-                    },
-                  },
-                  // {
-                  //   tanggal_request: {
-                  //     gte: q,
-                  //   },
-                  // },
                 ],
               }
             : {},
