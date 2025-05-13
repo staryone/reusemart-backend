@@ -189,59 +189,71 @@ const get = async (id) => {
 };
 
 const getList = async (request) => {
-  let listPenitip;
   const page = parseInt(request.page) || 1;
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
-  const q = request.search || null;
+  const q = request.search;
 
-  const countAllPenitip = await prismaClient.penitip.count();
-  if (q !== null) {
-    listPenitip = await prismaClient.penitip.findMany({
-      where: {
-        OR: [
-          {
-            nama: {
-              contains: q,
-            },
-          },
-          {
-            user: {
-              email: {
+  const countAllPenitip = await prismaClient.penitip.count({
+    where: q
+      ? {
+          OR: [
+            {
+              nama: {
                 contains: q,
               },
             },
-          },
-          {
-            nomor_ktp: {
-              contains: q,
+            {
+              user: {
+                email: {
+                  contains: q,
+                },
+              },
             },
-          },
-        ],
-      },
-      include: {
-        user: {
-          select: {
-            email: true,
-          },
+            {
+              nomor_ktp: {
+                contains: q,
+              },
+            },
+          ],
+        }
+      : {},
+  });
+
+  const listPenitip = (listPenitip = await prismaClient.penitip.findMany({
+    where: q
+      ? {
+          OR: [
+            {
+              nama: {
+                contains: q,
+              },
+            },
+            {
+              user: {
+                email: {
+                  contains: q,
+                },
+              },
+            },
+            {
+              nomor_ktp: {
+                contains: q,
+              },
+            },
+          ],
+        }
+      : {},
+    include: {
+      user: {
+        select: {
+          email: true,
         },
       },
-      skip: skip,
-      take: limit,
-    });
-  } else {
-    listPenitip = await prismaClient.penitip.findMany({
-      include: {
-        user: {
-          select: {
-            email: true,
-          },
-        },
-      },
-      skip: skip,
-      take: limit,
-    });
-  }
+    },
+    skip: skip,
+    take: limit,
+  }));
 
   const formattedPenitip = await Promise.all(
     listPenitip.map(async (p) => ({
