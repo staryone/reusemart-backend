@@ -99,7 +99,7 @@ const getList = async (query) => {
         include: {
           pegawai: {
             include: {
-              jabatan: true, // Include the jabatan relation
+              jabatan: true,
             },
           },
           pembeli: true,
@@ -127,7 +127,64 @@ const getList = async (query) => {
         ? diskusi.user.pegawai.nama
         : diskusi.user.pembeli.nama,
       role: diskusi.user.pegawai
-        ? (diskusi.user.pegawai.jabatan?.nama_jabatan?.toUpperCase() || 'UNKNOWN') // Handle missing jabatan
+        ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
+        : diskusi.user.role,
+    };
+  });
+
+  return [formattedDiskusi, countAllDiskusi];
+};
+
+const getListByIdBarang = async (query, id_barang) => {
+  let listDiskusi;
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const countAllDiskusi = await prismaClient.diskusi.count({
+    where: {
+      id_barang: id_barang,
+    },
+  });
+  listDiskusi = await prismaClient.diskusi.findMany({
+    where: {
+      id_barang: id_barang,
+    },
+    include: {
+      barang: true,
+      user: {
+        include: {
+          pegawai: {
+            include: {
+              jabatan: true,
+            },
+          },
+          pembeli: true,
+        },
+      },
+    },
+    skip: skip,
+    take: limit,
+  });
+
+  const formattedDiskusi = listDiskusi.map((diskusi) => {
+    return {
+      id_diskusi: diskusi.id_diskusi,
+      tanggal_diskusi: diskusi.tanggal_diskusi,
+      pesan: diskusi.pesan,
+      id_barang: idToString(diskusi.barang.prefix, diskusi.barang.id_barang),
+      id_cs: diskusi.user.pegawai
+        ? idToString(
+            diskusi.user.pegawai.prefix,
+            diskusi.user.pegawai.id_pegawai
+          )
+        : null,
+      id_pembeli: diskusi.user.pembeli ? diskusi.user.pembeli.id_pembeli : null,
+      nama: diskusi.user.pegawai
+        ? diskusi.user.pegawai.nama
+        : diskusi.user.pembeli.nama,
+      role: diskusi.user.pegawai
+        ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
         : diskusi.user.role,
     };
   });
@@ -139,4 +196,5 @@ export default {
   create,
   get,
   getList,
+  getListByIdBarang,
 };
