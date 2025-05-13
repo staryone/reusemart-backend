@@ -274,7 +274,7 @@ const getList = async (request) => {
       : {},
   });
 
-  const listPenitip = await prismaClient.penitip.findMany({
+  const listPenitip = await prismaClient.penitip.findMany ({
     where: q
       ? {
           OR: [
