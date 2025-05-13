@@ -40,6 +40,19 @@ const getList = async (req, res, next) => {
   }
 };
 
+const getAllList = async (req, res, next) => {
+  try {
+    const [listDonasi, totalItems] = await donasiService.getAllList(req.query);
+
+    res.status(200).json({
+      data: listDonasi,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const update = async (req, res, next) => {
   try {
     req.body.id_donasi = req.params.id;
@@ -58,5 +71,6 @@ export default {
   create,
   get,
   getList,
+  getAllList,
   update,
 };

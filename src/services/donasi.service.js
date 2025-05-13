@@ -1,6 +1,10 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idToInteger, idOrgToInteger, idToString } from "../utils/formater.util.js";
+import {
+  idToInteger,
+  idOrgToInteger,
+  idToString,
+} from "../utils/formater.util.js";
 import {
   createDonasiValidation,
   getDonasiValidation,
@@ -81,7 +85,7 @@ const getList = async (query, id_organisasi) => {
 
   id_organisasi = idOrgToInteger(id_organisasi);
 
-  const countAllReqDonasi = await prismaClient.donasi.count({
+  const countAllDonasi = await prismaClient.donasi.count({
     where: {
       AND: [
         {
@@ -147,7 +151,63 @@ const getList = async (query, id_organisasi) => {
     return donasi;
   });
 
-  return [formattedDonasi, countAllReqDonasi];
+  return [formattedDonasi, countAllDonasi];
+};
+const getAllList = async (query) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const q = query.search;
+
+  const countAllDonasi = await prismaClient.donasi.count({
+    where: q
+      ? {
+          OR: [
+            {
+              deskripsi: {
+                contains: q,
+              },
+            },
+            {
+              status: {
+                contains: q,
+              },
+            },
+          ],
+        }
+      : {},
+  });
+  const listDonasi = await prismaClient.donasi.findMany({
+    where: q
+      ? {
+          OR: [
+            {
+              deskripsi: {
+                contains: q,
+              },
+            },
+            {
+              status: {
+                contains: q,
+              },
+            },
+          ],
+        }
+      : {},
+    include: {
+      barang: true,
+    },
+    skip: skip,
+    take: limit,
+  });
+
+  const formattedDonasi = listDonasi.map((donasi) => {
+    donasi.id_barang = idToString(donasi.barang.prefix, donasi.id_barang);
+
+    return donasi;
+  });
+
+  return [formattedDonasi, countAllDonasi];
 };
 
 const update = async (request) => {
@@ -190,5 +250,6 @@ export default {
   create,
   get,
   getList,
+  getAllList,
   update,
 };
