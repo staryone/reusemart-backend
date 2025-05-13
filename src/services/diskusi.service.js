@@ -93,6 +93,11 @@ const getList = async (query) => {
           },
         }
       : {},
+    orderBy: [
+      {
+        tanggal_diskusi: "desc",
+      },
+    ],
     include: {
       barang: true,
       user: {
