@@ -67,7 +67,11 @@ const profile = async (id) => {
           pengiriman: true,
           detail_transaksi: {
             select: {
-              barang: true,
+              barang: {
+                include: {
+                  gambar: true,
+                },
+              },
             },
           },
         },
