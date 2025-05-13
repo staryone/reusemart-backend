@@ -146,7 +146,6 @@ const getList = async (query) => {
 };
 
 const getListByIdBarang = async (query, id_barang) => {
-  let listDiskusi;
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -157,7 +156,8 @@ const getListByIdBarang = async (query, id_barang) => {
       id_barang: id_barang,
     },
   });
-  listDiskusi = await prismaClient.diskusi.findMany({
+
+  const listDiskusi = await prismaClient.diskusi.findMany({
     where: {
       id_barang: id_barang,
     },
@@ -178,31 +178,38 @@ const getListByIdBarang = async (query, id_barang) => {
     take: limit,
   });
 
+  // Format data diskusi
   const formattedDiskusi = listDiskusi.map((diskusi) => {
+    const isPegawai = !!diskusi.user.pegawai;
+    const isPembeli = !!diskusi.user.pembeli;
+
     return {
       id_diskusi: diskusi.id_diskusi,
       tanggal_diskusi: diskusi.tanggal_diskusi,
       pesan: diskusi.pesan,
       id_barang: idToString(diskusi.barang.prefix, diskusi.barang.id_barang),
-      id_cs: diskusi.user.pegawai
+      id_cs: isPegawai
         ? idToString(
             diskusi.user.pegawai.prefix,
             diskusi.user.pegawai.id_pegawai
           )
         : null,
-      id_pembeli: diskusi.user.pembeli ? diskusi.user.pembeli.id_pembeli : null,
-      nama: diskusi.user.pegawai
+      id_pembeli: isPembeli ? diskusi.user.pembeli.id_pembeli : null,
+      nama: isPegawai
         ? diskusi.user.pegawai.nama
-        : diskusi.user.pembeli.nama,
-      role: diskusi.user.pegawai
+        : isPembeli
+        ? diskusi.user.pembeli.nama
+        : null,
+      role: isPegawai
         ? String(diskusi.user.pegawai.jabatan.nama_jabatan).toUpperCase()
-        : diskusi.user.role,
+        : isPembeli
+        ? diskusi.user.role
+        : null,
     };
   });
 
   return [formattedDiskusi, countAllDiskusi];
 };
-
 export default {
   create,
   get,
