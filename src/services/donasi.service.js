@@ -196,6 +196,7 @@ const getAllList = async (query) => {
       : {},
     include: {
       barang: true,
+      request: true
     },
     skip: skip,
     take: limit,
