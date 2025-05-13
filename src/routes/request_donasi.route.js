@@ -73,6 +73,13 @@ requestDonasiRouter.post(
  *         schema:
  *           type: string
  *         description: Search term for deskripsi
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum:
+ *            - MENUNGGU
+ *            - DISETUJUI
  *     responses:
  *       200:
  *         description: List of request donasi
