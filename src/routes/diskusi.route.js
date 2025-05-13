@@ -103,6 +103,55 @@ diskusiRouter.get(
 
 /**
  * @swagger
+ * /api/diskusi/lists/{idBarang}:
+ *   get:
+ *     summary: Get a list of diskusi and able to search
+ *     tags: [Diskusi]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idBarang
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Barang ID (e.g., A123)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: List of diskusi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Diskusi'
+ *                 totalItems:
+ *                   type: integer
+ *                   example: 100
+ *       401:
+ *         description: Unauthorized
+ */
+diskusiRouter.get(
+  "/api/diskusi/lists/:idBarang",
+  restrictTo("PEGAWAI", "CS", "PEMBELI"),
+  diskusiController.getListByIdBarang
+);
+
+/**
+ * @swagger
  * /api/diskusi/{id}:
  *   get:
  *     summary: Get an diskusi by ID

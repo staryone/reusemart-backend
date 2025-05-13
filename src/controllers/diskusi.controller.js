@@ -40,8 +40,26 @@ const getList = async (req, res, next) => {
   }
 };
 
+const getListByIdBarang = async (req, res, next) => {
+  try {
+    const id_barang = req.params.idBarang;
+    const [listDiskusi, totalItems] = await diskusiService.getListByIdBarang(
+      req.query,
+      id_barang
+    );
+
+    res.status(200).json({
+      data: listDiskusi,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   get,
   getList,
+  getListByIdBarang,
 };
