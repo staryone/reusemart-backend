@@ -97,7 +97,7 @@ diskusiRouter.post(
  */
 diskusiRouter.get(
   "/api/diskusi/lists",
-  restrictTo("PEGAWAI", "CS", "PEMBELI"),
+  restrictTo("PEGAWAI", "CS"),
   diskusiController.getList
 );
 
@@ -146,7 +146,7 @@ diskusiRouter.get(
  */
 diskusiRouter.get(
   "/api/diskusi/lists/:idBarang",
-  restrictTo("PEGAWAI", "CS", "PEMBELI"),
+  restrictTo("PEMBELI"),
   diskusiController.getListByIdBarang
 );
 
