@@ -5,6 +5,7 @@ import authController from "../controllers/auth.controller.js";
 import penitipController from "../controllers/penitip.controller.js";
 import pembeliController from "../controllers/pembeli.controller.js";
 import barangController from "../controllers/barang.controller.js";
+import diskusiController from "../controllers/diskusi.controller.js";
 
 const publicRouter = new express.Router();
 
@@ -388,6 +389,52 @@ publicRouter.get("/api/barang/lists", barangController.getList);
  *         description: Barang not found
  */
 publicRouter.get("/api/barang/:id", barangController.get);
+
+/**
+ * @swagger
+ * /api/diskusi/lists/{idBarang}:
+ *   get:
+ *     summary: Get a list of diskusi and able to search
+ *     tags: [Diskusi]
+ *     parameters:
+ *       - in: path
+ *         name: idBarang
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Barang ID (e.g., A123)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: List of diskusi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Diskusi'
+ *                 totalItems:
+ *                   type: integer
+ *                   example: 100
+ *       401:
+ *         description: Unauthorized
+ */
+publicRouter.get(
+  "/api/diskusi/lists/:idBarang",
+  diskusiController.getListByIdBarang
+);
 
 /**
  * @swagger
