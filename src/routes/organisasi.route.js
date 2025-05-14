@@ -33,37 +33,6 @@ organisasiRouter.get(
 
 /**
  * @swagger
- * /api/organisasi/logout:
- *   delete:
- *     summary: Log out the current organization
- *     tags: [Organisasi]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: string
- *                   example: OK
- *                 message:
- *                   type: string
- *                   example: Logout berhasil!
- *       401:
- *         description: Unauthorized
- */
-organisasiRouter.delete(
-  "/api/organisasi/logout",
-  restrictTo("ORGANISASI"),
-  organisasiController.logout
-);
-
-/**
- * @swagger
  * /api/organisasi/lists:
  *   get:
  *     summary: Get a list of organizations and able to search

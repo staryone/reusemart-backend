@@ -76,11 +76,6 @@ const login = async (request) => {
     },
     select: {
       token: true,
-      user: {
-        select: {
-          role: true,
-        },
-      },
     },
   });
 };

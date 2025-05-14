@@ -104,37 +104,6 @@ penitipRouter.get(
 
 /**
  * @swagger
- * /api/penitip/logout:
- *   delete:
- *     summary: Log out the current penitip
- *     tags: [Penitip]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: string
- *                   example: OK
- *                 message:
- *                   type: string
- *                   example: Logout berhasil!
- *       401:
- *         description: Unauthorized
- */
-penitipRouter.delete(
-  "/api/penitip/logout",
-  restrictTo("PENITIP"),
-  penitipController.logout
-);
-
-/**
- * @swagger
  * /api/penitip/lists:
  *   get:
  *     summary: Get a list of penitips and able to search

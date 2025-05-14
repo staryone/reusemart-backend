@@ -11,49 +11,6 @@ const publicRouter = new express.Router();
 
 /**
  * @swagger
- * /api/pegawai/login:
- *   post:
- *     summary: Log in an employee
- *     tags: [Pegawai]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: employee@example.com
- *               password:
- *                 type: string
- *                 example: password123
- *     responses:
- *       200:
- *         description: Successful login
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                   properties:
- *                     token:
- *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       401:
- *         description: Invalid credentials
- */
-
-publicRouter.post("/api/pegawai/login", pegawaiController.login);
-
-/**
- * @swagger
  * /api/organisasi:
  *   post:
  *     summary: Register a new organization
@@ -118,92 +75,6 @@ publicRouter.post("/api/organisasi", organisasiController.register);
 
 /**
  * @swagger
- * /api/organisasi/login:
- *   post:
- *     summary: Log in an organization
- *     tags: [Organisasi]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: organization@example.com
- *               password:
- *                 type: string
- *                 example: password123
- *     responses:
- *       200:
- *         description: Successful login
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                   properties:
- *                     token:
- *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       401:
- *         description: Invalid credentials
- */
-
-publicRouter.post("/api/organisasi/login", organisasiController.login);
-
-/**
- * @swagger
- * /api/penitip/login:
- *   post:
- *     summary: Log in an penitip
- *     tags: [Penitip]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: penitiptest@gmail.com
- *               password:
- *                 type: string
- *                 example: test1234
- *     responses:
- *       200:
- *         description: Successful login
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: object
- *                   properties:
- *                     token:
- *                       type: string
- *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *       401:
- *         description: Invalid credentials
- */
-
-publicRouter.post("/api/penitip/login", penitipController.login);
-
-/**
- * @swagger
  * /api/pembeli:
  *   post:
  *     summary: Register a new pembeli
@@ -261,10 +132,10 @@ publicRouter.post("/api/pembeli", pembeliController.register);
 
 /**
  * @swagger
- * /api/pembeli/login:
+ * /api/login:
  *   post:
- *     summary: Log in an pembeli
- *     tags: [Pembeli]
+ *     summary: Log in an user
+ *     tags: [User]
  *     requestBody:
  *       required: true
  *       content:
@@ -278,7 +149,7 @@ publicRouter.post("/api/pembeli", pembeliController.register);
  *               email:
  *                 type: string
  *                 format: email
- *                 example: pembelitest@gmail.com
+ *                 example: userlogin@gmail.com
  *               password:
  *                 type: string
  *                 example: test1234
@@ -300,7 +171,7 @@ publicRouter.post("/api/pembeli", pembeliController.register);
  *         description: Invalid credentials
  */
 
-publicRouter.post("/api/pembeli/login", pembeliController.login);
+publicRouter.post("/api/login", authController.login);
 
 /**
  * @swagger

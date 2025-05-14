@@ -17,6 +17,7 @@ import cors from "cors";
 import { diskusiRouter } from "../routes/diskusi.route.js";
 import { requestDonasiRouter } from "../routes/request_donasi.route.js";
 import { donasiRouter } from "../routes/donasi.route.js";
+import { authRouter } from "../routes/auth.route.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
@@ -40,6 +41,7 @@ app.use(
 app.use(publicRouter);
 
 app.use(authMiddleware);
+app.use(authRouter);
 app.use(pegawaiRouter);
 app.use(jabatanRouter);
 app.use(organisasiRouter);
