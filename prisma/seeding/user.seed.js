@@ -19,7 +19,7 @@ async function generateUserList() {
     {
       id_user: 3,
       email: "stanyslaushary@reusemart.my.id",
-      plainPassword: "12072000",
+      plainPassword: "test1234",
       role: "PEGAWAI",
       token: null,
     },

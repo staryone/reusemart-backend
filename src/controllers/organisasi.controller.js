@@ -86,10 +86,8 @@ const get = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    const id_organisasi = req.session.user.organisasi.id_organisasi;
     const [listOrganisasi, totalItems] = await organisasiService.getList(
       req.query,
-      id_organisasi
     );
 
     res.status(200).json({
