@@ -12,6 +12,19 @@ import { validate } from "../validation/validate.js";
 const create = async (request) => {
   const org = validate(createOrganisasiValidation, request);
 
+  const countDuplikat = await prismaClient.organisasi.count({
+    where: {
+      nama_organisasi: org.nama_organisasi,
+    },
+  });
+
+  if (countDuplikat >= 1) {
+    throw new ResponseError(
+      401,
+      "Nama organisasi sudah terdaftar dan tidak boleh sama!"
+    );
+  }
+
   const createdOrg = await prismaClient.organisasi.create({
     data: org,
     include: {
