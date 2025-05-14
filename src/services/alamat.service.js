@@ -168,7 +168,7 @@ const destroy = async (id, id_pembeli) => {
   if (countAlamat <= 1) {
     throw new ResponseError(
       401,
-      `Alamat tidak dihapus dari database karena pembeli harus memiliki alamat minimal 1`
+      `Alamat ${alamat.nama_alamat} tidak dihapus dari database karena pembeli harus memiliki alamat minimal 1`
     );
   }
 
