@@ -8,20 +8,6 @@ import {
   updatePegawaiValidation,
 } from "../validation/pegawai.validate.js";
 import { validate } from "../validation/validate.js";
-import authService from "./auth.service.js";
-
-const login = async (request) => {
-  const loginUser = await authService.login(request);
-
-  if (loginUser.user.role !== "PEGAWAI") {
-    await authService.logout(loginUser.token);
-    throw new ResponseError(401, "Login gagal, Anda bukan pegawai!");
-  }
-
-  return {
-    token: loginUser.token,
-  };
-};
 
 const create = async (request) => {
   const pegawai = validate(createPegawaiValidation, request);
@@ -313,7 +299,6 @@ const destroy = async (id) => {
 };
 
 export default {
-  login,
   create,
   profile,
   get,

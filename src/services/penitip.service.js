@@ -14,20 +14,6 @@ import {
   updateSistemPenitipValidation,
 } from "../validation/penitip.validate.js";
 import { validate } from "../validation/validate.js";
-import authService from "./auth.service.js";
-
-const login = async (request) => {
-  const loginUser = await authService.login(request);
-
-  if (loginUser.user.role !== "PENITIP") {
-    await authService.logout(loginUser.token);
-    throw new ResponseError(401, "Login gagal, Anda bukan penitip!");
-  }
-
-  return {
-    token: loginUser.token,
-  };
-};
 
 const create = async (request) => {
   const penitip = validate(createPenitipValidation, request);
@@ -482,7 +468,6 @@ const destroy = async (id) => {
 };
 
 export default {
-  login,
   create,
   profile,
   get,

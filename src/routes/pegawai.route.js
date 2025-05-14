@@ -96,37 +96,6 @@ pegawaiRouter.get(
 
 /**
  * @swagger
- * /api/pegawai/logout:
- *   delete:
- *     summary: Log out the current employee
- *     tags: [Pegawai]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: string
- *                   example: OK
- *                 message:
- *                   type: string
- *                   example: Logout berhasil!
- *       401:
- *         description: Unauthorized
- */
-pegawaiRouter.delete(
-  "/api/pegawai/logout",
-  restrictTo("PEGAWAI"),
-  pegawaiController.logout
-);
-
-/**
- * @swagger
  * /api/pegawai/change-password:
  *   patch:
  *     summary: Change the employee's password
