@@ -9,20 +9,6 @@ import {
   updatePoinPembeliValidation,
 } from "../validation/pembeli.validate.js";
 import { validate } from "../validation/validate.js";
-import authService from "./auth.service.js";
-
-const login = async (request) => {
-  const loginUser = await authService.login(request);
-
-  if (loginUser.user.role !== "PEMBELI") {
-    await authService.logout(loginUser.token);
-    throw new ResponseError(401, "Login gagal, Anda bukan pembeli!");
-  }
-
-  return {
-    token: loginUser.token,
-  };
-};
 
 const create = async (request) => {
   const pembeli = validate(createPembeliValidation, request);
@@ -98,7 +84,6 @@ const profile = async (id) => {
 };
 
 export default {
-  login,
   create,
   profile,
 };

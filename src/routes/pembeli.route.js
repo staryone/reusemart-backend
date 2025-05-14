@@ -31,35 +31,4 @@ pembeliRouter.get(
   pembeliController.profile
 );
 
-/**
- * @swagger
- * /api/pembeli/logout:
- *   delete:
- *     summary: Log out the current pembeli
- *     tags: [Pembeli]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Logout successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: string
- *                   example: OK
- *                 message:
- *                   type: string
- *                   example: Logout berhasil!
- *       401:
- *         description: Unauthorized
- */
-pembeliRouter.delete(
-  "/api/pembeli/logout",
-  restrictTo("PEMBELI"),
-  pembeliController.logout
-);
-
 export { pembeliRouter };

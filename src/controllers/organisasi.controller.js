@@ -33,31 +33,6 @@ const register = async (req, res, next) => {
   }
 };
 
-const login = async (req, res, next) => {
-  try {
-    const result = await organisasiService.login(req.body);
-    res.status(200).json({
-      data: result,
-    });
-  } catch (e) {
-    next(e);
-  }
-};
-
-const logout = async (req, res, next) => {
-  try {
-    const id = req.session.id_session;
-    await authService.logout(id);
-
-    res.status(200).json({
-      data: "OK",
-      message: "Logout berhasil!",
-    });
-  } catch (e) {
-    next(e);
-  }
-};
-
 const profile = async (req, res, next) => {
   try {
     const id = req.session.user.id_user;
@@ -87,7 +62,7 @@ const get = async (req, res, next) => {
 const getList = async (req, res, next) => {
   try {
     const [listOrganisasi, totalItems] = await organisasiService.getList(
-      req.query,
+      req.query
     );
 
     res.status(200).json({
@@ -127,8 +102,6 @@ const destroy = async (req, res, next) => {
 
 export default {
   register,
-  login,
-  logout,
   get,
   profile,
   update,
