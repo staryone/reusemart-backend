@@ -157,7 +157,7 @@ const get = async (idBarang) => {
 const getList = async (query) => {
   const page = query.page || 1;
   const limit = query.limit || 10;
-  const skip = (page - 1) * limit;
+  const skip = query.all ? undefined : (page - 1) * limit; // Explicitly set skip to undefined when fetching all
   const q = query.search || "";
   const status = query.status || "";
 
@@ -194,7 +194,7 @@ const getList = async (query) => {
     },
   });
 
-  const listBarang = await prismaClient.barang.findMany({
+  const findManyOptions = {
     where: {
       AND: [
         status ? { status } : {},
@@ -262,10 +262,17 @@ const getList = async (query) => {
         },
       },
     },
-    skip: skip,
-    take: limit,
-  });
+  };
 
+  // Only add skip and take if not fetching all
+  if (!query.all && skip !== undefined && limit !== undefined) {
+    findManyOptions.skip = skip;
+    findManyOptions.take = limit;
+  }
+
+  const listBarang = await prismaClient.barang.findMany(findManyOptions);
+
+  // Rest of the code (formatting barang, handling images, etc.) remains unchanged
   const formattedBarang = await Promise.all(
     listBarang.map(async (barang) => {
       const gambarPromises = barang.gambar.map(async (g) => {
@@ -287,7 +294,7 @@ const getList = async (query) => {
           );
           return {
             id_gambar: g.id_gambar,
-            url_gambar: null, // atau URL default jika ada
+            url_gambar: null,
             order_number: g.order_number,
             is_primary: g.is_primary,
             id_barang: g.id_barang,
@@ -302,7 +309,7 @@ const getList = async (query) => {
         if (result.status === "fulfilled") {
           return result.value;
         }
-        return result.reason; // atau sesuaikan dengan struktur error
+        return result.reason;
       });
 
       return {
@@ -314,7 +321,7 @@ const getList = async (query) => {
         garansi: barang.garansi ? barang.garansi : null,
         berat: barang.berat,
         kategori: barang.kategori,
-        gambar: gambar, // Gunakan hasil yang sudah diproses
+        gambar: gambar,
         createdAt: barang.createdAt,
         updatedAt: barang.updatedAt,
         penitip: barang.detail_penitipan.penitipan.penitip,
