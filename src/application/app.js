@@ -18,6 +18,7 @@ import { diskusiRouter } from "../routes/diskusi.route.js";
 import { requestDonasiRouter } from "../routes/request_donasi.route.js";
 import { donasiRouter } from "../routes/donasi.route.js";
 import { authRouter } from "../routes/auth.route.js";
+import { keranjangRouter } from "../routes/keranjang.route.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
@@ -51,4 +52,5 @@ app.use(alamatRouter);
 app.use(diskusiRouter);
 app.use(requestDonasiRouter);
 app.use(donasiRouter);
+app.use(keranjangRouter);
 app.use(errorMiddleware);

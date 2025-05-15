@@ -77,7 +77,7 @@ const update = async (req, res, next) => {
 const destroy = async (req, res, next) => {
   try {
     const id_organisasi = req.session.user.organisasi.id_organisasi;
-    requestDonasiService.destroy(req.params.id, id_organisasi);
+    await requestDonasiService.destroy(req.params.id, id_organisasi);
     res.status(200).json({
       data: "OK",
       message: "Hapus request donasi berhasil!",

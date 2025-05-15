@@ -510,6 +510,41 @@ const options = {
             },
           },
         },
+        Keranjang: {
+          type: "object",
+          properties: {
+            id_keranjang: {
+              type: "integer",
+              example: 1,
+            },
+            id_barang: {
+              type: "string",
+              example: "M1",
+            },
+            id_pembeli: {
+              type: "integer",
+              example: 12,
+            },
+            nama_barang: {
+              type: "string",
+              example: "Baju Bekas",
+            },
+            harga_barang: {
+              type: "number",
+              format: "float",
+              example: 50000,
+            },
+            gambar_barang: {
+              type: "string",
+              example: "https://aaa.com/contoh/gambar",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-05-07T10:00:00Z",
+            },
+          },
+        },
       },
     },
   },

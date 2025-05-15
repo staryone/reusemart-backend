@@ -50,8 +50,8 @@ const get = async (id, id_pembeli) => {
 
 const getList = async (query, id_pembeli) => {
   let listAlamat;
-  const page = query.page || 1;
-  const limit = query.limit || 10;
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
   const q = query.search;
 

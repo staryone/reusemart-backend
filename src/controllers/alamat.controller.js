@@ -36,7 +36,7 @@ const getList = async (req, res, next) => {
   try {
     const id_pembeli = req.session.user.pembeli.id_pembeli;
     const listAlamat = await alamatService.getList(req.query, id_pembeli);
-    
+
     res.status(200).json({
       data: listAlamat,
     });
@@ -63,7 +63,7 @@ const update = async (req, res, next) => {
 const destroy = async (req, res, next) => {
   try {
     const id_pembeli = req.session.user.pembeli.id_pembeli;
-    alamatService.destroy(req.params.id, id_pembeli);
+    await alamatService.destroy(req.params.id, id_pembeli);
     res.status(200).json({
       data: "OK",
       message: "Hapus alamat berhasil!",
