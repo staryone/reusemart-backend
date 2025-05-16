@@ -36,6 +36,23 @@ const getList = async (req, res, next) => {
   }
 };
 
+const updateStatus = async (req, res, next) => {
+  try {
+    const id_pembeli = req.session.user.pembeli.id_pembeli;
+    await keranjangService.updateStatus(
+      req.params.id,
+      id_pembeli,
+      req.body.is_selected
+    );
+    res.status(200).json({
+      data: "OK",
+      message: "Update status keranjang berhasil!",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const destroy = async (req, res, next) => {
   try {
     const id_pembeli = req.session.user.pembeli.id_pembeli;
@@ -53,4 +70,5 @@ export default {
   create,
   getList,
   destroy,
+  updateStatus,
 };

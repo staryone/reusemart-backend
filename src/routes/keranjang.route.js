@@ -92,6 +92,60 @@ keranjangRouter.get(
 /**
  * @swagger
  * /api/keranjang/{id}:
+ *   patch:
+ *     summary: Update selected an keranjang
+ *     tags: [Keranjang]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - is_selected
+ *             properties:
+ *               is_selected:
+ *                 type: boolean
+ *                 example: false
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Keranjang ID (e.g., 123)
+ *     responses:
+ *       200:
+ *         description: Keranjang updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Update status keranjang berhasil!
+ *       400:
+ *         description: Invalid input or nama keranjang already exists
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Keranjang not found
+ */
+keranjangRouter.patch(
+  "/api/keranjang/:id",
+  restrictTo("PEMBELI"),
+  keranjangController.updateStatus
+);
+
+/**
+ * @swagger
+ * /api/keranjang/{id}:
  *   delete:
  *     summary: Delete an keranjang
  *     tags: [Keranjang]

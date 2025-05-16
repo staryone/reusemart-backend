@@ -5,6 +5,7 @@ const createKeranjangValidation = Joi.object({
   id_pembeli: Joi.number().required(),
 });
 
+const updateStatusKeranjangValidation = Joi.boolean().required();
 const getKeranjangValidation = Joi.number().required();
 
-export { createKeranjangValidation, getKeranjangValidation };
+export { createKeranjangValidation, getKeranjangValidation,  updateStatusKeranjangValidation};

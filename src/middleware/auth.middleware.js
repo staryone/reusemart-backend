@@ -6,6 +6,8 @@ export const authMiddleware = async (req, res, next) => {
   try {
     let token = req.get("Authorization");
 
+    console.log(token);
+
     if (token && String(token).startsWith("Bearer ")) {
       token = String(token).slice(7);
     }

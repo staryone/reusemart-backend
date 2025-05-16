@@ -525,6 +525,18 @@ const options = {
               type: "integer",
               example: 12,
             },
+            id_penitip: {
+              type: "integer",
+              example: 1,
+            },
+            is_selected: {
+              type: "boolean",
+              example: false,
+            },
+            nama_penitip: {
+              type: "string",
+              example: "Joko",
+            },
             nama_barang: {
               type: "string",
               example: "Baju Bekas",

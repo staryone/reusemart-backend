@@ -5,6 +5,7 @@ import { idToInteger, idToString } from "../utils/formater.util.js";
 import {
   createKeranjangValidation,
   getKeranjangValidation,
+  updateStatusKeranjangValidation,
 } from "../validation/keranjang.validate.js";
 import { validate } from "../validation/validate.js";
 
@@ -77,6 +78,20 @@ const getList = async (query, id_pembeli) => {
       barang: {
         include: {
           gambar: true,
+          detail_penitipan: {
+            include: {
+              penitipan: {
+                include: {
+                  penitip: {
+                    select: {
+                      nama: true,
+                      id_penitip: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -90,6 +105,10 @@ const getList = async (query, id_pembeli) => {
         id_keranjang: keranjang.id_keranjang,
         id_barang: idToString(keranjang.barang.prefix, keranjang.id_barang),
         id_pembeli: keranjang.id_pembeli,
+        is_selected: keranjang.is_selected,
+        id_penitip:
+          keranjang.barang.detail_penitipan.penitipan.penitip.id_penitip,
+        nama_penitip: keranjang.barang.detail_penitipan.penitipan.penitip.nama,
         nama_barang: keranjang.barang.nama_barang,
         harga_barang: keranjang.barang.harga,
         gambar_barang:
@@ -110,6 +129,39 @@ const getList = async (query, id_pembeli) => {
   );
 
   return [formattedKeranjang, countKeranjang];
+};
+
+const updateStatus = async (id, id_pembeli, newStatus) => {
+  const id_keranjang = validate(getKeranjangValidation, id);
+  newStatus = validate(updateStatusKeranjangValidation, newStatus);
+
+  const keranjang = await prismaClient.keranjang.findUnique({
+    where: {
+      id_keranjang: id_keranjang,
+    },
+  });
+
+  if (!keranjang) {
+    throw new ResponseError(404, "Keranjang tidak ditemukan!");
+  }
+
+  if (keranjang.id_pembeli !== id_pembeli) {
+    throw new ResponseError(
+      404,
+      "Hanya bisa mengupdate status keranjang sendiri!"
+    );
+  }
+
+  keranjang.is_selected = newStatus;
+
+  const result = await prismaClient.keranjang.update({
+    where: {
+      id_keranjang: id_keranjang,
+    },
+    data: keranjang,
+  });
+
+  return result;
 };
 
 const destroy = async (id, id_pembeli) => {
@@ -140,4 +192,5 @@ export default {
   create,
   getList,
   destroy,
+  updateStatus,
 };
