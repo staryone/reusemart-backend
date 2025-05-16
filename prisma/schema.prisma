@@ -271,6 +271,7 @@ model Keranjang {
   id_keranjang Int      @id @default(autoincrement())
   id_barang    Int
   id_pembeli   Int
+  is_selected  Boolean  @default(false)
   createdAt    DateTime @default(now())
   barang       Barang   @relation("KeranjangToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_keranjang_to_barang")
   pembeli      Pembeli  @relation("KeranjangToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_keranjang_to_pembeli")
