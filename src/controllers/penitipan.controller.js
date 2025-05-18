@@ -17,16 +17,27 @@ const create = async (req, res, next) => {
 
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
-    
+
     // Distribute files to corresponding barangData entries
     const barangDataWithFiles = await Promise.all(
       barangData.map(async (barang, index) => {
         // Assume files are uploaded with field names like 'gambar[0]', 'gambar[1]', etc.
         const barangFiles = files.filter((file) => file.fieldname === `gambar[${index}]`);
 
+        const validatedFiles = await Promise.all(
+          barangFiles.map(async (file) => {
+            const fileType = await fileTypeFromBuffer(file.buffer);
+            return {
+              originalname: file.originalname,
+              mimetype: fileType.mime,
+              buffer: file.buffer,
+            };
+          })
+        );
+
         return {
           ...barang,
-          gambar: barangFiles,
+          gambar: validatedFiles,
         };
       })
     );

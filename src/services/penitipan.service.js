@@ -1,8 +1,8 @@
 import { prismaClient } from "../application/database.js";
-import { getUrlFile, uploadFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
 import { createPenitipanValidation } from "../validation/penitipan.validate.js";
 import { validate } from "../validation/validate.js";
+import { ResponseError } from "../errors/response.error.js";
 import barangService from "../services/barang.service.js";
 
 const create = async (barangDataArray, penitipanData, detailPenitipanDataArray) => {
@@ -26,7 +26,7 @@ const create = async (barangDataArray, penitipanData, detailPenitipanDataArray) 
       }
 
       // Use a transaction to ensure atomicity
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prismaClient.$transaction(async (tx) => {
         // Step 1: Create multiple Barang records
         const idBarangArray = await Promise.all(
           barangDataArray.map((barangData) => barangService.create(barangData, penitipanData.id_penitip))
