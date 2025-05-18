@@ -137,7 +137,7 @@ const get = async (idBarang) => {
     diskusi: barang.diskusi.map((d) => {
       return {
         id_diskusi: d.id_diskusi,
-        tanggal_d: d.tanggal_diskusi,
+        tanggal_diskusi: d.tanggal_diskusi,
         pesan: d.pesan,
         id_barang: idBarang,
         id_cs: d.user.pegawai
