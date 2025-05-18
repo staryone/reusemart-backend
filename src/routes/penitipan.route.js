@@ -4,7 +4,7 @@ import penitipanController from "../controllers/penitipan.controller.js";
 
 const penitipanRouter = new express.Router();
 
-diskusiRouter.post(
+penitipanRouter.post(
   "/api/penitipan",
   restrictTo("GUDANG"),
   penitipanController.create
