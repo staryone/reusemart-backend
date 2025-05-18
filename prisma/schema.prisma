@@ -309,11 +309,6 @@ model Donasi {
 
 model Penitipan {
   id_penitipan     Int               @id @default(autoincrement())
-  tanggal_masuk    DateTime          @default(now())
-  tanggal_akhir    DateTime
-  tanggal_laku     DateTime?
-  batas_ambil      DateTime
-  is_perpanjang    Boolean           @default(false)
   id_penitip       Int
   id_hunter        Int?
   id_pegawai_qc    Int
@@ -332,8 +327,14 @@ model DetailPenitipan {
   id_dtl_penitipan Int       @id @default(autoincrement())
   id_penitipan     Int
   id_barang        Int       @unique
+  tanggal_masuk    DateTime  @default(now())
+  tanggal_akhir    DateTime
+  tanggal_laku     DateTime?
+  batas_ambil      DateTime
+  is_perpanjang    Boolean   @default(false)
   barang           Barang    @relation("DetailPenitipanToBarang", fields: [id_barang], references: [id_barang], onDelete: Cascade, map: "fk_detail_penitipan_to_barang")
   penitipan        Penitipan @relation("DetailPenitipanToPenitipan", fields: [id_penitipan], references: [id_penitipan], onDelete: Cascade, map: "fk_detail_penitipan_to_penitipan")
+
 
   @@index([id_penitipan], map: "fk_detail_penitipan_to_penitipan")
   @@map("dtl_penitipan")
