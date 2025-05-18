@@ -5,100 +5,72 @@ import { createPenitipanValidation } from "../validation/penitipan.validate.js";
 import { validate } from "../validation/validate.js";
 import barangService from "../services/barang.service.js";
 
-const create = async (request, id_barang_list) => {
-  // Validate the incoming penitipan request
-  const penitipan = validate(createPenitipanValidation, request);
+const create = async (barangDataArray, penitipanData, detailPenitipanDataArray) => {
+  try {
+      // Validate input data
+      if (!Array.isArray(barangDataArray) || barangDataArray.length === 0) {
+        throw new Error('At least one barangData is required');
+      }
+      if (!penitipanData.id_penitip || !penitipanData.id_pegawai_qc) {
+        throw new Error('id_penitip and id_pegawai_qc are required');
+      }
+      if (
+        !Array.isArray(detailPenitipanDataArray) ||
+        detailPenitipanDataArray.length === 0 ||
+        detailPenitipanDataArray.length !== barangDataArray.length
+      ) {
+        throw new Error('detailPenitipanDataArray must match barangDataArray in length');
+      }
+      if (detailPenitipanDataArray.some((d) => !d.tanggal_akhir || !d.batas_ambil)) {
+        throw new Error('Each detailPenitipan must have tanggal_akhir and batas_ambil');
+      }
 
-  // Ensure id_barang_list is an array and not empty
-  if (!Array.isArray(id_barang_list) || id_barang_list.length === 0) {
-    throw new ResponseError(400, "id_barang_list must be a non-empty array");
-  }
+      // Use a transaction to ensure atomicity
+      const result = await prisma.$transaction(async (tx) => {
+        // Step 1: Create multiple Barang records
+        const idBarangArray = await Promise.all(
+          barangDataArray.map((barangData) => barangService.create(barangData, penitipanData.id_penitip))
+        );
 
-  // Validate that all id_barang exist in the Barang table
-  const barangList = await prismaClient.barang.findMany({
-    where: {
-      id_barang: { in: id_barang_list },
-    },
-  });
+        // Step 2: Create Penitipan record
+        const penitipan = await tx.penitipan.create({
+          data: {
+            id_penitip: penitipanData.id_penitip,
+            id_pegawai_qc: penitipanData.id_pegawai_qc,
+            id_hunter: penitipanData.id_hunter || null, // Optional field
+          },
+        });
 
-  if (barangList.length !== id_barang_list.length) {
-    throw new ResponseError(404, "One or more Barang IDs not found");
-  }
+        // Step 3: Create DetailPenitipan records
+        const detailPenitipanRecords = detailPenitipanDataArray.map((detail, index) => ({
+          id_penitipan: penitipan.id_penitipan,
+          id_barang: idBarangArray[index],
+          tanggal_masuk: new Date(), // Defaults to now
+          tanggal_akhir: new Date(detail.tanggal_akhir),
+          batas_ambil: new Date(detail.batas_ambil),
+          tanggal_laku: detail.tanggal_laku ? new Date(detail.tanggal_laku) : null,
+          is_perpanjang: detail.is_perpanjang || false,
+        }));
 
-  // Check if any id_barang is already associated with another DetailPenitipan
-  const existingDetails = await prismaClient.detailPenitipan.findMany({
-    where: {
-      id_barang: { in: id_barang_list },
-    },
-  });
+        const detailPenitipan = await tx.dtl_penitipan.createMany({
+          data: detailPenitipanRecords,
+        });
 
-  if (existingDetails.length > 0) {
-    const usedBarangIds = existingDetails.map(detail => detail.id_barang);
-    throw new ResponseError(400, `Barang IDs already associated: ${usedBarangIds.join(", ")}`);
-  }
+        return {
+          penitipan,
+          detailPenitipan: detailPenitipanRecords, // Return formatted input data
+          barang: idBarangArray.map((id_barang) => ({ id_barang })),
+          message: 'Barang, Penitipan, and DetailPenitipan created successfully',
+        };
+      });
 
-  // Create Penitipan and DetailPenitipan records in a transaction
-  const [createdPenitipan, createdDetailPenitipans] = await prismaClient.$transaction([
-    prismaClient.penitipan.create({
-      data: penitipan,
-    }),
-    prismaClient.detailPenitipan.createMany({
-      data: id_barang_list.map(id_barang => ({
-        id_penitipan: createdPenitipan.id_penitipan,
-        id_barang,
-      })),
-    }),
-  ]);
+      return result;
+    } catch (error) {
+      console.error('Error creating Penitipan:', error);
+      throw new Error(`Failed to create Penitipan: ${error.message}`);
+    }
+}
 
-  // Fetch the created DetailPenitipan records for response formatting
-  const detailPenitipans = await prismaClient.detailPenitipan.findMany({
-    where: {
-      id_penitipan: createdPenitipan.id_penitipan,
-    },
-  });
-
-  // Format the response
-  const formattedPenitipan = {
-    id_penitipan: createdPenitipan.id_penitipan,
-    tanggal_masuk: createdPenitipan.tanggal_masuk,
-    tanggal_akhir: createdPenitipan.tanggal_akhir,
-    tanggal_laku: createdPenitipan.tanggal_laku,
-    batas_ambil: createdPenitipan.batas_ambil,
-    is_perpanjang: createdPenitipan.is_perpanjang,
-    id_penitip: createdPenitipan.id_penitip,
-    id_hunter: createdPenitipan.id_hunter,
-    id_pegawai_qc: createdPenitipan.id_pegawai_qc,
-    detail_penitipan: detailPenitipans.map(detail => ({
-      id_dtl_penitipan: detail.id_dtl_penitipan,
-      id_barang: detail.id_barang,
-    })),
-  };
-
-  return formattedPenitipan;
-};
-
-const createBarangAndPenitipan = async (barangRequests, penitipanRequest, id_penitip) => {
-  if (!Array.isArray(barangRequests) || barangRequests.length === 0 || !penitipanRequest || !id_penitip) {
-    throw new ResponseError(400, "Missing or invalid inputs");
-  }
-
-  const result = await prismaClient.$transaction(async (prisma) => {
-    // Create multiple Barang records
-    const barangList = await Promise.all(
-      barangRequests.map((barangRequest) => barangService.create(barangRequest, id_penitip))
-    );
-
-    // Extract id_barang values
-    const id_barang_list = barangList.map((barang) => barang.id_barang);
-
-    // Create Penitipan with all id_barang
-    const penitipan = await create(penitipanRequest, id_barang_list);
-
-    return {
-      barang: barangList.map((barang) => ({ id_barang: barang.id_barang })),
-      penitipan,
-    };
-  });
-
-  return result;
+export default {
+  create
 };

@@ -35,7 +35,7 @@ const create = async (request, id_penitip) => {
     },
   });
 
-  return Promise.all(
+  await Promise.all(
     imageURLs.map((imageurl) => {
       prismaClient.gambarBarang.create({
         data: {
@@ -46,6 +46,7 @@ const create = async (request, id_penitip) => {
       return "OK";
     })
   );
+  return barang.id_barang;
 };
 
 const get = async (idBarang) => {
