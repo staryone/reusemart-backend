@@ -19,8 +19,6 @@ const create = async (request) => {
     },
   });
 
-  console.log("ini id barang: ", request.id_barang);
-
   const checkBarangInKeranjang = await prismaClient.keranjang.count({
     where: {
       AND: [
@@ -78,6 +76,7 @@ const getList = async (query, id_pembeli) => {
       barang: {
         include: {
           gambar: true,
+          kategori: true,
           detail_penitipan: {
             include: {
               penitipan: {
@@ -117,6 +116,7 @@ const getList = async (query, id_pembeli) => {
                 .filter((g) => g.is_primary === true && g.url_gambar)
                 .pop().url_gambar
             : "",
+        kategori_barang: keranjang.barang.kategori.nama_kategori,
         createdAt: keranjang.createdAt,
       };
 

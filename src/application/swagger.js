@@ -550,6 +550,10 @@ const options = {
               type: "string",
               example: "https://aaa.com/contoh/gambar",
             },
+            kategori_barang: {
+              type: "string",
+              example: "Elektronik & Gadget",
+            },
             createdAt: {
               type: "string",
               format: "date-time",
