@@ -146,7 +146,7 @@ penitipRouter.get(
  */
 penitipRouter.get(
   "/api/penitip/lists",
-  restrictTo("PEGAWAI", "CS"),
+  restrictTo("PEGAWAI", "CS", "GUDANG"),
   penitipController.getList
 );
 

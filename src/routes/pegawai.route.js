@@ -181,7 +181,7 @@ pegawaiRouter.patch(
  */
 pegawaiRouter.get(
   "/api/pegawai/lists",
-  restrictTo("PEGAWAI", "ADMIN"),
+  restrictTo("PEGAWAI", "ADMIN", "GUDANG"),
   pegawaiController.getList
 );
 
