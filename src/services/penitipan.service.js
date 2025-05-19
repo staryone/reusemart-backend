@@ -86,6 +86,89 @@ const create = async (
   return result;
 };
 
+const getList = async (request) => {
+  const page = parseInt(request.page) || 1;
+  const limit = parseInt(request.limit) || 10;
+  const skip = (page - 1) * limit;
+  const q = request.search;
+
+  const countAllPenitipan = await prismaClient.detailPenitipan.count({
+    where: q
+      ? {
+          OR: [
+            {
+              penitipan: {
+                penitip: {
+                  nama: {
+                    contains: q,
+                  }
+                }
+              },
+            },
+            {
+              barang: {
+                nama_barang: {
+                  contains: q,
+                },
+              },
+            },
+          ],
+        }
+      : {},
+  });
+
+  const listPenitipan = await prismaClient.detailPenitipan.findMany({
+    where: q
+      ? {
+          OR: [
+            {
+              penitipan: {
+                penitip: {
+                  nama: {
+                    contains: q,
+                  }
+                }
+              },
+            },
+            {
+              barang: {
+                nama_barang: {
+                  contains: q,
+                },
+              },
+            },
+          ],
+        }
+      : {},
+    include: {
+      barang: true,
+      penitipan: {
+        select: {
+          penitip: true
+        }
+      }
+    },
+    skip: skip,
+    take: limit,
+  });
+
+  const formattedPenitipan = await Promise.all(
+    listPenitipan.map(async (p) => ({
+      id_dtl_penitipan: p.id_dtl_penitipan,
+      tanggal_masuk: p.tanggal_masuk,
+      tanggal_akhir: p.tanggal_akhir,
+      tanggal_laku: p.tanggal_laku,
+      batas_ambil: p.batas_ambil,
+      is_piperpanjang: p.is_perpanjang,
+      penitipan: p.penitipan,
+      barang: p.barang
+    }))
+  );
+
+  return [formattedPenitipan, countAllPenitipan];
+};
+
 export default {
   create,
+  getList
 };

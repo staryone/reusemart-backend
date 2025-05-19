@@ -6,8 +6,14 @@ const penitipanRouter = new express.Router();
 
 penitipanRouter.post(
   "/api/penitipan",
-  restrictTo("GUDANG"),
+  restrictTo("PEGAWAI", "GUDANG"),
   penitipanController.create
+);
+
+penitipanRouter.get(
+  "/api/penitipan/lists",
+  restrictTo("PEGAWAI", "GUDANG"),
+  penitipanController.getList
 );
 
 export { penitipanRouter };
