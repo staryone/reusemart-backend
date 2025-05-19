@@ -59,11 +59,8 @@ const create = async (req, res, next) => {
         detailPenitipan: result.detailPenitipan,
       },
     });
-  } catch (error) {
-    console.error('Error in createPenitipan:', error);
-    return res.status(error.message.includes('Invalid') || error.message.includes('required') ? 400 : 500).json({
-      error: `Failed to create Penitipan: ${error.message}`,
-    });
+  } catch (e) {
+    next(e);
   }
 };
 
