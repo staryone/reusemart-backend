@@ -6,15 +6,6 @@ const create = async (req, res, next) => {
     // Parse JSON fields from request body
     let { barangData, penitipanData, detailPenitipanData } = req.body;
 
-    // Handle JSON string fields (if sent as strings)
-    try {
-      barangData = typeof barangData === 'string' ? JSON.parse(barangData) : barangData;
-      penitipanData = typeof penitipanData === 'string' ? JSON.parse(penitipanData) : penitipanData;
-      detailPenitipanData = typeof detailPenitipanData === 'string' ? JSON.parse(detailPenitipanData) : detailPenitipanData;
-    } catch (error) {
-      return res.status(400).json({ error: 'Invalid JSON format in request body' });
-    }
-
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
 
