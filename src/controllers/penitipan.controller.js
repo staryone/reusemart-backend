@@ -5,13 +5,13 @@ const create = async (req, res, next) => {
   try {
     // Parse JSON fields from request body
     let { barangData, penitipanData, detailPenitipanData } = req.body;
-
+    const parsedBarangData = JSON.parse(req.body.barangData);
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
 
     // Distribute files to corresponding barangData entries
     const barangDataWithFiles = await Promise.all(
-      barangData.map(async (barang, index) => {
+      parsedBarangData.map(async (barang, index) => {
         // Assume files are uploaded with field names like 'gambar[0]', 'gambar[1]', etc.
         const barangFiles = files.filter((file) => file.fieldname === `gambar[${index}]`);
 
@@ -35,7 +35,7 @@ const create = async (req, res, next) => {
 
 
     // Call the service to create Penitipan, Barang, and DetailPenitipan
-    const result = await penitipanService.createPenitipan(
+    const result = await penitipanService.create(
       barangDataWithFiles,
       penitipanData,
       detailPenitipanData
