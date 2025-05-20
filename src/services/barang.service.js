@@ -19,12 +19,14 @@ const create = async (request, id_penitip) => {
   request = validate(createBarangValidation, request);
 
   const imageURLs = await Promise.all(
-    request.gambar.map((g) => {
+    request.gambar.map(async(g) => {
       g.fieldname = formatNamaGambarBarang(id_penitip);
-      uploadFile("gambar_barang/", g);
+      await uploadFile("gambar_barang/", g);
       return "gambar_barang/" + g.fieldname + "." + String(g.mimetype).slice(6);
     })
   );
+
+  console.log(imageURLs);
 
   delete request.gambar;
 

@@ -45,7 +45,7 @@ const create = async (req, res, next) => {
     // parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter ? idToInteger(parsedPenitipanData.id_hunter) : undefined;
 
     
-     console.log("\n\n",parsedBarangData);
+    //  console.log("\n\n",parsedBarangData);
     // Call the service to create Penitipan, Barang, and DetailPenitipan
     const result = await penitipanService.create(
       barangDataWithFiles,
