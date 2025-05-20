@@ -18,7 +18,6 @@ import { donasiSeeding } from "./seeding/donasi.seed.js";
 import { transaksiSeeding } from "./seeding/transaksi.seed.js";
 import { detailTransaksiSeeding } from "./seeding/detail_transaksi.seed.js";
 import { redeemMerchandiseSeeding } from "./seeding/redeem_merchandise.seed.js";
-import { detailRedeemMerchandiseSeeding } from "./seeding/detail_redeem_merchandise.seed.js";
 import { pengirimanSeeding } from "./seeding/pengiriman.seed.js";
 import { detailPenitipanSeeding } from "./seeding/detail_penitipan.seed.js";
 import { gambarBarangSeeding } from "./seeding/gambar_barang.seed.js";
@@ -43,7 +42,6 @@ const seedFiles = [
   { name: "penitipan", seed: penitipanSeeding },
   { name: "dtl_penitipan", seed: detailPenitipanSeeding },
   { name: "dtl_transaksi", seed: detailTransaksiSeeding },
-  { name: "dtl_redeem_merch", seed: detailRedeemMerchandiseSeeding },
   { name: "pengiriman", seed: pengirimanSeeding },
   { name: "gambar_barang", seed: gambarBarangSeeding },
 ];

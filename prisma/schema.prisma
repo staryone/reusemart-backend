@@ -130,11 +130,16 @@ model Alamat {
 model RedeemMerchandise {
   id_redeem_merch Int                       @id @default(autoincrement())
   tanggal_redeem  DateTime                  @default(now())
+  tanggal_ambil   DateTime?
   id_pembeli      Int
-  detail_redeem   DetailRedeemMerchandise[] @relation("DetailRedeemToRedeemMerch")
+  id_merchandise  Int
+  jumlah_merch    Int
+  status          StatusRedeemMerch
   pembeli         Pembeli                   @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_redeem_merch_to_pembeli")
+  merchandise     Merchandise               @relation("RedeemMerchToMerchandise", fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade, map: "fk_detail_redeem_to_merchandise")
 
   @@index([id_pembeli], map: "fk_redeem_merch_to_pembeli")
+  @@index([id_merchandise], map: "fk_redeem_merch_to_merchandise")
   @@map("redeem_merchandise")
 }
 
@@ -145,22 +150,9 @@ model Merchandise {
   stok           Int
   createdAt      DateTime                  @default(now())
   updatedAt      DateTime                  @default(now()) @db.DateTime(0)
-  detail_redeem  DetailRedeemMerchandise[] @relation("DetailRedeemToMerchandise")
+  redeem_merch   RedeemMerchandise[] @relation("RedeemMerchToMerchandise")
 
   @@map("merchandise")
-}
-
-model DetailRedeemMerchandise {
-  id_dtl_redeem_merch Int               @id @default(autoincrement())
-  jumlah_merch        Int
-  id_redeem_merch     Int
-  id_merchandise      Int
-  merchandise         Merchandise       @relation("DetailRedeemToMerchandise", fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade, map: "fk_detail_redeem_to_merchandise")
-  redeem_merch        RedeemMerchandise @relation("DetailRedeemToRedeemMerch", fields: [id_redeem_merch], references: [id_redeem_merch], onDelete: Cascade, map: "fk_detail_redeem_to_redeem_merch")
-
-  @@index([id_merchandise], map: "fk_detail_redeem_to_merchandise")
-  @@index([id_redeem_merch], map: "fk_detail_redeem_to_redeem_merch")
-  @@map("dtl_redeem_merch")
 }
 
 model Kategori {
@@ -417,4 +409,9 @@ enum StatusPengiriman {
 enum StatusRequestDonasi {
   MENUNGGU
   DISETUJUI
+}
+
+enum StatusRedeemMerch {
+  BELUM_DIAMBIL
+  SUDAH_DIAMBIL
 }
