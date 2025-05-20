@@ -1,17 +1,21 @@
 import penitipanService from "../services/penitipan.service.js";
 import { fileTypeFromBuffer } from "file-type";
+import { idToInteger } from "../utils/formater.util.js";
 
 const create = async (req, res, next) => {
   try {
     // Parse JSON fields from request body
     let { barangData, penitipanData, detailPenitipanData } = req.body;
     const parsedBarangData = JSON.parse(req.body.barangData);
+    const parsedPenitipanData = JSON.parse(req.body.penitipanData);
+    const parsedDetailPenitipanData = JSON.parse(req.body.detailPenitipanData);
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
-
+   
     // Distribute files to corresponding barangData entries
     const barangDataWithFiles = await Promise.all(
       parsedBarangData.map(async (barang, index) => {
+        // barang.garansi = barang.garansi ? barang.garansi : undefined;
         // Assume files are uploaded with field names like 'gambar[0]', 'gambar[1]', etc.
         const barangFiles = files.filter((file) => file.fieldname === `gambar[${index}]`);
 
@@ -22,6 +26,9 @@ const create = async (req, res, next) => {
               originalname: file.originalname,
               mimetype: fileType.mime,
               buffer: file.buffer,
+              encoding: file.encoding,
+              fieldname: file.fieldname,
+              size: file.size
             };
           })
         );
@@ -33,12 +40,17 @@ const create = async (req, res, next) => {
       })
     );
 
+    parsedPenitipanData.id_penitip = idToInteger(parsedPenitipanData.id_penitip);
+    parsedPenitipanData.id_pegawai_qc = idToInteger(parsedPenitipanData.id_pegawai_qc);
+    // parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter ? idToInteger(parsedPenitipanData.id_hunter) : undefined;
 
+    
+     console.log("\n\n",parsedBarangData);
     // Call the service to create Penitipan, Barang, and DetailPenitipan
     const result = await penitipanService.create(
       barangDataWithFiles,
-      penitipanData,
-      detailPenitipanData
+      parsedPenitipanData,
+      parsedDetailPenitipanData
     );
 
     // Return success response

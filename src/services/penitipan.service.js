@@ -10,6 +10,7 @@ const create = async (
   detailPenitipanDataArray
 ) => {
   // Validate penitipanData using Joi schema
+  // console.log("\n\n", detailPenitipanDataArray);
   const validatedPenitipanData = validate(
     createPenitipanValidation,
     penitipanData
@@ -71,7 +72,7 @@ const create = async (
       })
     );
 
-    const detailPenitipan = await tx.dtl_penitipan.createMany({
+    const detailPenitipan = await tx.detailPenitipan.createMany({
       data: detailPenitipanRecords,
     });
 

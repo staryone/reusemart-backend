@@ -2,6 +2,7 @@ import Joi from "joi";
 import { JoiImage } from "../utils/joi_image_extended.util.js";
 
 const createBarangValidation = Joi.object({
+  prefix: Joi.string().required(),
   nama_barang: Joi.string().max(255).required(),
   deskripsi: Joi.string().max(255).required(),
   harga: Joi.number().required(),
