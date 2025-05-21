@@ -230,6 +230,7 @@ model Transaksi {
   total_akhir        Float
   id_pembeli         Int
   id_alamat          Int?
+  id_cs_verif        Int?
   updatedAt          DateTime          @default(now()) @db.DateTime(0)
   detail_transaksi   DetailTransaksi[] @relation("DetailTransaksiToTransaksi")
   pengiriman         Pengiriman?       @relation("PengirimanToTransaksi")
