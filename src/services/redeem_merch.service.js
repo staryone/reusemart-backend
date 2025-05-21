@@ -138,33 +138,35 @@ const getAllList = async (query) => {
   const limit = parseInt(query.limit) || 10;
   const skip = (page - 1) * limit;
   const q = query.search;
-  const searchPembeli = query.searchPembeli;
+  const filter = query.filterStatus;
 
   // Build the where clause dynamically
   const whereClause =
-    q || searchPembeli
+    q || filter
       ? {
           OR: [
             q
               ? {
-                  deskripsi: {
-                    contains: q,
+                  merchandise: {
+                    nama_merch: {
+                      contains: q,
+                    }
                   },
                 }
               : null,
             q
               ? {
-                  status: {
-                    equals: q, // Enum filter for status
+                  pembeli: {
+                    nama: {
+                      contains: q,
+                    },
                   },
                 }
               : null,
-            searchPembeli
+            filter
               ? {
-                  pembeli: {
-                    nama: {
-                      contains: searchPembeli,
-                    },
+                  status: {
+                    equals: filter, // Enum filter for status
                   },
                 }
               : null,

@@ -92,11 +92,11 @@ redeemMerchRouter.post(
  *       401:
  *         description: Unauthorized
  */
-redeemMerchRouter.get(
-  "/api/redeem-merch/lists",
-  restrictTo("PEGAWAI", "CS"),
-  redeemMerchController.getList
-);
+// redeemMerchRouter.get(
+//   "/api/redeem-merch/lists",
+//   restrictTo("PEGAWAI", "CS"),
+//   redeemMerchController.getList
+// );
 
 /**
  * @swagger

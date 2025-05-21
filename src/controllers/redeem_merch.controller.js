@@ -77,7 +77,6 @@ const update = async (req, res, next) => {
 export default {
   create,
   get,
-  getList,
   getAllList,
   update,
 };
