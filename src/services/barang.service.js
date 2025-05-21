@@ -19,14 +19,12 @@ const create = async (request, id_penitip) => {
   request = validate(createBarangValidation, request);
 
   const imageURLs = await Promise.all(
-    request.gambar.map(async(g) => {
+    request.gambar.map(async (g) => {
       g.fieldname = formatNamaGambarBarang(id_penitip);
-      await uploadFile("gambar_barang/", g);
+      await uploadFile(g, "gambar_barang");
       return "gambar_barang/" + g.fieldname + "." + String(g.mimetype).slice(6);
     })
   );
-
-  console.log(imageURLs);
 
   delete request.gambar;
 
@@ -38,14 +36,13 @@ const create = async (request, id_penitip) => {
   });
 
   await Promise.all(
-    imageURLs.map((imageurl) => {
-      prismaClient.gambarBarang.create({
+    imageURLs.map(async (imageurl) => {
+      await prismaClient.gambarBarang.create({
         data: {
           url_gambar: imageurl,
           id_barang: barang.id_barang,
         },
       });
-      return "OK";
     })
   );
   return barang.id_barang;
@@ -290,11 +287,7 @@ const getList = async (query) => {
             createdAt: g.createdAt,
             updatedAt: g.updatedAt,
           };
-        } catch (error) {
-          console.error(
-            `Gagal mendapatkan URL untuk gambar ${g.id_gambar}:`,
-            error
-          );
+        } catch {
           return {
             id_gambar: g.id_gambar,
             url_gambar: null,

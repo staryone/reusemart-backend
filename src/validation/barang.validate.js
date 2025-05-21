@@ -15,7 +15,7 @@ const createBarangValidation = Joi.object({
         .allowedTypes(["jpg", "png", "jpeg"])
         .maxSize(2 * 1024 * 1024)
     )
-    .max(2)
+    .min(2)
     .required(),
 });
 const getBarangValidation = Joi.string()
