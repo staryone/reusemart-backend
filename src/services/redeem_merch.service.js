@@ -10,7 +10,19 @@ import { validate } from "../validation/validate.js";
 
 const create = async (request) => {
   request = validate(createRedeemMerchValidation, request);
+  
+  const currentMerch = await prismaClient.merchandise.findUnique({
+    where: {
+        id_merchandise: request.id_merchandise,
+      },
+  });
 
+  if(request.jumlah_merch > currentMerch.stok){
+    throw new ResponseError(400, "Jumlah merchandise yang tersedia tidak mencukupi")
+  }
+  else {
+    currentMerch.stok = currentMerch.stok - request.jumlah_merch;
+  }
   return prismaClient.redeemMerchandise.create({
     data: request,
   });
@@ -188,13 +200,6 @@ const update = async (request) => {
 
   if (!data) {
     throw new ResponseError(404, "RedeemMerch tidak ditemukan!");
-  }
-
-  if (data.id_pembeli !== updateRequest.id_pembeli) {
-    throw new ResponseError(
-      401,
-      "Anda hanya boleh mengakses redeem_merch sendiri!"
-    );
   }
 
   if (updateRequest.status) {

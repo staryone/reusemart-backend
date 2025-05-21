@@ -240,46 +240,4 @@ redeemMerchRouter.patch(
   redeemMerchController.update
 );
 
-/**
- * @swagger
- * /api/redeem-merch/{id}:
- *   delete:
- *     summary: Delete an redeem-merch
- *     tags: [RedeemMerch]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: RedeemMerch ID (e.g., 123)
- *     responses:
- *       200:
- *         description: RedeemMerch deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: string
- *                   example: OK
- *                 message:
- *                   type: string
- *                   example: Hapus redeem-merch berhasil!
- *       400:
- *         description: Invalid input or nama redeem-merch already exists
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: RedeemMerch not found
- */
-redeemMerchRouter.delete(
-  "/api/redeem-merch/:id",
-  restrictTo("PEGAWAI", "CS"),
-  redeemMerchController.destroy
-);
-
 export { redeemMerchRouter };
