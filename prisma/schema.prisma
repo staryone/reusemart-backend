@@ -134,7 +134,7 @@ model RedeemMerchandise {
   id_pembeli      Int
   id_merchandise  Int
   jumlah_merch    Int
-  status          StatusRedeemMerch
+  status          StatusRedeemMerch         @default(BELUM_DIAMBIL)
   pembeli         Pembeli                   @relation("RedeemMerchToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_redeem_merch_to_pembeli")
   merchandise     Merchandise               @relation("RedeemMerchToMerchandise", fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade, map: "fk_detail_redeem_to_merchandise")
 

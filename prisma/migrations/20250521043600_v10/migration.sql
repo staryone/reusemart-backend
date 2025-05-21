@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `redeem_merchandise` MODIFY `status` ENUM('BELUM_DIAMBIL', 'SUDAH_DIAMBIL') NOT NULL DEFAULT 'BELUM_DIAMBIL';

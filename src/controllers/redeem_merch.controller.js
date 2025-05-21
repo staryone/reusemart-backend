@@ -32,18 +32,18 @@ const get = async (req, res, next) => {
   }
 };
 
-const getList = async (req, res, next) => {
-  try {
-    const id_pembeli = req.session.user.pembeli.id_pembeli;
-    const listRedeemMerch = await redeemMerchService.getList(req.query, id_pembeli);
+// const getList = async (req, res, next) => {
+//   try {
+//     const id_pembeli = req.session.user.pembeli.id_pembeli;
+//     const listRedeemMerch = await redeemMerchService.getList(req.query, id_pembeli);
 
-    res.status(200).json({
-      data: listRedeemMerch,
-    });
-  } catch (e) {
-    next(e);
-  }
-};
+//     res.status(200).json({
+//       data: listRedeemMerch,
+//     });
+//   } catch (e) {
+//     next(e);
+//   }
+// };
 
 const getAllList = async (req, res, next) => {
   try {
@@ -74,24 +74,10 @@ const update = async (req, res, next) => {
   }
 };
 
-const destroy = async (req, res, next) => {
-  try {
-    const id_pembeli = req.session.user.pembeli.id_pembeli;
-    await redeemMerchService.destroy(req.params.id, id_pembeli);
-    res.status(200).json({
-      data: "OK",
-      message: "Hapus redeemMerch berhasil!",
-    });
-  } catch (e) {
-    next(e);
-  }
-};
-
 export default {
   create,
   get,
   getList,
   getAllList,
   update,
-  destroy,
 };
