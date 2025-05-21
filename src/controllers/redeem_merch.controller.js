@@ -61,8 +61,7 @@ const getAllList = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    req.body.id_redeemMerch = req.params.id;
-    req.body.id_pembeli = req.session.user.pembeli.id_pembeli;
+    req.body.id_redeem_merch = req.params.id;
     await redeemMerchService.update(req.body);
 
     res.status(200).json({
