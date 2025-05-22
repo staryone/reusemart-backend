@@ -88,6 +88,14 @@ const create = async (request) => {
             id_transaksi: result.id_transaksi,
           },
         });
+        await tx.barang.update({
+          where: {
+            id_barang: barang.id_barang,
+          },
+          data: {
+            status: "PROSES_PEMBAYARAN",
+          },
+        });
       })
     );
 
@@ -119,5 +127,4 @@ const create = async (request) => {
 
 export default {
   create,
-  get,
 };

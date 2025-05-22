@@ -1,4 +1,4 @@
-import transaksiService from "../services/transaksi.service";
+import transaksiService from "../services/transaksi.service.js";
 
 const create = async (req, res, next) => {
   try {
