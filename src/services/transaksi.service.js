@@ -99,6 +99,19 @@ const create = async (request) => {
         poin_loyalitas: poin_loyalitas - result.potongan_poin,
       },
     });
+
+    await tx.keranjang.deleteMany({
+      where: {
+        AND: [
+          {
+            id_pembeli: request.id_pembeli,
+          },
+          {
+            is_selected: true,
+          },
+        ],
+      },
+    });
   });
 
   return "OK";
