@@ -2,6 +2,7 @@ import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 import { createPenitipanValidation } from "../validation/penitipan.validate.js";
 import { validate } from "../validation/validate.js";
+import { getUrlFile } from "../application/storage.js";
 import barangService from "./barang.service.js";
 
 const create = async (
@@ -102,8 +103,8 @@ const getList = async (request) => {
                 penitip: {
                   nama: {
                     contains: q,
-                  }
-                }
+                  },
+                },
               },
             },
             {
@@ -127,8 +128,8 @@ const getList = async (request) => {
                 penitip: {
                   nama: {
                     contains: q,
-                  }
-                }
+                  },
+                },
               },
             },
             {
@@ -142,28 +143,84 @@ const getList = async (request) => {
         }
       : {},
     include: {
-      barang: true,
+      barang: {
+        select: {
+          nama_barang: true,
+          harga: true,
+          status: true,
+          deskripsi: true,
+          berat: true,
+          garansi: true,
+          kategori: true,
+          gambar: true,
+        },
+      },
       penitipan: {
         select: {
-          penitip: true
-        }
-      }
+          id_penitipan: true,
+          penitip: true,
+          pegawai_qc: true,
+          hunter: true,
+        },
+      },
     },
     skip: skip,
     take: limit,
   });
 
   const formattedPenitipan = await Promise.all(
-    listPenitipan.map(async (p) => ({
-      id_dtl_penitipan: p.id_dtl_penitipan,
-      tanggal_masuk: p.tanggal_masuk,
-      tanggal_akhir: p.tanggal_akhir,
-      tanggal_laku: p.tanggal_laku,
-      batas_ambil: p.batas_ambil,
-      is_piperpanjang: p.is_perpanjang,
-      penitipan: p.penitipan,
-      barang: p.barang
-    }))
+    listPenitipan.map(async (p) => {
+      const gambarPromises = p.barang.gambar.map(async (g) => {
+        try {
+          const url = await getUrlFile(g.url_gambar);
+          return {
+            id_gambar: g.id_gambar,
+            url_gambar: url,
+            order_number: g.order_number,
+            is_primary: g.is_primary,
+            id_barang: g.id_barang,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          };
+        } catch {
+          return {
+            id_gambar: g.id_gambar,
+            url_gambar: null,
+            order_number: g.order_number,
+            is_primary: g.is_primary,
+            id_barang: g.id_barang,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          };
+        }
+      });
+      const gambarResults = await Promise.allSettled(gambarPromises);
+      const gambar = gambarResults.map((result) => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        }
+        return result.reason;
+      });
+      return {
+        id_dtl_penitipan: p.id_dtl_penitipan,
+        tanggal_masuk: p.tanggal_masuk,
+        tanggal_akhir: p.tanggal_akhir,
+        tanggal_laku: p.tanggal_laku,
+        batas_ambil: p.batas_ambil,
+        is_perpanjang: p.is_perpanjang,
+        penitipan: p.penitipan,
+        barang: {
+          nama_barang: p.barang.nama_barang,
+          deskripsi: p.barang.deskripsi,
+          harga: p.barang.harga,
+          status: p.barang.status,
+          garansi: p.barang.garansi ? p.barang.garansi : null,
+          berat: p.barang.berat,
+          kategori: p.barang.kategori,
+          gambar: gambar,
+        },
+      };
+    })
   );
 
   return [formattedPenitipan, countAllPenitipan];
@@ -171,5 +228,5 @@ const getList = async (request) => {
 
 export default {
   create,
-  getList
+  getList,
 };
