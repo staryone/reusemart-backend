@@ -164,6 +164,9 @@ const getList = async (request) => {
         },
       },
     },
+    orderBy: {
+      tanggal_masuk: "desc",
+    },
     skip: skip,
     take: limit,
   });
@@ -226,7 +229,119 @@ const getList = async (request) => {
   return [formattedPenitipan, countAllPenitipan];
 };
 
+const update = async (
+  id_dtl_penitipan,
+  barangDataArray,
+  penitipanData,
+  detailPenitipanDataArray
+) => {
+  // Validate penitipanData using Joi schema
+  const validatedPenitipanData = validate(
+    createPenitipanValidation,
+    penitipanData
+  );
+
+  // Validate input data
+  if (!id_dtl_penitipan) {
+    throw new ResponseError(400, "id_dtl_penitipan is required");
+  }
+  if (!Array.isArray(barangDataArray) || barangDataArray.length === 0) {
+    throw new ResponseError(400, "At least one barangData is required");
+  }
+  if (
+    !Array.isArray(detailPenitipanDataArray) ||
+    detailPenitipanDataArray.length === 0 ||
+    detailPenitipanDataArray.length !== barangDataArray.length
+  ) {
+    throw new ResponseError(
+      400,
+      "detailPenitipanDataArray must match barangDataArray in length"
+    );
+  }
+  if (
+    detailPenitipanDataArray.some((d) => !d.tanggal_akhir || !d.batas_ambil)
+  ) {
+    throw new ResponseError(
+      400,
+      "Each detailPenitipan must have tanggal_akhir and batas_ambil"
+    );
+  }
+
+  // Verify that the DetailPenitipan record exists
+  const existingDetailPenitipan = await prismaClient.detailPenitipan.findUnique({
+    where: { id_dtl_penitipan: parseInt(id_dtl_penitipan) },
+    include: {
+      barang: true,
+      penitipan: true,
+    },
+  });
+
+  if (!existingDetailPenitipan) {
+    throw new ResponseError(404, "DetailPenitipan not found");
+  }
+
+  // Use a transaction to ensure atomicity
+  const result = await prismaClient.$transaction(async (tx) => {
+    // Step 1: Update Barang record
+    const barangData = barangDataArray[0]; // Assuming single barang per DetailPenitipan
+    const updatedBarangId = await barangService.update(
+      existingDetailPenitipan.barang.id_barang,
+      barangData,
+      validatedPenitipanData.id_penitip
+    );
+
+    // Step 2: Update Penitipan record
+    const penitipan = await tx.penitipan.update({
+      where: { id_penitipan: existingDetailPenitipan.penitipan.id_penitipan },
+      data: {
+        id_penitip: validatedPenitipanData.id_penitip,
+        id_pegawai_qc: validatedPenitipanData.id_pegawai_qc,
+        id_hunter: validatedPenitipanData.id_hunter || null,
+      },
+    });
+
+    // Step 3: Update DetailPenitipan record
+    const detailPenitipanData = detailPenitipanDataArray[0]; // Assuming single detail per DetailPenitipan
+    const detailPenitipan = await tx.detailPenitipan.update({
+      where: { id_dtl_penitipan: parseInt(id_dtl_penitipan) },
+      data: {
+        id_penitipan: penitipan.id_penitipan,
+        id_barang: updatedBarangId,
+        tanggal_masuk: new Date(detailPenitipanData.tanggal_masuk),
+        tanggal_akhir: new Date(detailPenitipanData.tanggal_akhir),
+        batas_ambil: new Date(detailPenitipanData.batas_ambil),
+        tanggal_laku: detailPenitipanData.tanggal_laku
+          ? new Date(detailPenitipanData.tanggal_laku)
+          : null,
+        is_perpanjang: detailPenitipanData.is_perpanjang || false,
+      },
+    });
+
+    // Step 4: Format the response
+    const formattedDetailPenitipan = {
+      id_dtl_penitipan: detailPenitipan.id_dtl_penitipan,
+      id_penitipan: detailPenitipan.id_penitipan,
+      id_barang: detailPenitipan.id_barang,
+      tanggal_masuk: detailPenitipan.tanggal_masuk,
+      tanggal_akhir: detailPenitipan.tanggal_akhir,
+      batas_ambil: detailPenitipan.batas_ambil,
+      tanggal_laku: detailPenitipan.tanggal_laku,
+      is_perpanjang: detailPenitipan.is_perpanjang,
+    };
+
+    return {
+      penitipan,
+      detailPenitipan: [formattedDetailPenitipan],
+      barang: [{ id_barang: updatedBarangId }],
+      message: "Barang, Penitipan, and DetailPenitipan updated successfully",
+    };
+  });
+
+  return result;
+};
+
 export default {
   create,
   getList,
+  update
 };

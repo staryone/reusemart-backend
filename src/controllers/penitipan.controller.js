@@ -81,7 +81,83 @@ const getList = async (req, res, next) => {
   }
 };
 
+const update = async (req, res, next) => {
+  try {
+    // Extract id_dtl_penitipan from URL parameters
+    const { id } = req.params;
+    if (!id) {
+      throw new Error("ID Detail Penitipan is required");
+    }
+
+    // Parse JSON fields from request body
+    const parsedBarangData = JSON.parse(req.body.barangData);
+    const parsedPenitipanData = JSON.parse(req.body.penitipanData);
+    const parsedDetailPenitipanData = JSON.parse(req.body.detailPenitipanData);
+
+    // Attach uploaded files to barangData and validate MIME types
+    const files = req.files || [];
+
+    // Distribute files to corresponding barangData entries
+    const barangDataWithFiles = await Promise.all(
+      parsedBarangData.map(async (barang, index) => {
+        // Assume files are uploaded with field names like 'gambar[0]', 'gambar[1]', etc.
+        const barangFiles = files.filter((file) => file.fieldname === `gambar[${index}]`);
+
+        const validatedFiles = await Promise.all(
+          barangFiles.map(async (file) => {
+            const fileType = await fileTypeFromBuffer(file.buffer);
+            if (!["image/jpeg", "image/png"].includes(fileType.mime)) {
+              throw new Error(`Invalid file type for ${file.originalname}. Only JPEG and PNG are allowed.`);
+            }
+            return {
+              originalname: file.originalname,
+              mimetype: fileType.mime,
+              buffer: file.buffer,
+              encoding: file.encoding,
+              fieldname: file.fieldname,
+              size: file.size,
+            };
+          })
+        );
+
+        return {
+          ...barang,
+          gambar: validatedFiles,
+        };
+      })
+    );
+
+    // Validate and parse IDs
+    parsedPenitipanData.id_penitip = idToInteger(parsedPenitipanData.id_penitip);
+    parsedPenitipanData.id_pegawai_qc = idToInteger(parsedPenitipanData.id_pegawai_qc);
+    parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter
+      ? idToInteger(parsedPenitipanData.id_hunter)
+      : undefined;
+
+    // Call the service to update Penitipan, Barang, and DetailPenitipan
+    const result = await penitipanService.update(
+      id,
+      barangDataWithFiles,
+      parsedPenitipanData,
+      parsedDetailPenitipanData
+    );
+
+    // Return success response
+    return res.status(200).json({
+      message: result.message,
+      data: {
+        penitipan: result.penitipan,
+        barang: result.barang,
+        detailPenitipan: result.detailPenitipan,
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
-  getList
+  getList,
+  update
 };
