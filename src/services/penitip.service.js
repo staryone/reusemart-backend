@@ -231,7 +231,7 @@ const get = async (id) => {
 const getList = async (request) => {
   const page = parseInt(request.page) || 1;
   const limit = parseInt(request.limit) || 10;
-  const skip = (page - 1) * limit;
+  const skip = request.all ? undefined : (page - 1) * limit;
   const q = request.search;
 
   const countAllPenitip = await prismaClient.penitip.count({
@@ -260,7 +260,7 @@ const getList = async (request) => {
       : {},
   });
 
-  const listPenitip = await prismaClient.penitip.findMany({
+  const findManyOptions = {
     where: q
       ? {
           OR: [
@@ -290,10 +290,15 @@ const getList = async (request) => {
           email: true,
         },
       },
-    },
-    skip: skip,
-    take: limit,
-  });
+    }
+  };
+
+  if (!request.all && skip !== undefined && limit !== undefined) {
+    findManyOptions.skip = skip;
+    findManyOptions.take = limit;
+  }
+
+  const listPenitip = await prismaClient.penitip.findMany(findManyOptions);
 
   const formattedPenitip = await Promise.all(
     listPenitip.map(async (p) => ({

@@ -370,9 +370,105 @@ const updateStatus = async (req) => {
   return "OK";
 };
 
+const update = async (id_barang, request, id_penitip, existingGambar = []) => {
+  // Validate input
+  request.id_barang = id_barang;
+  request = validate(updateBarangValidation, request);
+  id_barang = idToInteger(id_barang);
+  id_penitip = idToInteger(id_penitip);
+
+  const id_kategori = request.id_kategori ? request.id_kategori : undefined;
+  // Verify barang exists
+  const existingBarang = await prismaClient.barang.findUnique({
+    where: { id_barang },
+    include: { gambar: true },
+  });
+  if (!existingBarang) {
+    throw new ResponseError(404, "Barang tidak ditemukan");
+  }
+
+  // Prepare image updates
+  let newImageURLs = [];
+  if (request.gambar && request.gambar.length > 0) {
+    newImageURLs = await Promise.all(
+      request.gambar.map(async (g) => {
+        g.fieldname = formatNamaGambarBarang(id_penitip);
+        await uploadFile(g, "gambar_barang");
+        return "gambar_barang/" + g.fieldname + "." + String(g.mimetype).slice(6);
+      })
+    );
+  }
+
+  // Remove gambar field from request to avoid Prisma errors
+  delete request.gambar;
+  console.log("Barang req",request);
+  // Use transaction for atomic updates
+  const result = await prismaClient.$transaction(async (tx) => {
+    // Update Barang record
+    const updatedBarang = await tx.barang.update({
+      where: { id_barang },
+      data: {
+        prefix: request.prefix || existingBarang.prefix,
+        nama_barang: request.nama_barang,
+        deskripsi: request.deskripsi,
+        harga: request.harga,
+        berat: request.berat,
+        id_kategori: id_kategori !== undefined ? id_kategori : existingBarang.id_kategori,
+        id_penitip,
+        garansi: request.garansi || null,
+        status: request.status || existingBarang.status,
+      },
+      select: { id_barang: true },
+    });
+
+    // Handle images
+    // Delete images not in existingGambar
+    if (existingGambar.length > 0 || newImageURLs.length > 0) {
+      await tx.gambarBarang.deleteMany({
+        where: {
+          id_barang,
+          id_gambar: { notIn: existingGambar.map((g) => g.id_gambar) },
+        },
+      });
+    }
+
+    // Create new images
+    if (newImageURLs.length > 0) {
+      await Promise.all(
+        newImageURLs.map(async (imageurl, index) => {
+          await tx.gambarBarang.create({
+            data: {
+              url_gambar: imageurl,
+              id_barang: updatedBarang.id_barang,
+              is_primary: existingGambar.length === 0 && index === 0, // First new image is primary if no existing images
+              order_number: existingGambar.length + index,
+            },
+          });
+        })
+      );
+    }
+
+    // Ensure at least one image is primary
+    const images = await tx.gambarBarang.findMany({
+      where: { id_barang: updatedBarang.id_barang },
+    });
+    if (images.length > 0 && !images.some((img) => img.is_primary)) {
+      await tx.gambarBarang.update({
+        where: { id_gambar: images[0].id_gambar },
+        data: { is_primary: true },
+      });
+    }
+
+    return updatedBarang.id_barang;
+  });
+
+  return result;
+};
+
 export default {
   create,
   get,
   getList,
   updateStatus,
+  update,
 };

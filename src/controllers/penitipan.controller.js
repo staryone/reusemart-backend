@@ -11,13 +11,15 @@ const create = async (req, res, next) => {
     const parsedDetailPenitipanData = JSON.parse(req.body.detailPenitipanData);
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
-   
+
     // Distribute files to corresponding barangData entries
     const barangDataWithFiles = await Promise.all(
       parsedBarangData.map(async (barang, index) => {
         // barang.garansi = barang.garansi ? barang.garansi : undefined;
         // Assume files are uploaded with field names like 'gambar[0]', 'gambar[1]', etc.
-        const barangFiles = files.filter((file) => file.fieldname === `gambar[${index}]`);
+        const barangFiles = files.filter(
+          (file) => file.fieldname === `gambar[${index}]`
+        );
 
         const validatedFiles = await Promise.all(
           barangFiles.map(async (file) => {
@@ -28,7 +30,7 @@ const create = async (req, res, next) => {
               buffer: file.buffer,
               encoding: file.encoding,
               fieldname: file.fieldname,
-              size: file.size
+              size: file.size,
             };
           })
         );
@@ -40,11 +42,14 @@ const create = async (req, res, next) => {
       })
     );
 
-    parsedPenitipanData.id_penitip = idToInteger(parsedPenitipanData.id_penitip);
-    parsedPenitipanData.id_pegawai_qc = idToInteger(parsedPenitipanData.id_pegawai_qc);
+    parsedPenitipanData.id_penitip = idToInteger(
+      parsedPenitipanData.id_penitip
+    );
+    parsedPenitipanData.id_pegawai_qc = idToInteger(
+      parsedPenitipanData.id_pegawai_qc
+    );
     // parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter ? idToInteger(parsedPenitipanData.id_hunter) : undefined;
 
-    
     //  console.log("\n\n",parsedBarangData);
     // Call the service to create Penitipan, Barang, and DetailPenitipan
     const result = await penitipanService.create(
@@ -69,8 +74,10 @@ const create = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    console.log("\n\nMASUK CONTROLLER")
-    const [listPenitipan, totalItems] = await penitipanService.getList(req.query);
+    console.log("\n\nMASUK CONTROLLER");
+    const [listPenitipan, totalItems] = await penitipanService.getList(
+      req.query
+    );
 
     res.status(200).json({
       data: listPenitipan,
@@ -85,15 +92,12 @@ const update = async (req, res, next) => {
   try {
     // Extract id_dtl_penitipan from URL parameters
     const { id } = req.params;
-    if (!id) {
-      throw new Error("ID Detail Penitipan is required");
-    }
 
     // Parse JSON fields from request body
     const parsedBarangData = JSON.parse(req.body.barangData);
     const parsedPenitipanData = JSON.parse(req.body.penitipanData);
     const parsedDetailPenitipanData = JSON.parse(req.body.detailPenitipanData);
-
+    console.log("Req data", req.body);
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
 
@@ -101,14 +105,13 @@ const update = async (req, res, next) => {
     const barangDataWithFiles = await Promise.all(
       parsedBarangData.map(async (barang, index) => {
         // Assume files are uploaded with field names like 'gambar[0]', 'gambar[1]', etc.
-        const barangFiles = files.filter((file) => file.fieldname === `gambar[${index}]`);
+        const barangFiles = files.filter(
+          (file) => file.fieldname === `gambar[${index}]`
+        );
 
         const validatedFiles = await Promise.all(
           barangFiles.map(async (file) => {
             const fileType = await fileTypeFromBuffer(file.buffer);
-            if (!["image/jpeg", "image/png"].includes(fileType.mime)) {
-              throw new Error(`Invalid file type for ${file.originalname}. Only JPEG and PNG are allowed.`);
-            }
             return {
               originalname: file.originalname,
               mimetype: fileType.mime,
@@ -128,8 +131,12 @@ const update = async (req, res, next) => {
     );
 
     // Validate and parse IDs
-    parsedPenitipanData.id_penitip = idToInteger(parsedPenitipanData.id_penitip);
-    parsedPenitipanData.id_pegawai_qc = idToInteger(parsedPenitipanData.id_pegawai_qc);
+    parsedPenitipanData.id_penitip = idToInteger(
+      parsedPenitipanData.id_penitip
+    );
+    parsedPenitipanData.id_pegawai_qc = idToInteger(
+      parsedPenitipanData.id_pegawai_qc
+    );
     parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter
       ? idToInteger(parsedPenitipanData.id_hunter)
       : undefined;
@@ -159,5 +166,5 @@ const update = async (req, res, next) => {
 export default {
   create,
   getList,
-  update
+  update,
 };

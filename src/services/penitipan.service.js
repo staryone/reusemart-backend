@@ -233,7 +233,8 @@ const update = async (
   id_dtl_penitipan,
   barangDataArray,
   penitipanData,
-  detailPenitipanDataArray
+  detailPenitipanDataArray,
+  existingGambarArrays
 ) => {
   // Validate penitipanData using Joi schema
   const validatedPenitipanData = validate(
@@ -284,10 +285,13 @@ const update = async (
   const result = await prismaClient.$transaction(async (tx) => {
     // Step 1: Update Barang record
     const barangData = barangDataArray[0]; // Assuming single barang per DetailPenitipan
+    const existingGambar = existingGambarArrays ? existingGambarArrays[0] : []; // Array of { id_gambar }
+    const id_barang = existingDetailPenitipan.barang.prefix + existingDetailPenitipan.barang.id_barang;
     const updatedBarangId = await barangService.update(
-      existingDetailPenitipan.barang.id_barang,
+      id_barang,
       barangData,
-      validatedPenitipanData.id_penitip
+      validatedPenitipanData.id_penitip,
+      existingGambar
     );
 
     // Step 2: Update Penitipan record
@@ -343,5 +347,5 @@ const update = async (
 export default {
   create,
   getList,
-  update
+  update,
 };

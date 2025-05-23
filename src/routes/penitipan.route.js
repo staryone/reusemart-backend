@@ -16,4 +16,10 @@ penitipanRouter.get(
   penitipanController.getList
 );
 
+penitipanRouter.patch(
+  "/api/penitipan/:id",
+  restrictTo("PEGAWAI", "GUDANG"),
+  penitipanController.update
+);
+
 export { penitipanRouter };
