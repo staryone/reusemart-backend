@@ -72,10 +72,19 @@ const profile = async (id) => {
       },
       penitipan: {
         select: {
+          id_penitipan: true,
           detail_penitipan: {
             select: {
+              id_dtl_penitipan: true,
+              tanggal_masuk: true,
+              tanggal_akhir: true,
+              tanggal_laku: true,
+              batas_ambil: true,
+              is_perpanjang: true,
               barang: {
-                include: {
+                select: {
+                  nama_barang: true,
+                  harga: true,
                   detail_transaksi: {
                     include: {
                       transaksi: {
@@ -290,7 +299,7 @@ const getList = async (request) => {
           email: true,
         },
       },
-    }
+    },
   };
 
   if (!request.all && skip !== undefined && limit !== undefined) {
