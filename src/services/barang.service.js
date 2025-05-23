@@ -1,5 +1,5 @@
 import { prismaClient } from "../application/database.js";
-import { getUrlFile, uploadFile } from "../application/storage.js";
+import { getUrlFile, uploadFile, deleteFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
 import {
   formatNamaGambarBarang,
@@ -413,8 +413,7 @@ const update = async (id_barang, request, id_penitip, existingGambar = []) => {
         deskripsi: request.deskripsi,
         harga: request.harga,
         berat: request.berat,
-        id_kategori: id_kategori !== undefined ? id_kategori : existingBarang.id_kategori,
-        id_penitip,
+        id_kategori: id_kategori,
         garansi: request.garansi || null,
         status: request.status || existingBarang.status,
       },
@@ -424,6 +423,26 @@ const update = async (id_barang, request, id_penitip, existingGambar = []) => {
     // Handle images
     // Delete images not in existingGambar
     if (existingGambar.length > 0 || newImageURLs.length > 0) {
+      const imagesToDelete = await tx.gambarBarang.findMany({
+        where: {
+          id_barang,
+          id_gambar: { notIn: existingGambar.map((g) => g.id_gambar) },
+        },
+        select: { url_gambar: true },
+      });
+
+      // Delete files from storage
+      await Promise.all(
+        imagesToDelete.map(async ({ url_gambar }) => {
+          try {
+            await deleteFile(url_gambar);
+          } catch (error) {
+            console.error(`Failed to delete file ${url_gambar}:`, error.message);
+            // Continue without throwing to avoid transaction rollback
+          }
+        })
+      );
+
       await tx.gambarBarang.deleteMany({
         where: {
           id_barang,
