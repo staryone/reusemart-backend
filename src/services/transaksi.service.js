@@ -19,7 +19,7 @@ const create = async (request) => {
           harga: true,
         },
       });
-      result.poin = result.harga / 10000;
+      result.poin = parseInt(result.harga / 10000);
       return result;
     })
   );
@@ -34,11 +34,14 @@ const create = async (request) => {
       0
     );
     const total_poin = listBarang.reduce((acc, barang) => acc + barang.poin, 0);
-    const batas_pembayaran = new Date(Date.now());
-    batas_pembayaran.setMinutes(tanggal_transaksi.getMinutes() + 1);
+    const tanggal_transaksi = new Date();
+    tanggal_transaksi.setHours(tanggal_pembayaran.getHours() + 7);
+    const batas_pembayaran = new Date(tanggal_pembayaran);
+    batas_pembayaran.setMinutes(batas_pembayaran.getMinutes() + 1);
+    console.log(batas_pembayaran);
 
     const ongkos_kirim =
-      request.metode_pembayaran.toUpperCase() === "DIKIRIM" &&
+      String(request.metode_pembayaran).toUpperCase() === "DIKIRIM" &&
       total_harga < 1500000
         ? 100000
         : 0;
@@ -53,7 +56,10 @@ const create = async (request) => {
     });
 
     if (request.potongan_poin > poin_loyalitas) {
-      throw new ResponseError(401, "Poin gagal terpotong karena tidak cukup!");
+      throw new ResponseError(
+        401,
+        "Poin gagal terpotong karena tidak cukup! " + request.potongan_poin
+      );
     }
 
     const potongan_harga = request.potongan_poin * 0.01 * 10000;
@@ -63,9 +69,12 @@ const create = async (request) => {
     const transaksiData = {
       ...request,
       total_harga: total_harga,
+      tanggal_transaksi: tanggal_transaksi,
       batas_pembayaran: batas_pembayaran,
       total_poin:
-        total_harga > 500000 ? total_poin + total_poin * 0.2 : total_poin,
+        total_harga > 500000
+          ? parseInt(total_poin + total_poin * 0.2)
+          : total_poin,
       ongkos_kirim: ongkos_kirim,
       total_akhir: total_akhir,
     };

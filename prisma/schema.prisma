@@ -164,24 +164,24 @@ model Kategori {
 }
 
 model Barang {
-  prefix           String           @db.Char(1)
-  id_barang        Int              @id @default(autoincrement())
-  nama_barang      String           @db.VarChar(255)
-  deskripsi        String           @db.VarChar(255)
+  prefix           String            @db.Char(1)
+  id_barang        Int               @id @default(autoincrement())
+  nama_barang      String            @db.VarChar(255)
+  deskripsi        String            @db.VarChar(255)
   harga            Float
-  status           StatusBarang     @default(TERSEDIA)
+  status           StatusBarang      @default(TERSEDIA)
   garansi          DateTime?
   berat            Float
   id_kategori      Int
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @default(now()) @db.DateTime(0)
-  kategori         Kategori         @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], onDelete: Cascade, map: "fk_barang_to_kategori")
-  diskusi          Diskusi[]        @relation("DiskusiToBarang")
-  donasi           Donasi?          @relation("DonasiToBarang")
-  detail_penitipan DetailPenitipan? @relation("DetailPenitipanToBarang")
-  detail_transaksi DetailTransaksi? @relation("DetailTransaksiToBarang")
-  gambar           GambarBarang[]   @relation("GambarBarangToBarang")
-  keranjang        Keranjang[]      @relation("KeranjangToBarang")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @db.DateTime(0)
+  kategori         Kategori          @relation("BarangToKategori", fields: [id_kategori], references: [id_kategori], onDelete: Cascade, map: "fk_barang_to_kategori")
+  diskusi          Diskusi[]         @relation("DiskusiToBarang")
+  donasi           Donasi?           @relation("DonasiToBarang")
+  detail_penitipan DetailPenitipan?  @relation("DetailPenitipanToBarang")
+  detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToBarang")
+  gambar           GambarBarang[]    @relation("GambarBarangToBarang")
+  keranjang        Keranjang[]       @relation("KeranjangToBarang")
 
   @@index([id_kategori], map: "fk_barang_to_kategori")
   @@map("barang")
@@ -244,7 +244,7 @@ model Transaksi {
 
 model DetailTransaksi {
   id_dtl_transaksi Int       @id @default(autoincrement())
-  id_barang        Int       @unique
+  id_barang        Int       
   id_transaksi     Int?
   is_rating        Boolean   @default(false)
   poin             Int
