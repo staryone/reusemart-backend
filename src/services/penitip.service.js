@@ -122,6 +122,25 @@ const profile = async (id) => {
     is_top_seller: penitip.is_top_seller,
     total_per_bulan: penitip.total_per_bulan,
     poin: penitip.poin,
+    penitipan: penitip.penitipan.map((penitipan) => ({
+      id_penitipan: penitipan.id_penitipan,
+      detail_penitipan: penitipan.detail_penitipan.map((dtl) => ({
+        id_dtl_penitipan: dtl.id_dtl_penitipan,
+        tanggal_masuk: dtl.tanggal_masuk.toISOString(),
+        tanggal_akhir: dtl.tanggal_akhir.toISOString(),
+        tanggal_laku: dtl.tanggal_laku ? dtl.tanggal_laku.toISOString() : null,
+        batas_ambil: dtl.batas_ambil ? dtl.batas_ambil.toISOString() : null,
+        is_perpanjang: dtl.is_perpanjang,
+        barang: {
+          nama_barang: dtl.barang.nama_barang,
+          harga: new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+          }).format(dtl.barang.harga),
+        },
+      })),
+    })),
     detail_transaksi: penitip.penitipan
       .map((penitipan) =>
         penitipan.detail_penitipan
