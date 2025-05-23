@@ -1,8 +1,18 @@
 import { prismaClient } from "../application/database.js";
+import { logger } from "../application/logging.js";
 import { getUrlFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idToInteger, idToString } from "../utils/formater.util.js";
-import { createTransaksiValidation } from "../validation/transaksi.validate.js";
+import {
+  formatBuktiPembayaran,
+  generateNomorNota,
+  idToInteger,
+  idToString,
+} from "../utils/formater.util.js";
+import {
+  createTransaksiValidation,
+  getTransaksiValidation,
+  updateBuktiPembayaranTransaksiValidation,
+} from "../validation/transaksi.validate.js";
 import { validate } from "../validation/validate.js";
 
 const create = async (request) => {
@@ -28,15 +38,15 @@ const create = async (request) => {
 
   console.log(listBarang);
 
-  await prismaClient.$transaction(async (tx) => {
+  const result = await prismaClient.$transaction(async (tx) => {
     const total_harga = listBarang.reduce(
       (acc, barang) => acc + barang.harga,
       0
     );
     const total_poin = listBarang.reduce((acc, barang) => acc + barang.poin, 0);
     const tanggal_transaksi = new Date();
-    tanggal_transaksi.setHours(tanggal_pembayaran.getHours() + 7);
-    const batas_pembayaran = new Date(tanggal_pembayaran);
+    tanggal_transaksi.setHours(tanggal_transaksi.getHours() + 7);
+    const batas_pembayaran = new Date(tanggal_transaksi);
     batas_pembayaran.setMinutes(batas_pembayaran.getMinutes() + 1);
     console.log(batas_pembayaran);
 
@@ -102,7 +112,7 @@ const create = async (request) => {
             id_barang: barang.id_barang,
           },
           data: {
-            status: "PROSES_PEMBAYARAN",
+            status: "TERJUAL",
           },
         });
       })
@@ -129,11 +139,170 @@ const create = async (request) => {
         ],
       },
     });
+    return result.id_transaksi;
   });
 
-  return "OK";
+  return result.toString();
+};
+
+const get = async (id_transaksi, id_pembeli) => {
+  id_transaksi = validate(getTransaksiValidation, id_transaksi);
+
+  const transaksi = await prismaClient.transaksi.findUnique({
+    where: {
+      id_transaksi: id_transaksi,
+    },
+  });
+
+  if (transaksi.id_pembeli !== id_pembeli) {
+    throw new ResponseError(
+      401,
+      "Anda tidak diijinkan untuk mengakses transaksi ini!"
+    );
+  }
+
+  return {
+    nomor_transaksi: generateNomorNota(
+      transaksi.tanggal_transaksi,
+      transaksi.id_transaksi
+    ),
+    ...result,
+  };
+};
+
+const updateBuktiPembayaranByPembeli = async (
+  request,
+  id_pembeli,
+  id_transaksi
+) => {
+  id_transaksi = validate(getTransaksiValidation, request);
+  const fotoArray = validate(updateBuktiPembayaranTransaksiValidation, request);
+
+  const fotoBuktiPembayaran = fotoArray[0];
+  const formatFoto =
+    "bukti_pembayaran/" + formatBuktiPembayaran(penitip.nomor_ktp);
+  "." + String(penitip.foto_ktp.mimetype).slice(6);
+  fotoBuktiPembayaran.fieldname = formatBuktiPembayaran(penitip.nomor_ktp);
+  const now = new Date();
+  now.setHours(now.getHours() + 7);
+
+  await Promise.all([
+    prismaClient.transaksi.update({
+      where: {
+        id_transaksi: id_transaksi,
+      },
+      data: {
+        tanggal_pembayaran: now,
+        bukti_transfer: formatFoto,
+        status_Pembayaran: "SUDAH_DIBAYAR",
+      },
+    }),
+    uploadFile(fotoBuktiPembayaran, "bukti_pembayaran"),
+  ]);
+};
+
+const updateStatusBySistem = async () => {
+  const result = await checkExpiredTransactions();
+  return result;
+};
+
+const checkExpiredTransactions = async () => {
+  try {
+    const now = new Date();
+    now.setHours(now.getHours() + 7);
+    const result = await prismaClient.$transaction(async (tx) => {
+      const expiredTransactions = await tx.transaksi.findMany({
+        where: {
+          AND: [
+            {
+              batas_pembayaran: {
+                lte: now,
+              },
+            },
+            {
+              status_Pembayaran: "BELUM_DIBAYAR",
+            },
+          ],
+        },
+        include: {
+          detail_transaksi: true,
+        },
+      });
+
+      logger.log(expiredTransactions);
+
+      if (expiredTransactions.length > 0) {
+        const listIdTransaksi = expiredTransactions.map((transaksi) => {
+          return transaksi.id_transaksi;
+        });
+
+        const listIdBarang = expiredTransactions
+          .map((transaksi) => {
+            return transaksi.detail_transaksi.map((detail) => {
+              return detail.id_barang;
+            });
+          })
+          .flat();
+
+        await Promise.all([
+          await tx.transaksi.updateMany({
+            where: {
+              id_transaksi: {
+                in: listIdTransaksi,
+              },
+            },
+            data: {
+              status_Pembayaran: "DIBATALKAN",
+            },
+          }),
+
+          await Promise.all(
+            expiredTransactions.map(async (transaksi) => {
+              const { poin_loyalitas } = await tx.pembeli.findUnique({
+                where: {
+                  id_pembeli: transaksi.id_pembeli,
+                },
+                select: {
+                  poin_loyalitas: true,
+                },
+              });
+
+              await tx.pembeli.update({
+                where: {
+                  id_pembeli: transaksi.id_pembeli,
+                },
+                data: {
+                  poin_loyalitas: poin_loyalitas + transaksi.potongan_poin,
+                },
+              });
+            })
+          ),
+
+          await tx.barang.updateMany({
+            where: {
+              id_barang: {
+                in: listIdBarang,
+              },
+            },
+            data: {
+              status: "TERSEDIA",
+            },
+          }),
+        ]);
+
+        return "Transaksi ada dan operasi berhasil!";
+      }
+      return "Transaksi tidak ada dan operasi berhasil";
+    });
+
+    return result;
+  } catch (error) {
+    return `Operasi gagal, ${error}`;
+  }
 };
 
 export default {
   create,
+  get,
+  checkExpiredTransactions,
 };

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { JoiImage } from "../utils/joi_image_extended.util.js";
 
 const createTransaksiValidation = Joi.object({
   id_pembeli: Joi.number().required(),
@@ -8,6 +9,19 @@ const createTransaksiValidation = Joi.object({
   metode_pengiriman: Joi.string().max(255).required(),
 });
 
+const updateBuktiPembayaranTransaksiValidation = Joi.array()
+  .items(
+    JoiImage.image()
+      .allowedTypes(["jpg", "png", "jpeg"])
+      .maxSize(2 * 1024 * 1024)
+  )
+  .max(1)
+  .required();
+
 const getTransaksiValidation = Joi.number().required();
 
-export { createTransaksiValidation, getTransaksiValidation };
+export {
+  createTransaksiValidation,
+  getTransaksiValidation,
+  updateBuktiPembayaranTransaksiValidation,
+};

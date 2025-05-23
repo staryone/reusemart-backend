@@ -7,9 +7,9 @@ const create = async (req, res, next) => {
 
     if (dataTransaksi.id_alamat === null) delete dataTransaksi.id_alamat;
 
-    await transaksiService.create(dataTransaksi);
+    const result = await transaksiService.create(dataTransaksi);
     res.status(200).json({
-      data: "OK",
+      data: result,
       message: "Create transaksi berhasil!",
     });
   } catch (e) {

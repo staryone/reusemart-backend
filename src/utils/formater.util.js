@@ -15,7 +15,15 @@ export const formatImageName = (fieldname) => {
 };
 
 export const formatNamaGambarBarang = (id_penitip) => {
-  return `user-${id_penitip}-${String(Date.now())}`;
+  const now = new Date();
+  now.setHours(now.getHours() + 7);
+  return `user-${id_penitip}-${String(now.getTime())}`;
+};
+
+export const formatBuktiPembayaran = (id_pembeli) => {
+  const now = new Date();
+  now.setHours(now.getHours() + 7);
+  return `user-${id_pembeli}-buktiBayar-${String(now.getTime())}`;
 };
 
 export const generateNomorNota = (tanggal_transaksi, id) => {
