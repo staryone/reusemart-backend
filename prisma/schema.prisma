@@ -184,6 +184,7 @@ model Barang {
   keranjang        Keranjang[]       @relation("KeranjangToBarang")
 
   @@index([id_kategori], map: "fk_barang_to_kategori")
+  @@index([status])
   @@map("barang")
 }
 
@@ -239,6 +240,8 @@ model Transaksi {
 
   @@index([id_alamat], map: "fk_transaksi_to_alamat")
   @@index([id_pembeli], map: "fk_transaksi_to_pembeli")
+  @@index([status_Pembayaran])
+  @@index([tanggal_pembayaran])
   @@map("transaksi")
 }
 
