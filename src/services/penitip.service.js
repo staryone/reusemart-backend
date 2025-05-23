@@ -133,11 +133,7 @@ const profile = async (id) => {
         is_perpanjang: dtl.is_perpanjang,
         barang: {
           nama_barang: dtl.barang.nama_barang,
-          harga: new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            minimumFractionDigits: 0,
-          }).format(dtl.barang.harga),
+          harga: dtl.barang.harga,
         },
       })),
     })),
