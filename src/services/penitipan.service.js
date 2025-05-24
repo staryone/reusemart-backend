@@ -280,12 +280,13 @@ const update = async (
   if (!existingDetailPenitipan) {
     throw new ResponseError(404, "DetailPenitipan not found");
   }
-
+  console.log("\n\nExisting gambar arrays", existingGambarArrays)
   // Use a transaction to ensure atomicity
   const result = await prismaClient.$transaction(async (tx) => {
     // Step 1: Update Barang record
     const barangData = barangDataArray[0]; // Assuming single barang per DetailPenitipan
-    const existingGambar = existingGambarArrays ? existingGambarArrays[0] : []; // Array of { id_gambar }
+    const existingGambar = existingGambarArrays ? existingGambarArrays : []; // Array of { id_gambar }
+    console.log(existingGambar)
     const id_barang = existingDetailPenitipan.barang.prefix + existingDetailPenitipan.barang.id_barang;
     const updatedBarangId = await barangService.update(
       id_barang,

@@ -97,7 +97,8 @@ const update = async (req, res, next) => {
     const parsedBarangData = JSON.parse(req.body.barangData);
     const parsedPenitipanData = JSON.parse(req.body.penitipanData);
     const parsedDetailPenitipanData = JSON.parse(req.body.detailPenitipanData);
-    console.log("Req data", req.body);
+    const parsedExistingGambar = JSON.parse(req.body.existingGambar);
+    
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
 
@@ -146,7 +147,8 @@ const update = async (req, res, next) => {
       id,
       barangDataWithFiles,
       parsedPenitipanData,
-      parsedDetailPenitipanData
+      parsedDetailPenitipanData,
+      parsedExistingGambar
     );
 
     // Return success response

@@ -400,8 +400,8 @@ const update = async (id_barang, request, id_penitip, existingGambar = []) => {
   }
 
   // Remove gambar field from request to avoid Prisma errors
-  delete request.gambar;
   console.log("Barang req",request);
+  delete request.gambar;
   // Use transaction for atomic updates
   const result = await prismaClient.$transaction(async (tx) => {
     // Update Barang record
