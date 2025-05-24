@@ -53,4 +53,28 @@ transaksiRouter.post(
   transaksiController.create
 );
 
+transaksiRouter.get(
+  "/api/transaksi/:id",
+  restrictTo("PEMBELI"),
+  transaksiController.get
+);
+
+transaksiRouter.delete(
+  "/api/transaksi/:id",
+  restrictTo("PEMBELI"),
+  transaksiController.updateExpiredPayment
+);
+
+transaksiRouter.post(
+  "/api/transaksi/:id",
+  restrictTo("PEMBELI"),
+  transaksiController.uploadPembayaran
+);
+
+transaksiRouter.patch(
+  "/api/transaksi/:id/verif",
+  restrictTo("PEGAWAI", "CS"),
+  transaksiController.verifPembayaran
+);
+
 export { transaksiRouter };

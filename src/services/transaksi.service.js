@@ -1,7 +1,8 @@
 import { prismaClient } from "../application/database.js";
 import { logger } from "../application/logging.js";
-import { getUrlFile } from "../application/storage.js";
+import { getUrlFile, uploadFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
+import { formatUTCtoWIB } from "../utils/date.util.js";
 import {
   formatBuktiPembayaran,
   generateNomorNota,
@@ -45,10 +46,9 @@ const create = async (request) => {
     );
     const total_poin = listBarang.reduce((acc, barang) => acc + barang.poin, 0);
     const tanggal_transaksi = new Date();
-    tanggal_transaksi.setHours(tanggal_transaksi.getHours() + 7);
-    const batas_pembayaran = new Date(tanggal_transaksi);
-    batas_pembayaran.setMinutes(batas_pembayaran.getMinutes() + 1);
-    console.log(batas_pembayaran);
+    const batas_pembayaran = new Date(
+      tanggal_transaksi.getTime() + 1 * 60 * 1000
+    );
 
     const ongkos_kirim =
       String(request.metode_pembayaran).toUpperCase() === "DIKIRIM" &&
@@ -81,6 +81,7 @@ const create = async (request) => {
       total_harga: total_harga,
       tanggal_transaksi: tanggal_transaksi,
       batas_pembayaran: batas_pembayaran,
+      updatedAt: tanggal_transaksi,
       total_poin:
         total_harga > 500000
           ? parseInt(total_poin + total_poin * 0.2)
@@ -157,16 +158,24 @@ const get = async (id_transaksi, id_pembeli) => {
   if (transaksi.id_pembeli !== id_pembeli) {
     throw new ResponseError(
       401,
-      "Anda tidak diijinkan untuk mengakses transaksi ini!"
+      "Akses ditolak! Anda bukan pemilik transaksi ini!"
     );
   }
+
+  console.log({
+    nomor_transaksi: generateNomorNota(
+      transaksi.tanggal_transaksi,
+      transaksi.id_transaksi
+    ),
+    ...transaksi,
+  });
 
   return {
     nomor_transaksi: generateNomorNota(
       transaksi.tanggal_transaksi,
       transaksi.id_transaksi
     ),
-    ...result,
+    ...transaksi,
   };
 };
 
@@ -175,16 +184,33 @@ const updateBuktiPembayaranByPembeli = async (
   id_pembeli,
   id_transaksi
 ) => {
-  id_transaksi = validate(getTransaksiValidation, request);
+  id_transaksi = validate(getTransaksiValidation, id_transaksi);
   const fotoArray = validate(updateBuktiPembayaranTransaksiValidation, request);
 
   const fotoBuktiPembayaran = fotoArray[0];
   const formatFoto =
-    "bukti_pembayaran/" + formatBuktiPembayaran(penitip.nomor_ktp);
-  "." + String(penitip.foto_ktp.mimetype).slice(6);
-  fotoBuktiPembayaran.fieldname = formatBuktiPembayaran(penitip.nomor_ktp);
+    "bukti_pembayaran/" +
+    formatBuktiPembayaran(id_pembeli) +
+    "." +
+    String(fotoBuktiPembayaran.mimetype).slice(6);
+  fotoBuktiPembayaran.fieldname = formatBuktiPembayaran(id_pembeli);
   const now = new Date();
-  now.setHours(now.getHours() + 7);
+
+  const transaksi = await prismaClient.transaksi.findUnique({
+    where: {
+      id_transaksi: id_transaksi,
+    },
+    select: {
+      id_pembeli: true,
+    },
+  });
+
+  if (transaksi.id_pembeli !== id_pembeli) {
+    throw new ResponseError(
+      401,
+      "Akses ditolak, anda bukan pemilik transaksi ini!"
+    );
+  }
 
   await Promise.all([
     prismaClient.transaksi.update({
@@ -195,21 +221,116 @@ const updateBuktiPembayaranByPembeli = async (
         tanggal_pembayaran: now,
         bukti_transfer: formatFoto,
         status_Pembayaran: "SUDAH_DIBAYAR",
+        updatedAt: now,
       },
     }),
     uploadFile(fotoBuktiPembayaran, "bukti_pembayaran"),
   ]);
+
+  return "OK";
 };
 
-const updateStatusBySistem = async () => {
-  const result = await checkExpiredTransactions();
-  return result;
+const updateExpiredPayment = async (id_transaksi, id_pembeli) => {
+  id_transaksi = validate(getTransaksiValidation, id_transaksi);
+  const transaksi = await prismaClient.transaksi.findUnique({
+    where: {
+      id_transaksi: id_transaksi,
+    },
+    select: {
+      id_pembeli,
+      detail_transaksi: {
+        select: {
+          id_barang: true,
+        },
+      },
+    },
+  });
+
+  if (transaksi.id_pembeli !== id_pembeli) {
+    throw new ResponseError(
+      401,
+      "Akses gagal, anda bukan pemilik transaksi ini!"
+    );
+  }
+
+  await prismaClient.$transaction(async (tx) => {
+    const listIdBarang = transaksi.detail_transaksi.map((detail) => {
+      return detail.id_barang;
+    });
+
+    await Promise.all([
+      tx.transaksi.update({
+        where: {
+          id_transaksi: id_transaksi,
+        },
+        data: {
+          status_Pembayaran: "DIBATALKAN",
+        },
+        select: {
+          detail_transaksi: {
+            select: {
+              id_barang: true,
+            },
+          },
+        },
+      }),
+
+      tx.barang.updateMany({
+        where: {
+          id_barang: {
+            in: listIdBarang,
+          },
+        },
+        data: {
+          status: "TERSEDIA",
+        },
+      }),
+    ]);
+  });
+};
+
+const updateStatusByCS = async (id_transaksi, status) => {
+  id_transaksi = validate(getTransaksiValidation, id_transaksi);
+
+  const transaksi = await prismaClient.transaksi.update({
+    where: {
+      id_transaksi: id_transaksi,
+    },
+    data: {
+      status_Pembayaran: status,
+    },
+    select: {
+      detail_transaksi: {
+        select: {
+          id_barang: true,
+        },
+      },
+    },
+  });
+
+  const listIdBarang = transaksi.detail_transaksi.map((detail) => {
+    return detail.id_barang;
+  });
+
+  if (status === "DIBATALKAN") {
+    await prismaClient.barang.updateMany({
+      where: {
+        id_barang: {
+          in: listIdBarang,
+        },
+      },
+      data: {
+        status: "TERSEDIA",
+      },
+    });
+  }
+
+  return "OK";
 };
 
 const checkExpiredTransactions = async () => {
   try {
     const now = new Date();
-    now.setHours(now.getHours() + 7);
     const result = await prismaClient.$transaction(async (tx) => {
       const expiredTransactions = await tx.transaksi.findMany({
         where: {
@@ -297,7 +418,7 @@ const checkExpiredTransactions = async () => {
 
     return result;
   } catch (error) {
-    return `Operasi gagal, ${error}`;
+    return `Operasi gagal, Internal server error ${error}`;
   }
 };
 
@@ -305,4 +426,7 @@ export default {
   create,
   get,
   checkExpiredTransactions,
+  updateBuktiPembayaranByPembeli,
+  updateExpiredPayment,
+  updateStatusByCS,
 };
