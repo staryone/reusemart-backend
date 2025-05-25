@@ -51,6 +51,7 @@ model Pegawai {
   pengiriman_kurir Pengiriman[] @relation("PengirimanToKurir")
   penitipan_hunter Penitipan[]  @relation("PenitipanToHunter")
   penitipan_qc     Penitipan[]  @relation("PenitipanToPegawaiQC")
+  transaksi        Transaksi[]  @relation("TransaksiToCS")
 
   @@index([id_jabatan], map: "pegawai_id_jabatan_fkey")
   @@map("pegawai")
@@ -237,6 +238,7 @@ model Transaksi {
   pengiriman         Pengiriman?       @relation("PengirimanToTransaksi")
   alamat             Alamat?           @relation("TransaksiToAlamat", fields: [id_alamat], references: [id_alamat], map: "fk_transaksi_to_alamat")
   pembeli            Pembeli           @relation("TransaksiToPembeli", fields: [id_pembeli], references: [id_pembeli], onDelete: Cascade, map: "fk_transaksi_to_pembeli")
+  cs                 Pegawai?          @relation("TransaksiToCS", fields: [id_cs_verif], references: [id_pegawai], onDelete: Cascade, map: "fk_transaksi_to_cs")
 
   @@index([id_alamat], map: "fk_transaksi_to_alamat")
   @@index([id_pembeli], map: "fk_transaksi_to_pembeli")
@@ -388,6 +390,7 @@ enum StatusPembayaran {
   SUDAH_DIBAYAR
   DITERIMA
   DIBATALKAN
+  DITOLAK
 }
 
 enum MetodePengiriman {
@@ -397,7 +400,6 @@ enum MetodePengiriman {
 
 enum StatusBarang {
   TERSEDIA
-  PROSES_PEMBAYARAN
   KEMBALI
   DIDONASIKAN
   TERDONASI
