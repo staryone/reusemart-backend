@@ -4,6 +4,7 @@ import { createPenitipanValidation } from "../validation/penitipan.validate.js";
 import { validate } from "../validation/validate.js";
 import { getUrlFile } from "../application/storage.js";
 import barangService from "./barang.service.js";
+import { generateNomorNota } from "../utils/formater.util.js";
 
 const create = async (
   barangDataArray,
@@ -93,11 +94,13 @@ const getList = async (request) => {
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
   const q = request.search;
+  const filter = request.status;
 
   const countAllPenitipan = await prismaClient.detailPenitipan.count({
-    where: q
+    where: q || filter
       ? {
           OR: [
+            q ? 
             {
               penitipan: {
                 penitip: {
@@ -106,23 +109,33 @@ const getList = async (request) => {
                   },
                 },
               },
-            },
+            }: null,
+            q ?
             {
               barang: {
                 nama_barang: {
                   contains: q,
                 },
               },
-            },
-          ],
+            }: null,
+            filter ?
+            {
+              barang: {
+                status: {
+                  equals: filter
+                }
+              }
+            }: null
+          ].filter(Boolean),
         }
       : {},
   });
 
   const listPenitipan = await prismaClient.detailPenitipan.findMany({
-    where: q
+    where:q || filter
       ? {
           OR: [
+            q ? 
             {
               penitipan: {
                 penitip: {
@@ -131,15 +144,24 @@ const getList = async (request) => {
                   },
                 },
               },
-            },
+            }: null,
+            q ?
             {
               barang: {
                 nama_barang: {
                   contains: q,
                 },
               },
-            },
-          ],
+            }: null,
+            filter ?
+            {
+              barang: {
+                status: {
+                  equals: filter
+                }
+              }
+            }: null
+          ].filter(Boolean),
         }
       : {},
     include: {
@@ -206,6 +228,7 @@ const getList = async (request) => {
       });
       return {
         id_dtl_penitipan: p.id_dtl_penitipan,
+        nomorNota: generateNomorNota(p.tanggal_masuk, p.id_dtl_penitipan),
         tanggal_masuk: p.tanggal_masuk,
         tanggal_akhir: p.tanggal_akhir,
         tanggal_laku: p.tanggal_laku,
