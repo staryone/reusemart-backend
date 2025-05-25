@@ -289,7 +289,7 @@ const updateExpiredPayment = async (id_transaksi, id_pembeli) => {
   });
 };
 
-const updateStatusByCS = async (id_transaksi, status) => {
+const updateStatusByCS = async (id_transaksi, status, id_cs) => {
   id_transaksi = validate(getTransaksiValidation, id_transaksi);
 
   const transaksi = await prismaClient.transaksi.update({
@@ -298,6 +298,7 @@ const updateStatusByCS = async (id_transaksi, status) => {
     },
     data: {
       status_Pembayaran: status,
+      id_cs_verif: id_cs,
     },
     select: {
       detail_transaksi: {
@@ -312,7 +313,7 @@ const updateStatusByCS = async (id_transaksi, status) => {
     return detail.id_barang;
   });
 
-  if (status === "DIBATALKAN") {
+  if (status === "DITOLAK") {
     await prismaClient.barang.updateMany({
       where: {
         id_barang: {
@@ -422,6 +423,126 @@ const checkExpiredTransactions = async () => {
   }
 };
 
+const getListVerifPembayaran = async (request) => {
+  const page = parseInt(request.page) || 1;
+  const limit = parseInt(request.limit) || 10;
+  const status = request.status || "ALL";
+  const skip = (page - 1) * limit;
+
+  const [countAllTransaksi, listTransaksi] = await Promise.all([
+    await prismaClient.transaksi.count({
+      where:
+        status === "ALL"
+          ? {
+              OR: [
+                {
+                  status_Pembayaran: "SUDAH_DIBAYAR",
+                },
+                {
+                  status_Pembayaran: "DITERIMA",
+                },
+                {
+                  status_Pembayaran: "DITOLAK",
+                },
+              ],
+            }
+          : {
+              status_Pembayaran: status,
+            },
+    }),
+
+    await prismaClient.transaksi.findMany({
+      where:
+        status === "ALL"
+          ? {
+              OR: [
+                {
+                  status_Pembayaran: "SUDAH_DIBAYAR",
+                },
+                {
+                  status_Pembayaran: "DITERIMA",
+                },
+                {
+                  status_Pembayaran: "DITOLAK",
+                },
+              ],
+            }
+          : {
+              status_Pembayaran: status,
+            },
+      include: {
+        pembeli: {
+          include: {
+            user: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
+        cs: {
+          select: {
+            prefix: true,
+            id_pegawai: true,
+            nama: true,
+          },
+        },
+        detail_transaksi: {
+          select: {
+            barang: true,
+          },
+        },
+      },
+      orderBy: { id_transaksi: "desc" },
+      skip: skip,
+      take: limit,
+    }),
+  ]);
+
+  const formattedTransaksi = await Promise.all(
+    listTransaksi.map(async (transaksi) => {
+      transaksi.bukti_transfer = await getUrlFile(transaksi.bukti_transfer);
+
+      const result = {
+        nomor_transaksi: generateNomorNota(
+          transaksi.tanggal_transaksi,
+          transaksi.id_transaksi
+        ),
+        id_transaksi: transaksi.id_transaksi,
+        total_akhir: transaksi.total_akhir,
+        tanggal_transaksi: transaksi.tanggal_transaksi,
+        tanggal_pembayaran: transaksi.tanggal_pembayaran,
+        status_Pembayaran: transaksi.status_Pembayaran,
+        pembeli: {
+          email: transaksi.pembeli.user.email,
+          nama: transaksi.pembeli.nama,
+        },
+        bukti_transfer: transaksi.bukti_transfer,
+        barang: transaksi.detail_transaksi
+          .map((dtl) => {
+            return {
+              id_barang: idToString(dtl.barang.prefix, dtl.barang.id_barang),
+              nama_barang: dtl.barang.nama_barang,
+              harga_barang: dtl.barang.harga,
+            };
+          })
+          .flat(),
+      };
+
+      if (transaksi.cs) {
+        result.cs = {
+          id_cs: idToString(transaksi.cs.prefix, transaksi.cs.id_pegawai),
+          nama_cs: transaksi.cs.nama,
+        };
+      }
+
+      return result;
+    })
+  );
+
+  return [formattedTransaksi, countAllTransaksi];
+};
+
 export default {
   create,
   get,
@@ -429,4 +550,5 @@ export default {
   updateBuktiPembayaranByPembeli,
   updateExpiredPayment,
   updateStatusByCS,
+  getListVerifPembayaran,
 };

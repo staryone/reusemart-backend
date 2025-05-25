@@ -54,6 +54,18 @@ transaksiRouter.post(
 );
 
 transaksiRouter.get(
+  "/api/transaksi/verifLists",
+  restrictTo("PEGAWAI", "CS"),
+  transaksiController.getListVerifPembayaran
+);
+
+transaksiRouter.patch(
+  "/api/transaksi/:id/verif",
+  restrictTo("PEGAWAI", "CS"),
+  transaksiController.verifPembayaran
+);
+
+transaksiRouter.get(
   "/api/transaksi/:id",
   restrictTo("PEMBELI"),
   transaksiController.get
@@ -69,12 +81,6 @@ transaksiRouter.post(
   "/api/transaksi/:id",
   restrictTo("PEMBELI"),
   transaksiController.uploadPembayaran
-);
-
-transaksiRouter.patch(
-  "/api/transaksi/:id/verif",
-  restrictTo("PEGAWAI", "CS"),
-  transaksiController.verifPembayaran
 );
 
 export { transaksiRouter };

@@ -18,6 +18,19 @@ const create = async (req, res, next) => {
   }
 };
 
+const getListVerifPembayaran = async (req, res, next) => {
+  try {
+    const [listTransaksi, totalItems] =
+      await transaksiService.getListVerifPembayaran(req.query);
+    res.status(200).json({
+      data: listTransaksi,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const get = async (req, res, next) => {
   try {
     const id_pembeli = req.session.user.pembeli.id_pembeli;
@@ -56,10 +69,13 @@ const uploadPembayaran = async (req, res, next) => {
 
 const verifPembayaran = async (req, res, next) => {
   try {
-    const fileType = await fileTypeFromBuffer(req.files[0].buffer);
-    req.files[0].mimetype = fileType.mime;
+    const id_cs = req.session.user.pegawai.id_pegawai;
 
-    await transaksiService.updateStatusByCS(req.params.id, req.body.status);
+    await transaksiService.updateStatusByCS(
+      req.params.id,
+      req.body.status,
+      id_cs
+    );
     res.status(200).json({
       data: "OK",
       message: "Verif pembayaran berhasil!",
@@ -91,4 +107,5 @@ export default {
   uploadPembayaran,
   verifPembayaran,
   updateExpiredPayment,
+  getListVerifPembayaran,
 };
