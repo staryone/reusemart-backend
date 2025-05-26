@@ -106,19 +106,6 @@ const profile = async (id) => {
     throw new ResponseError(404, "Penitip tidak ditemukan");
   }
 
-  // barang.gambar = await Promise.all(
-  //   barang.gambar.map(async (g) => {
-  //     return {
-  //       id_gambar: g.id_gambar,
-  //       url_gambar: await getUrlFile(g.url_gambar),
-  //       order_number: g.order_number,
-  //       is_primary: g.is_primary,
-  //       id_barang: g.id_barang,
-  //       createdAt: g.createdAt,
-  //       updatedAt: g.updatedAt,
-  //     };
-  //   })
-  // );
   try {
     await Promise.all(
       penitip.penitipan.map(async (penitipan) => {
@@ -183,6 +170,65 @@ const profile = async (id) => {
       )
       .flat(),
   };
+
+  //uncomment yang bawah, comment yang atas buat console log json detail transaksi
+
+  // const formattedPenitip = {
+  //   id_penitip: idToString(penitip.prefix, penitip.id_penitip),
+  //   email: penitip.user.email,
+  //   nomor_ktp: penitip.nomor_ktp,
+  //   foto_ktp: penitip.foto_ktp,
+  //   nama: penitip.nama,
+  //   alamat: penitip.alamat,
+  //   nomor_telepon: penitip.nomor_telepon,
+  //   saldo: penitip.saldo,
+  //   rating: penitip.rating,
+  //   total_review: penitip.total_review,
+  //   jumlah_review: penitip.jumlah_review,
+  //   is_top_seller: penitip.is_top_seller,
+  //   total_per_bulan: penitip.total_per_bulan,
+  //   poin: penitip.poin,
+  //   penitipan: penitip.penitipan.map((penitipan) => ({
+  //     id_penitipan: penitipan.id_penitipan,
+  //     detail_penitipan: penitipan.detail_penitipan.map((dtl) => {
+  //       const detailPenitipanData = {
+  //         id_dtl_penitipan: dtl.id_dtl_penitipan,
+  //         tanggal_masuk: dtl.tanggal_masuk.toISOString(),
+  //         tanggal_akhir: dtl.tanggal_akhir.toISOString(),
+  //         tanggal_laku: dtl.tanggal_laku
+  //           ? dtl.tanggal_laku.toISOString()
+  //           : null,
+  //         batas_ambil: dtl.batas_ambil ? dtl.batas_ambil.toISOString() : null,
+  //         is_perpanjang: dtl.is_perpanjang,
+  //         barang: {
+  //           nama_barang: dtl.barang.nama_barang,
+  //           harga: dtl.barang.harga,
+  //           status: dtl.barang.status,
+  //           gambar: dtl.barang.gambar,
+  //         },
+  //       };
+  //       console.log(
+  //         `Detail Penitipan ${dtl.id_dtl_penitipan}:`,
+  //         JSON.stringify(detailPenitipanData, null, 2)
+  //       );
+  //       return detailPenitipanData;
+  //     }),
+  //   })),
+  //   detail_transaksi: penitip.penitipan
+  //     .map((penitipan) =>
+  //       penitipan.detail_penitipan
+  //         .map((dtl_penitipan) =>
+  //           dtl_penitipan.barang?.detail_transaksi
+  //             ? dtl_penitipan.barang.detail_transaksi
+  //             : null
+  //         )
+  //         .filter((transaksi) => transaksi !== null)
+  //     )
+  //     .flat(),
+  // };
+
+  console.log("Formatted Penitip:", formattedPenitip);
+  console.log("Penitip Detail Transaksi:", formattedPenitip.detail_transaksi);
 
   return formattedPenitip;
 };
