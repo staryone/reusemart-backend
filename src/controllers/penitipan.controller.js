@@ -74,13 +74,27 @@ const create = async (req, res, next) => {
 
 const getList = async (req, res, next) => {
   try {
-    console.log("\n\nMASUK CONTROLLER");
     const [listPenitipan, totalItems] = await penitipanService.getList(
       req.query
     );
 
     res.status(200).json({
       data: listPenitipan,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const getLaporan = async (req, res, next) => {
+  try {
+    const [hasilData, totalItems] = await penitipanService.getLaporan(
+      req.query
+    );
+
+    res.status(200).json({
+      data: hasilData,
       totalItems: totalItems,
     });
   } catch (e) {
@@ -168,5 +182,6 @@ const update = async (req, res, next) => {
 export default {
   create,
   getList,
+  getLaporan,
   update,
 };

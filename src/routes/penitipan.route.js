@@ -16,6 +16,12 @@ penitipanRouter.get(
   penitipanController.getList
 );
 
+penitipanRouter.get(
+  "/api/penitipan/laporan",
+  restrictTo("PEGAWAI", "OWNER"),
+  penitipanController.getLaporan
+);
+
 penitipanRouter.patch(
   "/api/penitipan/:id",
   restrictTo("PEGAWAI", "GUDANG"),
