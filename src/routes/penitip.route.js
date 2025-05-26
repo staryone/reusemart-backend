@@ -321,4 +321,10 @@ penitipRouter.delete(
   penitipController.destroy
 );
 
+penitipRouter.post(
+  "/api/penitip/extend",
+  restrictTo("PENITIP"),
+  penitipController.extendPenitipan
+);
+
 export { penitipRouter };

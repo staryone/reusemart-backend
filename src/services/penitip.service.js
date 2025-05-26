@@ -542,6 +542,94 @@ const updateSistem = async (req) => {
   });
 };
 
+const extendPenitipan = async (request) => {
+  const { id_dtl_penitipan, id_user } = validate(
+    extendPenitipValidation,
+    request
+  );
+
+  const detailPenitipan = await prismaClient.detail_penitipan.findUnique({
+    where: {
+      id_dtl_penitipan: id_dtl_penitipan,
+    },
+    include: {
+      penitipan: {
+        select: {
+          id_penitip: true,
+        },
+      },
+    },
+  });
+
+  if (!detailPenitipan) {
+    throw new ResponseError(404, "Detail penitipan tidak ditemukan");
+  }
+
+  const penitip = await prismaClient.penitip.findUnique({
+    where: {
+      id_user: id_user,
+    },
+    select: {
+      id_penitip: true,
+    },
+  });
+
+  if (!penitip || penitip.id_penitip !== detailPenitipan.penitipan.id_penitip) {
+    throw new ResponseError(403, "Anda tidak memiliki akses ke penitipan ini");
+  }
+
+  if (!detailPenitipan.is_perpanjang) {
+    throw new ResponseError(400, "Penitipan ini tidak dapat diperpanjang");
+  }
+
+  const currentDate = new Date();
+  if (new Date(detailPenitipan.tanggal_akhir) < currentDate) {
+    throw new ResponseError(400, "Penitipan telah berakhir");
+  }
+
+  const newTanggalAkhir = addDays(new Date(detailPenitipan.tanggal_akhir), 30);
+
+  const updatedDetailPenitipan = await prismaClient.detail_penitipan.update({
+    where: {
+      id_dtl_penitipan: id_dtl_penitipan,
+    },
+    data: {
+      tanggal_akhir: newTanggalAkhir,
+    },
+    include: {
+      barang: {
+        include: {
+          gambar: true,
+        },
+      },
+    },
+  });
+
+  return {
+    id_dtl_penitipan: updatedDetailPenitipan.id_dtl_penitipan,
+    tanggal_masuk: updatedDetailPenitipan.tanggal_masuk.toISOString(),
+    tanggal_akhir: updatedDetailPenitipan.tanggal_akhir.toISOString(),
+    tanggal_laku: updatedDetailPenitipan.tanggal_laku
+      ? updatedDetailPenitipan.tanggal_laku.toISOString()
+      : null,
+    batas_ambil: updatedDetailPenitipan.batas_ambil
+      ? updatedDetailPenitipan.batas_ambil.toISOString()
+      : null,
+    is_perpanjang: updatedDetailPenitipan.is_perpanjang,
+    barang: {
+      nama_barang: updatedDetailPenitipan.barang.nama_barang,
+      harga: updatedDetailPenitipan.barang.harga,
+      status: updatedDetailPenitipan.barang.status,
+      gambar: await Promise.all(
+        updatedDetailPenitipan.barang.gambar.map(async (g) => ({
+          url_gambar: await getUrlFile(g.url_gambar),
+          is_primary: g.is_primary,
+        }))
+      ),
+    },
+  };
+};
+
 const destroy = async (id) => {
   id = validate(getPenitipValidation, id);
   const id_penitip = idToInteger(id);
@@ -584,5 +672,6 @@ export default {
   getHistoryPenjualan,
   update,
   updateSistem,
+  extendPenitipan,
   destroy,
 };

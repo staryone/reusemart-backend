@@ -124,6 +124,21 @@ const destroy = async (req, res, next) => {
   }
 };
 
+const extendPenitipan = async (req, res, next) => {
+  try {
+    const result = await penitipService.extendPenitipan({
+      id_dtl_penitipan: parseInt(req.body.id_dtl_penitipan),
+      id_user: req.user.id_user, // Assumes user ID is available from authentication middleware
+    });
+    res.status(200).json({
+      data: result,
+      message: "Penitipan berhasil diperpanjang!",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   register,
   get,
@@ -132,4 +147,5 @@ export default {
   destroy,
   getList,
   getHistoryPenjualan,
+  extendPenitipan,
 };
