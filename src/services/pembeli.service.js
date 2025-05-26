@@ -58,6 +58,7 @@ const profile = async (id) => {
                   gambar: true,
                 },
               },
+              is_rating: true
             },
           },
         },

@@ -1,16 +1,21 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 
-const updateRating = async (id_barang, req) => {
+const updateRating = async (id_barang_req, req) => {
   // Validate rating input
   const rating = Number(req.rating);
+  const id_barang = Number(id_barang_req);
   if (!rating || rating < 1 || rating > 5) {
     throw new Error("Rating harus antara 1 hingga 5");
   }
 
+  const detailTransaksiRecord = await prismaClient.detailTransaksi.findFirst({
+    where: { id_barang: id_barang },
+  });
+
   // Update is_rating in detail_transaksi
   const detailTransaksi = await prismaClient.detailTransaksi.update({
-    where: { id_barang },
+    where: { id_dtl_transaksi: detailTransaksiRecord.id_dtl_transaksi },
     data: { is_rating: true },
   });
 
@@ -32,7 +37,10 @@ const updateRating = async (id_barang, req) => {
     },
   });
 
-  if (!barangWithPenitip || !barangWithPenitip.detail_penitipan?.penitipan?.penitip) {
+  if (
+    !barangWithPenitip ||
+    !barangWithPenitip.detail_penitipan?.penitipan?.penitip
+  ) {
     throw new Error("Data penitip tidak ditemukan untuk barang ini");
   }
 
@@ -54,5 +62,5 @@ const updateRating = async (id_barang, req) => {
 };
 
 export default {
-  updateRating
+  updateRating,
 };

@@ -1,9 +1,9 @@
-import ratingService from "../services/rating.service";
-import { idToInteger } from "../utils/formater.util";
+import ratingService from "../services/rating.service.js";
+import { idToInteger } from "../utils/formater.util.js";
 
 const updateRating = async (req, res, next) => {
   try {
-    const id_barang = idToInteger(req.params.id);
+    const id_barang = req.params.id;
     req.body.id_user = req.session.user.id_user;
     await ratingService.updateRating(id_barang,req.body);
 
