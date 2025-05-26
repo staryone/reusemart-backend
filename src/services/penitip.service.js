@@ -85,6 +85,8 @@ const profile = async (id) => {
                 select: {
                   nama_barang: true,
                   harga: true,
+                  status: true,
+                  gambar: true,
                   detail_transaksi: {
                     include: {
                       transaksi: {
@@ -134,6 +136,8 @@ const profile = async (id) => {
         barang: {
           nama_barang: dtl.barang.nama_barang,
           harga: dtl.barang.harga,
+          status: dtl.barang.status,
+          gambar: dtl.barang.gambar,
         },
       })),
     })),
