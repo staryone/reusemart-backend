@@ -4,7 +4,7 @@ import { createPenitipanValidation } from "../validation/penitipan.validate.js";
 import { validate } from "../validation/validate.js";
 import { getUrlFile } from "../application/storage.js";
 import barangService from "./barang.service.js";
-import { generateNomorNota } from "../utils/formater.util.js";
+import { generateNomorNota, idToString } from "../utils/formater.util.js";
 
 const create = async (
   barangDataArray,
@@ -169,6 +169,7 @@ const getList = async (request) => {
     include: {
       barang: {
         select: {
+          id_barang: true,
           nama_barang: true,
           harga: true,
           status: true,
@@ -176,6 +177,7 @@ const getList = async (request) => {
           berat: true,
           garansi: true,
           kategori: true,
+          prefix: true,
           gambar: true,
         },
       },
@@ -243,6 +245,7 @@ const getList = async (request) => {
         is_perpanjang: p.is_perpanjang,
         penitipan: p.penitipan,
         barang: {
+          id_barang: idToString(p.barang.prefix, p.barang.id_barang),
           nama_barang: p.barang.nama_barang,
           deskripsi: p.barang.deskripsi,
           harga: p.barang.harga,
@@ -255,7 +258,6 @@ const getList = async (request) => {
       };
     })
   );
-
   return [formattedPenitipan, countAllPenitipan];
 };
 
@@ -377,8 +379,6 @@ const getLaporan = async (request) => {
   const countAllPenitipan = await prismaClient.detailPenitipan.count({
     where: whereClause,
   });
-
-  console.log("\n\n Data agregat",aggregatedData)
 
   return [aggregatedData, countAllPenitipan];
 };

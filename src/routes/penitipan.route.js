@@ -12,7 +12,7 @@ penitipanRouter.post(
 
 penitipanRouter.get(
   "/api/penitipan/lists",
-  restrictTo("PEGAWAI", "GUDANG"),
+  restrictTo("PEGAWAI", "GUDANG", "OWNER"),
   penitipanController.getList
 );
 
