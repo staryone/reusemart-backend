@@ -82,10 +82,7 @@ const profile = async (id) => {
               batas_ambil: true,
               is_perpanjang: true,
               barang: {
-                select: {
-                  nama_barang: true,
-                  harga: true,
-                  status: true,
+                include: {
                   gambar: true,
                   detail_transaksi: {
                     include: {
@@ -108,6 +105,39 @@ const profile = async (id) => {
   if (!penitip) {
     throw new ResponseError(404, "Penitip tidak ditemukan");
   }
+
+  // barang.gambar = await Promise.all(
+  //   barang.gambar.map(async (g) => {
+  //     return {
+  //       id_gambar: g.id_gambar,
+  //       url_gambar: await getUrlFile(g.url_gambar),
+  //       order_number: g.order_number,
+  //       is_primary: g.is_primary,
+  //       id_barang: g.id_barang,
+  //       createdAt: g.createdAt,
+  //       updatedAt: g.updatedAt,
+  //     };
+  //   })
+  // );
+  try {
+    await Promise.all(
+      penitip.penitipan.map(async (penitipan) => {
+        penitipan.detail_penitipan = await Promise.all(
+          penitipan.detail_penitipan.map(async (dtl) => {
+            dtl.barang.gambar = await Promise.all(
+              dtl.barang.gambar.map(async (g) => {
+                return {
+                  url_gambar: await getUrlFile(g.url_gambar),
+                  is_primary: g.is_primary,
+                };
+              })
+            );
+            return dtl;
+          })
+        );
+      })
+    );
+  } catch {}
 
   const formattedPenitip = {
     id_penitip: idToString(penitip.prefix, penitip.id_penitip),
