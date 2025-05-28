@@ -28,4 +28,10 @@ penitipanRouter.patch(
   penitipanController.update
 );
 
+penitipanRouter.patch(
+  "/api/penitipan/extend/:id_dtl_penitipan",
+  restrictTo("PENITIP"),
+  penitipanController.extendPenitipan
+);
+
 export { penitipanRouter };

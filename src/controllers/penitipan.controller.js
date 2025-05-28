@@ -112,7 +112,7 @@ const update = async (req, res, next) => {
     const parsedPenitipanData = JSON.parse(req.body.penitipanData);
     const parsedDetailPenitipanData = JSON.parse(req.body.detailPenitipanData);
     const parsedExistingGambar = JSON.parse(req.body.existingGambar);
-    
+
     // Attach uploaded files to barangData and validate MIME types
     const files = req.files || [];
 
@@ -179,9 +179,30 @@ const update = async (req, res, next) => {
   }
 };
 
+const extendPenitipan = async (req, res, next) => {
+  try {
+    // Extract id_dtl_penitipan from URL parameters
+    const { id_dtl_penitipan } = req.params;
+
+    // Call the service to extend DetailPenitipan
+    const result = await penitipanService.extendPenitipan(id_dtl_penitipan);
+
+    // Return success response
+    return res.status(200).json({
+      message: result.message,
+      data: {
+        detailPenitipan: result.detailPenitipan,
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   getList,
   getLaporan,
   update,
+  extendPenitipan,
 };

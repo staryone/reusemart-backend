@@ -63,15 +63,9 @@ const updateSistemPenitipValidation = Joi.object({
   poin: Joi.number().optional(),
 });
 
-const extendPenitipValidation = Joi.object({
-  id_dtl_penitipan: Joi.number().required(),
-  id_user: Joi.number().required(),
-});
-
 export {
   createPenitipValidation,
   getPenitipValidation,
   updatePenitipValidation,
   updateSistemPenitipValidation,
-  extendPenitipValidation,
 };
