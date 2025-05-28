@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id_user    Int         @id @default(autoincrement())
-  email      String      @unique
+  id_user    Int          @id @default(autoincrement())
+  email      String       @unique
   password   String
-  role       Role        @default(PEMBELI)
-  createdAt  DateTime    @default(now())
-  token      String?     @unique
-  updatedAt  DateTime    @default(now()) @db.DateTime(0)
-  diskusi    Diskusi[]   @relation("DiskusiToUser")
-  organisasi Organisasi? @relation("OrganisasiToUser")
-  pegawai    Pegawai?    @relation("PegawaiToUser")
-  pembeli    Pembeli?    @relation("PembeliToUser")
-  penitip    Penitip?    @relation("PenitipToUser")
-  session    Session[]   @relation("SessionToUser")
+  role       Role         @default(PEMBELI)
+  createdAt  DateTime     @default(now())
+  token      String?      @unique
+  fcm_token  String?
+  updatedAt  DateTime      @default(now()) @db.DateTime(0)
+  diskusi    Diskusi[]    @relation("DiskusiToUser")
+  organisasi Organisasi?  @relation("OrganisasiToUser")
+  pegawai    Pegawai?     @relation("PegawaiToUser")
+  pembeli    Pembeli?     @relation("PembeliToUser")
+  penitip    Penitip?     @relation("PenitipToUser")
+  session    Session[]    @relation("SessionToUser")
+  notif      Notifikasi[] @relation("NotifikasiToUser")
 
   @@map("users")
 }
@@ -376,6 +378,19 @@ model Rating {
 
   @@index([id_penitip], map: "fk_rating_to_penitip")
   @@map("rating")
+}
+
+model Notifikasi {
+  id_notif         Int            @id @default(autoincrement())
+  judul            String         @db.VarChar(255)
+  isi              String         @db.Text
+  id_user          Int            
+  createdAt        DateTime       @default(now())
+
+  user             User           @relation("NotifikasiToUser", fields: [id_user], references: [id_user], onDelete: Cascade, map: "fk_notifikasi_to_user")
+
+  @@index([id_user], map:"fk_notifikasi_to_user")
+  @@map("notifikasi")
 }
 
 enum Role {

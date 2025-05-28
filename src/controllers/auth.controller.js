@@ -11,6 +11,17 @@ const login = async (req, res, next) => {
   }
 };
 
+const loginMobile = async (req, res, next) => {
+  try {
+    const result = await authService.loginMobile(req.body);
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const forgotPassword = async (req, res, next) => {
   try {
     const result = await authService.forgotPassword(req.body.email);
@@ -73,4 +84,5 @@ export default {
   checkValidToken,
   logout,
   login,
+  loginMobile
 };

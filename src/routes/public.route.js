@@ -6,6 +6,7 @@ import penitipController from "../controllers/penitip.controller.js";
 import pembeliController from "../controllers/pembeli.controller.js";
 import barangController from "../controllers/barang.controller.js";
 import diskusiController from "../controllers/diskusi.controller.js";
+import notificationController from "../controllers/notifikasi.controller.js";
 
 const publicRouter = new express.Router();
 
@@ -172,6 +173,49 @@ publicRouter.post("/api/pembeli", pembeliController.register);
  */
 
 publicRouter.post("/api/login", authController.login);
+
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     summary: Log in an user
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: userlogin@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: test1234
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
+ *         description: Invalid credentials
+ */
+
+publicRouter.post("/api/login/mobile", authController.loginMobile);
 
 /**
  * @swagger
@@ -429,5 +473,10 @@ publicRouter.post("/api/reset-password/:token", authController.resetPassword);
  */
 
 publicRouter.get("/api/reset-password/:token", authController.checkValidToken);
+
+publicRouter.post(
+  "/api/notifications/send",
+  notificationController.sendNotification
+);
 
 export { publicRouter };

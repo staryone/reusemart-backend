@@ -80,6 +80,90 @@ const login = async (request) => {
   });
 };
 
+const loginMobile = async (request) => {
+  const loginRequest = validate(loginAuthValidation, request);
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email: loginRequest.email,
+    },
+    select: {
+      id_user: true,
+      email: true,
+      password: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    throw new ResponseError(401, "Email atau password salah!");
+  }
+
+  const dataToEncode = {
+    role: user.role,
+  };
+
+  if (user.role === "PEGAWAI") {
+    const pegawai = await prismaClient.pegawai.findUnique({
+      where: {
+        id_user: user.id_user,
+      },
+      select: {
+        jabatan: {
+          select: {
+            nama_jabatan: true,
+          },
+        },
+      },
+    });
+
+    if (
+      pegawai.jabatan.nama_jabatan === "OWNER" ||
+      pegawai.jabatan.nama_jabatan === "ADMIN" ||
+      pegawai.jabatan.nama_jabatan === "GUDANG" ||
+      pegawai.jabatan.nama_jabatan === "CS"
+    ) {
+      throw new ResponseError(400, "Credentials tidak valid!");
+    }
+
+    dataToEncode.jabatan = pegawai.jabatan.nama_jabatan;
+  }
+
+  if (user.role === "ORGANISASI") {
+    throw new ResponseError(400, "Credentials tidak valid!");
+  }
+
+  const isPasswordValid = await bcrypt.compare(
+    loginRequest.password,
+    user.password
+  );
+
+  if (!isPasswordValid) {
+    throw new ResponseError(401, "Email atau password salah!");
+  }
+
+  const token = jwt.sign(dataToEncode, process.env.JWT_SECRET_KEY, {
+    expiresIn: "7d",
+  });
+
+  const session = await prismaClient.session.create({
+    data: {
+      id_user: user.id_user,
+      token: token,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+    select: {
+      token: true,
+    },
+  });
+
+  return {
+    token: session.token,
+    userId: user.id_user,
+    role: dataToEncode.jabatan ? dataToEncode.jabatan : dataToEncode.role,
+  };
+};
+
 const register = async (user) => {
   const registerRequest = validate(registerAuthValidation, user);
 
@@ -107,9 +191,25 @@ const register = async (user) => {
 };
 
 const logout = async (id) => {
-  return prismaClient.session.delete({
+  const deletedSession = await prismaClient.session.delete({
     where: {
       id_session: id,
+    },
+    select: {
+      user: {
+        select: {
+          id_user: true,
+        },
+      },
+    },
+  });
+
+  return prismaClient.user.update({
+    where: {
+      id_user: deletedSession.user.id_user,
+    },
+    data: {
+      fcm_token: null,
     },
   });
 };
@@ -269,6 +369,7 @@ const resetAllSession = async (email) => {
 
 export default {
   login,
+  loginMobile,
   register,
   logout,
   updatePassword,
