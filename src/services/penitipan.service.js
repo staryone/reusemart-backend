@@ -107,51 +107,53 @@ const getList = async (request) => {
   }
 
   // Base where clause for search and filter
-  const baseWhere = q || filter
-    ? {
-        OR: [
-          q
-            ? {
-                penitipan: {
-                  penitip: {
-                    nama: {
+  const baseWhere =
+    q || filter
+      ? {
+          OR: [
+            q
+              ? {
+                  penitipan: {
+                    penitip: {
+                      nama: {
+                        contains: q,
+                      },
+                    },
+                  },
+                }
+              : null,
+            q
+              ? {
+                  barang: {
+                    nama_barang: {
                       contains: q,
                     },
                   },
-                },
-              }
-            : null,
-          q
-            ? {
-                barang: {
-                  nama_barang: {
-                    contains: q,
+                }
+              : null,
+            filter
+              ? {
+                  barang: {
+                    status: {
+                      equals: filter,
+                    },
                   },
-                },
-              }
-            : null,
-          filter
-            ? {
-                barang: {
-                  status: {
-                    equals: filter,
-                  },
-                },
-              }
-            : null,
-        ].filter(Boolean),
-      }
-    : {};
+                }
+              : null,
+          ].filter(Boolean),
+        }
+      : {};
 
   // Add date range filter to the where clause
-  const dateRangeFilter = startDate || endDate
-    ? {
-        tanggal_laku: {
-          ...(startDate ? { gte: startDate } : {}),
-          ...(endDate ? { lte: endDate } : {}),
-        },
-      }
-    : {};
+  const dateRangeFilter =
+    startDate || endDate
+      ? {
+          tanggal_laku: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {};
 
   // Combine base filters with date range filter
   const whereClause = {
@@ -200,7 +202,9 @@ const getList = async (request) => {
     findManyOptions.take = limit;
   }
 
-  const listPenitipan = await prismaClient.detailPenitipan.findMany(findManyOptions);
+  const listPenitipan = await prismaClient.detailPenitipan.findMany(
+    findManyOptions
+  );
 
   const formattedPenitipan = await Promise.all(
     listPenitipan.map(async (p) => {
@@ -276,51 +280,53 @@ const getLaporan = async (request) => {
   }
 
   // Base where clause for search and filter
-  const baseWhere = filter === "TERJUAL" || q
-    ? {
-        OR: [
-          q
-            ? {
-                penitipan: {
-                  penitip: {
-                    nama: {
+  const baseWhere =
+    filter === "TERJUAL" || q
+      ? {
+          OR: [
+            q
+              ? {
+                  penitipan: {
+                    penitip: {
+                      nama: {
+                        contains: q,
+                      },
+                    },
+                  },
+                }
+              : null,
+            q
+              ? {
+                  barang: {
+                    nama_barang: {
                       contains: q,
                     },
                   },
-                },
-              }
-            : null,
-          q
-            ? {
-                barang: {
-                  nama_barang: {
-                    contains: q,
+                }
+              : null,
+            filter === "TERJUAL"
+              ? {
+                  barang: {
+                    status: {
+                      equals: "TERJUAL",
+                    },
                   },
-                },
-              }
-            : null,
-          filter === "TERJUAL"
-            ? {
-                barang: {
-                  status: {
-                    equals: "TERJUAL",
-                  },
-                },
-              }
-            : null,
-        ].filter(Boolean),
-      }
-    : {};
+                }
+              : null,
+          ].filter(Boolean),
+        }
+      : {};
 
   // Add date range filter to the where clause
-  const dateRangeFilter = startDate || endDate
-    ? {
-        tanggal_laku: {
-          ...(startDate ? { gte: startDate } : {}),
-          ...(endDate ? { lte: endDate } : {}),
-        },
-      }
-    : {};
+  const dateRangeFilter =
+    startDate || endDate
+      ? {
+          tanggal_laku: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {};
 
   // Combine base filters with date range filter
   const whereClause = {
@@ -423,25 +429,29 @@ const update = async (
   }
 
   // Verify that the DetailPenitipan record exists
-  const existingDetailPenitipan = await prismaClient.detailPenitipan.findUnique({
-    where: { id_dtl_penitipan: parseInt(id_dtl_penitipan) },
-    include: {
-      barang: true,
-      penitipan: true,
-    },
-  });
+  const existingDetailPenitipan = await prismaClient.detailPenitipan.findUnique(
+    {
+      where: { id_dtl_penitipan: parseInt(id_dtl_penitipan) },
+      include: {
+        barang: true,
+        penitipan: true,
+      },
+    }
+  );
 
   if (!existingDetailPenitipan) {
     throw new ResponseError(404, "DetailPenitipan not found");
   }
-  console.log("\n\nExisting gambar arrays", existingGambarArrays)
+  console.log("\n\nExisting gambar arrays", existingGambarArrays);
   // Use a transaction to ensure atomicity
   const result = await prismaClient.$transaction(async (tx) => {
     // Step 1: Update Barang record
     const barangData = barangDataArray[0]; // Assuming single barang per DetailPenitipan
     const existingGambar = existingGambarArrays ? existingGambarArrays : []; // Array of { id_gambar }
-    console.log(existingGambar)
-    const id_barang = existingDetailPenitipan.barang.prefix + existingDetailPenitipan.barang.id_barang;
+    console.log(existingGambar);
+    const id_barang =
+      existingDetailPenitipan.barang.prefix +
+      existingDetailPenitipan.barang.id_barang;
     const updatedBarangId = await barangService.update(
       id_barang,
       barangData,
@@ -499,9 +509,64 @@ const update = async (
   return result;
 };
 
+const extendPenitipan = async (id_dtl_penitipan) => {
+  if (!id_dtl_penitipan) {
+    throw new ResponseError(400, "id_dtl_penitipan is required");
+  }
+
+  const existingDetailPenitipan = await prismaClient.detailPenitipan.findUnique(
+    {
+      where: { id_dtl_penitipan: parseInt(id_dtl_penitipan) },
+    }
+  );
+
+  if (!existingDetailPenitipan) {
+    throw new ResponseError(404, "DetailPenitipan not found");
+  }
+
+  if (existingDetailPenitipan.is_perpanjang) {
+    throw new ResponseError(
+      400,
+      "Perpanjangan is not allowed because is_perpanjang is already true"
+    );
+  }
+
+  const result = await prismaClient.$transaction(async (tx) => {
+    const newTanggalAkhir = new Date(existingDetailPenitipan.tanggal_akhir);
+    newTanggalAkhir.setDate(newTanggalAkhir.getDate() + 30);
+
+    const newBatasAmbil = new Date(existingDetailPenitipan.batas_ambil);
+    newBatasAmbil.setDate(newBatasAmbil.getDate() + 30);
+
+    const updatedDetailPenitipan = await tx.detailPenitipan.update({
+      where: { id_dtl_penitipan: parseInt(id_dtl_penitipan) },
+      data: {
+        tanggal_akhir: newTanggalAkhir,
+        batas_ambil: newBatasAmbil,
+        is_perpanjang: true,
+      },
+    });
+
+    const formattedDetailPenitipan = {
+      id_dtl_penitipan: updatedDetailPenitipan.id_dtl_penitipan,
+      tanggal_akhir: updatedDetailPenitipan.tanggal_akhir,
+      batas_ambil: updatedDetailPenitipan.batas_ambil,
+      is_perpanjang: updatedDetailPenitipan.is_perpanjang,
+    };
+
+    return {
+      detailPenitipan: formattedDetailPenitipan,
+      message: "Penitipan extended successfully by 30 days",
+    };
+  });
+
+  return result;
+};
+
 export default {
   create,
   getList,
   getLaporan,
   update,
+  extendPenitipan,
 };
