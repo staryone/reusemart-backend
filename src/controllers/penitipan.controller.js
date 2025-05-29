@@ -86,6 +86,20 @@ const getList = async (req, res, next) => {
     next(e);
   }
 };
+const getLaporanKomisi = async (req, res, next) => {
+  try {
+    const [listPenitipan, totalItems] = await penitipanService.getLaporanKomisi(
+      req.query
+    );
+
+    res.status(200).json({
+      data: listPenitipan,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 
 const getLaporanPenjualanBulanan = async (req, res, next) => {
   try {
@@ -202,6 +216,7 @@ const extendPenitipan = async (req, res, next) => {
 export default {
   create,
   getList,
+  getLaporanKomisi,
   getLaporanPenjualanBulanan,
   update,
   extendPenitipan,

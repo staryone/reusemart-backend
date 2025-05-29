@@ -17,7 +17,13 @@ penitipanRouter.get(
 );
 
 penitipanRouter.get(
-  "/api/penitipan/laporan",
+  "/api/penitipan/laporan-komisi",
+  restrictTo("PEGAWAI", "GUDANG", "OWNER"),
+  penitipanController.getLaporanKomisi
+);
+
+penitipanRouter.get(
+  "/api/penitipan/laporan-penjualan",
   restrictTo("PEGAWAI", "OWNER"),
   penitipanController.getLaporanPenjualanBulanan
 );

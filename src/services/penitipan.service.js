@@ -265,6 +265,180 @@ const getList = async (request) => {
   return [formattedPenitipan, countAllPenitipan];
 };
 
+const getLaporanKomisi = async (request) => {
+  const q = request.search;
+  const filter = request.status;
+  const startDate = request.startDate ? new Date(request.startDate) : undefined;
+  const endDate = request.endDate ? new Date(request.endDate) : undefined;
+
+  // Validate dates
+  if (startDate && isNaN(startDate.getTime())) {
+    throw new Error("Invalid start date format");
+  }
+  if (endDate && isNaN(endDate.getTime())) {
+    throw new Error("Invalid end date format");
+  }
+
+  // Base where clause for search and filter
+  const baseWhere =
+    q || filter
+      ? {
+          OR: [
+            q
+              ? {
+                  penitipan: {
+                    penitip: {
+                      nama: {
+                        contains: q,
+                      },
+                    },
+                  },
+                }
+              : null,
+            q
+              ? {
+                  barang: {
+                    nama_barang: {
+                      contains: q,
+                    },
+                  },
+                }
+              : null,
+            filter
+              ? {
+                  barang: {
+                    status: {
+                      equals: filter,
+                    },
+                  },
+                }
+              : null,
+          ].filter(Boolean),
+        }
+      : {};
+
+  // Add date range filter to the where clause
+  const dateRangeFilter =
+    startDate || endDate
+      ? {
+          tanggal_masuk: {
+            ...(startDate ? { gte: startDate } : {}),
+            ...(endDate ? { lte: endDate } : {}),
+          },
+        }
+      : {};
+
+  // Combine base filters with date range filter
+  const whereClause = {
+    ...baseWhere,
+    ...(startDate || endDate ? dateRangeFilter : {}),
+    ...(baseWhere.OR ? { AND: [baseWhere] } : {}), // Wrap baseWhere in AND if OR exists
+  };
+
+  const countAllPenitipan = await prismaClient.detailPenitipan.count({
+    where: whereClause,
+  });
+
+  const listPenitipan = await prismaClient.detailPenitipan.findMany(
+    {
+    where: whereClause,
+    include: {
+      barang: {
+        select: {
+          id_barang: true,
+          nama_barang: true,
+          harga: true,
+          status: true,
+          deskripsi: true,
+          berat: true,
+          garansi: true,
+          kategori: true,
+          prefix: true,
+          gambar: true,
+          detail_transaksi: {
+            select: {
+              komisi_hunter: true,
+              komisi_penitip: true,
+              komisi_reusemart: true,
+            }
+          }
+        },
+      },
+      penitipan: {
+        select: {
+          id_penitipan: true,
+          penitip: true,
+          pegawai_qc: true,
+          hunter: true,
+        },
+      },
+    },
+    orderBy: {
+      tanggal_masuk: "desc",
+    },
+  }
+  );
+
+  const formattedPenitipan = await Promise.all(
+    listPenitipan.map(async (p) => {
+      const gambarPromises = p.barang.gambar.map(async (g) => {
+        try {
+          const url = await getUrlFile(g.url_gambar);
+          return {
+            id_gambar: g.id_gambar,
+            url_gambar: url,
+            order_number: g.order_number,
+            is_primary: g.is_primary,
+            id_barang: g.id_barang,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          };
+        } catch {
+          return {
+            id_gambar: g.id_gambar,
+            url_gambar: null,
+            order_number: g.order_number,
+            is_primary: g.is_primary,
+            id_barang: g.id_barang,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt,
+          };
+        }
+      });
+      const gambarResults = await Promise.allSettled(gambarPromises);
+      const gambar = gambarResults.map((result) => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        }
+        return result.reason;
+      });
+      return {
+        id_dtl_penitipan: p.id_dtl_penitipan,
+        nomorNota: generateNomorNota(p.tanggal_masuk, p.id_dtl_penitipan),
+        tanggal_masuk: p.tanggal_masuk,
+        tanggal_akhir: p.tanggal_akhir,
+        tanggal_laku: p.tanggal_laku,
+        batas_ambil: p.batas_ambil,
+        is_perpanjang: p.is_perpanjang,
+        penitipan: p.penitipan,
+        barang: {
+          id_barang: idToString(p.barang.prefix, p.barang.id_barang),
+          nama_barang: p.barang.nama_barang,
+          deskripsi: p.barang.deskripsi,
+          harga: p.barang.harga,
+          status: p.barang.status,
+          garansi: p.barang.garansi ? p.barang.garansi : null,
+          berat: p.barang.berat,
+          kategori: p.barang.kategori,
+          gambar: gambar,
+          detail_transaksi: p.detail_transaksi,
+        },
+      };
+    })
+  );
+  return [formattedPenitipan, countAllPenitipan];
+};
+
 const getLaporanPenjualanBulanan = async (request) => {
   const q = request.search;
   const filter = request.status;
@@ -566,6 +740,7 @@ const extendPenitipan = async (id_dtl_penitipan) => {
 export default {
   create,
   getList,
+  getLaporanKomisi,
   getLaporanPenjualanBulanan,
   update,
   extendPenitipan,
