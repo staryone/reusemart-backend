@@ -15,6 +15,7 @@ import {
   updateBuktiPembayaranTransaksiValidation,
 } from "../validation/transaksi.validate.js";
 import { validate } from "../validation/validate.js";
+import notifikasiService from "./notifikasi.service.js";
 
 const create = async (request) => {
   request = validate(createTransaksiValidation, request);
@@ -304,6 +305,25 @@ const updateStatusByCS = async (id_transaksi, status, id_cs) => {
       detail_transaksi: {
         select: {
           id_barang: true,
+          barang: {
+            select: {
+              nama_barang: true,
+              detail_penitipan: {
+                select: {
+                  penitipan: {
+                    select: {
+                      penitip: {
+                        select: {
+                          id_user: true,
+                          nama: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -311,6 +331,14 @@ const updateStatusByCS = async (id_transaksi, status, id_cs) => {
 
   const listIdBarang = transaksi.detail_transaksi.map((detail) => {
     return detail.id_barang;
+  });
+
+  const listPenitip = transaksi.detail_transaksi.map((detail) => {
+    return {
+      id_user: detail.barang.detail_penitipan.penitipan.penitip.id_user,
+      nama_penitip: detail.barang.detail_penitipan.penitipan.penitip.nama,
+      nama_barang: detail.barang.nama_barang,
+    };
   });
 
   if (status === "DITOLAK") {
@@ -324,6 +352,18 @@ const updateStatusByCS = async (id_transaksi, status, id_cs) => {
         status: "TERSEDIA",
       },
     });
+  } else {
+    await Promise.all(
+      listPenitip.map(async (penitip) => {
+        const toSend = {
+          user_id: penitip.id_user,
+          title: "Barang Terjual",
+          body: `Halo ${penitip.nama_penitip}, Barangmu ${penitip.nama_barang} berhasil terjual`,
+        };
+        console.log(toSend);
+        await notifikasiService.sendNotification(toSend);
+      })
+    );
   }
 
   return "OK";

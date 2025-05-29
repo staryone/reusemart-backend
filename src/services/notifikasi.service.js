@@ -11,7 +11,6 @@ import {
 const sendNotification = async (request) => {
   const data = validate(sendNotificationValidation, request);
 
-  // Check if user exists and get their FCM token
   const user = await prismaClient.user.findUnique({
     where: { id_user: data.user_id },
     select: { fcm_token: true },
@@ -34,9 +33,16 @@ const sendNotification = async (request) => {
     },
   });
 
-  await sendPushNotification(user.fcm_token, data.title, data.body, {
-    notifikasiId: notifikasi.id_notif.toString(),
-  });
+  const result = await sendPushNotification(
+    user.fcm_token,
+    data.title,
+    data.body,
+    {
+      notifikasiId: notifikasi.id_notif.toString(),
+    }
+  );
+
+  console.log(result);
 
   return notifikasi;
 };
