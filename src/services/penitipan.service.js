@@ -447,7 +447,7 @@ const getLaporanKomisi = async (request) => {
   );
 
   // console.log("\n\nData hehe", listPenitipan);
-  console.log("\n\nData hehe", formattedPenitipan);
+  
   return [formattedPenitipan, countAllPenitipan];
 };
 
