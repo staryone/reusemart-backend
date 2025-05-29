@@ -265,7 +265,7 @@ const getList = async (request) => {
   return [formattedPenitipan, countAllPenitipan];
 };
 
-const getLaporan = async (request) => {
+const getLaporanPenjualanBulanan = async (request) => {
   const q = request.search;
   const filter = request.status;
   const startDate = request.startDate ? new Date(request.startDate) : undefined;
@@ -566,7 +566,7 @@ const extendPenitipan = async (id_dtl_penitipan) => {
 export default {
   create,
   getList,
-  getLaporan,
+  getLaporanPenjualanBulanan,
   update,
   extendPenitipan,
 };

@@ -87,9 +87,9 @@ const getList = async (req, res, next) => {
   }
 };
 
-const getLaporan = async (req, res, next) => {
+const getLaporanPenjualanBulanan = async (req, res, next) => {
   try {
-    const [hasilData, totalItems] = await penitipanService.getLaporan(
+    const [hasilData, totalItems] = await penitipanService.getLaporanPenjualanBulanan(
       req.query
     );
 
@@ -202,7 +202,7 @@ const extendPenitipan = async (req, res, next) => {
 export default {
   create,
   getList,
-  getLaporan,
+  getLaporanPenjualanBulanan,
   update,
   extendPenitipan,
 };
