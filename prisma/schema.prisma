@@ -182,7 +182,7 @@ model Barang {
   diskusi          Diskusi[]         @relation("DiskusiToBarang")
   donasi           Donasi?           @relation("DonasiToBarang")
   detail_penitipan DetailPenitipan?  @relation("DetailPenitipanToBarang")
-  detail_transaksi DetailTransaksi[] @relation("DetailTransaksiToBarang")
+  detail_transaksi DetailTransaksi? @relation("DetailTransaksiToBarang")
   gambar           GambarBarang[]    @relation("GambarBarangToBarang")
   keranjang        Keranjang[]       @relation("KeranjangToBarang")
 
@@ -251,7 +251,7 @@ model Transaksi {
 
 model DetailTransaksi {
   id_dtl_transaksi Int       @id @default(autoincrement())
-  id_barang        Int       
+  id_barang        Int       @unique
   id_transaksi     Int?
   is_rating        Boolean   @default(false)
   poin             Int

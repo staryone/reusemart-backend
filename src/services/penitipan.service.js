@@ -379,6 +379,8 @@ const getLaporanKomisi = async (request) => {
   }
   );
 
+  
+
   const formattedPenitipan = await Promise.all(
     listPenitipan.map(async (p) => {
       const gambarPromises = p.barang.gambar.map(async (g) => {
@@ -412,6 +414,13 @@ const getLaporanKomisi = async (request) => {
         }
         return result.reason;
       });
+      const detailTransaksi = await prismaClient.detailTransaksi.findUnique(
+        {
+          where: {
+            id_barang: p.id_barang
+          }
+        }
+      )
       return {
         id_dtl_penitipan: p.id_dtl_penitipan,
         nomorNota: generateNomorNota(p.tanggal_masuk, p.id_dtl_penitipan),
@@ -431,11 +440,14 @@ const getLaporanKomisi = async (request) => {
           berat: p.barang.berat,
           kategori: p.barang.kategori,
           gambar: gambar,
-          detail_transaksi: p.detail_transaksi,
+          detail_transaksi: detailTransaksi,
         },
       };
     })
   );
+
+  // console.log("\n\nData hehe", listPenitipan);
+  console.log("\n\nData hehe", formattedPenitipan);
   return [formattedPenitipan, countAllPenitipan];
 };
 
