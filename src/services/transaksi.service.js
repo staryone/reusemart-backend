@@ -238,7 +238,8 @@ const updateExpiredPayment = async (id_transaksi, id_pembeli) => {
       id_transaksi: id_transaksi,
     },
     select: {
-      id_pembeli,
+      id_pembeli: true,
+      potongan_poin: true,
       detail_transaksi: {
         select: {
           id_barang: true,
@@ -257,6 +258,24 @@ const updateExpiredPayment = async (id_transaksi, id_pembeli) => {
   await prismaClient.$transaction(async (tx) => {
     const listIdBarang = transaksi.detail_transaksi.map((detail) => {
       return detail.id_barang;
+    });
+
+    const { poin_loyalitas } = await tx.pembeli.findUnique({
+      where: {
+        id_pembeli: id_pembeli,
+      },
+      select: {
+        poin_loyalitas: true,
+      },
+    });
+
+    await tx.pembeli.update({
+      where: {
+        id_pembeli: id_pembeli,
+      },
+      data: {
+        poin_loyalitas: poin_loyalitas + transaksi.potongan_poin,
+      },
     });
 
     await Promise.all([
