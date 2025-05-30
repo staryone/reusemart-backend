@@ -131,6 +131,15 @@ const getList = async (request) => {
                   },
                 }
               : null,
+            q && !isNaN(Number(q))
+              ? {
+                  barang: {
+                    harga: {
+                      equals: Number(q),
+                    },
+                  },
+                }
+              : null,
             filter
               ? {
                   barang: {
@@ -148,7 +157,7 @@ const getList = async (request) => {
   const dateRangeFilter =
     startDate || endDate
       ? {
-          tanggal_laku: {
+          tanggal_masuk: {
             ...(startDate ? { gte: startDate } : {}),
             ...(endDate ? { lte: endDate } : {}),
           },
