@@ -1,5 +1,6 @@
 import express from "express";
 import penitipController from "../controllers/penitip.controller.js";
+import barangController from "../controllers/barang.controller.js";
 import { restrictTo } from "../middleware/restrictTo.middleware.js";
 
 const penitipRouter = new express.Router();
@@ -319,6 +320,12 @@ penitipRouter.delete(
   "/api/penitip/:id",
   restrictTo("PEGAWAI", "CS"),
   penitipController.destroy
+);
+
+penitipRouter.patch(
+  "/api/barang/status",
+  restrictTo("PENITIP"),
+  barangController.updateBarangStatus
 );
 
 export { penitipRouter };

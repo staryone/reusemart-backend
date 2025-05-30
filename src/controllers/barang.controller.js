@@ -26,7 +26,28 @@ const getList = async (req, res, next) => {
   }
 };
 
+const updateBarangStatus = async (req, res) => {
+  try {
+    // Memanggil fungsi updateStatus dari service
+    const result = await barangService.updateStatus(req.body);
+
+    // Mengembalikan respons sukses
+    res.status(200).json({
+      status: "success",
+      message: "Status barang berhasil diperbarui",
+      data: result,
+    });
+  } catch (error) {
+    // Menangani error
+    res.status(400).json({
+      status: "error",
+      message: error.message || "Gagal memperbarui status barang",
+    });
+  }
+};
+
 export default {
   get,
   getList,
+  updateBarangStatus,
 };
