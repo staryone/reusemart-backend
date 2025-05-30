@@ -423,7 +423,7 @@ const getLaporanKomisi = async (request) => {
         }
         return result.reason;
       });
-      const detailTransaksi = await prismaClient.detailTransaksi.findUnique(
+      const detailTransaksi = await prismaClient.detailTransaksi.findFirst(
         {
           where: {
             id_barang: p.id_barang
