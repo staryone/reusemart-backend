@@ -415,6 +415,7 @@ enum MetodePengiriman {
 
 enum StatusBarang {
   TERSEDIA
+  MENUNGGU_KEMBALI
   KEMBALI
   DIDONASIKAN
   TERDONASI
