@@ -1,8 +1,15 @@
 import express from "express";
 import pegawaiController from "../controllers/pegawai.controller.js";
+import barangController from "../controllers/barang.controller.js";
 import { restrictTo } from "../middleware/restrictTo.middleware.js";
 
 const pegawaiRouter = new express.Router();
+
+pegawaiRouter.patch(
+  "/api/pegawai/status-barang",
+  restrictTo("PEGAWAI", "GUDANG"),
+  barangController.updateBarangStatus
+);
 
 /**
  * @swagger
@@ -216,6 +223,7 @@ pegawaiRouter.get(
  *       404:
  *         description: Employee not found
  */
+
 pegawaiRouter.get(
   "/api/pegawai/:id",
   restrictTo("PEGAWAI", "ADMIN"),

@@ -330,52 +330,134 @@ const getList = async (query) => {
   return [formattedBarang, countAllReqBarang];
 };
 
-const updateStatus = async (req, id_penitip) => {
-  req = validate(updateStatusBarangValidation, req);
+// const updateStatus = async (req, id_penitip) => {
+//   req = validate(updateStatusBarangValidation, req);
 
-  if (typeof req.id_barang === "string") {
-    req.id_barang = idToInteger(req.id_barang);
-  }
+//   if (typeof req.id_barang === "string") {
+//     req.id_barang = idToInteger(req.id_barang);
+//   }
 
-  const barang = await prismaClient.barang.update({
-    where: {
-      id_barang: req.id_barang,
-    },
-    data: {
-      status: req.status,
-    },
-    include: {
-      donasi: true,
-      detail_penitipan: {
-        include: {
-          penitipan: {
-            include: {
-              penitip: true,
+//   const barang = await prismaClient.barang.update({
+//     where: {
+//       id_barang: req.id_barang,
+//     },
+//     data: {
+//       status: req.status,
+//     },
+//     include: {
+//       donasi: true,
+//       detail_penitipan: {
+//         include: {
+//           penitipan: {
+//             include: {
+//               penitip: true,
+//             },
+//           },
+//         },
+//       },
+//     },
+//   });
+
+//   if (barang.detail_penitipan.penitipan.id_penitip !== id_penitip) {
+//     throw new ResponseError(
+//       401,
+//       "Anda hanya bisa mengubah status milik sendiri!"
+//     );
+//   }
+
+//   if (barang.status === "TERDONASI") {
+//     await penitipService.updateSistem({
+//       id_penitip: idToString(
+//         barang.detail_penitipan.penitipan.penitip.prefix,
+//         barang.detail_penitipan.penitipan.penitip.id_penitip
+//       ),
+//       poin: barang.donasi.poin_penitip,
+//     });
+//   }
+
+//   return "OK";
+// };
+const updateStatus = async (req, userId, role) => {
+  try {
+    req = validate(updateStatusBarangValidation, req);
+
+    if (typeof req.id_barang === "string") {
+      req.id_barang = idToInteger(req.id_barang);
+    }
+
+    // Fetch the barang to check ownership (for PENITIP)
+    const barang = await prismaClient.barang.findUnique({
+      where: {
+        id_barang: req.id_barang,
+      },
+      include: {
+        detail_penitipan: {
+          include: {
+            penitipan: {
+              include: {
+                penitip: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (barang.detail_penitipan.penitipan.id_penitip !== id_penitip) {
+    if (!barang) {
+      throw new ResponseError(404, "Barang tidak ditemukan");
+    }
+
+    // Restrict PENITIP to only update their own items
+    if (
+      role === "PENITIP" &&
+      barang.detail_penitipan.penitipan.id_penitip !== userId
+    ) {
+      throw new ResponseError(
+        403,
+        "Anda hanya bisa mengubah status barang milik sendiri!"
+      );
+    }
+
+    // PEGAWAI and GUDANG can update any item
+    const updatedBarang = await prismaClient.barang.update({
+      where: {
+        id_barang: req.id_barang,
+      },
+      data: {
+        status: req.status,
+      },
+      include: {
+        donasi: true,
+        detail_penitipan: {
+          include: {
+            penitipan: {
+              include: {
+                penitip: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (updatedBarang.status === "TERDONASI") {
+      await penitipService.updateSistem({
+        id_penitip: idToString(
+          updatedBarang.detail_penitipan.penitipan.penitip.prefix,
+          updatedBarang.detail_penitipan.penitipan.penitip.id_penitip
+        ),
+        poin: updatedBarang.donasi.poin_penitip,
+      });
+    }
+
+    return "OK";
+  } catch (error) {
+    console.error("Error in updateStatus:", error);
     throw new ResponseError(
-      401,
-      "Anda hanya bisa mengubah status milik sendiri!"
+      500,
+      "Gagal memperbarui status barang: " + error.message
     );
   }
-
-  if (barang.status === "TERDONASI") {
-    await penitipService.updateSistem({
-      id_penitip: idToString(
-        barang.detail_penitipan.penitipan.penitip.prefix,
-        barang.detail_penitipan.penitipan.penitip.id_penitip
-      ),
-      poin: barang.donasi.poin_penitip,
-    });
-  }
-
-  return "OK";
 };
 
 const update = async (id_barang, request, id_penitip, existingGambar = []) => {
