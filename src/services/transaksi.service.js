@@ -372,7 +372,7 @@ const updateStatusByCS = async (id_transaksi, status, id_cs) => {
       },
     });
   } else {
-    await Promise.all(
+    await Promise.all([
       listPenitip.map(async (penitip) => {
         const toSend = {
           user_id: penitip.id_user,
@@ -381,8 +381,14 @@ const updateStatusByCS = async (id_transaksi, status, id_cs) => {
         };
         console.log(toSend);
         await notifikasiService.sendNotification(toSend);
-      })
-    );
+      }),
+
+      await prismaClient.pengiriman.create({
+        data: {
+          id_transaksi: id_transaksi,
+        },
+      }),
+    ]);
   }
 
   return "OK";
