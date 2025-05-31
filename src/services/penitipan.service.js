@@ -5,6 +5,8 @@ import { validate } from "../validation/validate.js";
 import { getUrlFile } from "../application/storage.js";
 import barangService from "./barang.service.js";
 import { generateNomorNota, idToString } from "../utils/formater.util.js";
+import notifikasiService from "./notifikasi.service.js";
+import { startOfDay, endOfDay } from 'date-fns';
 
 const create = async (
   barangDataArray,
@@ -348,8 +350,7 @@ const getLaporanKomisi = async (request) => {
     where: whereClause,
   });
 
-  const listPenitipan = await prismaClient.detailPenitipan.findMany(
-    {
+  const listPenitipan = await prismaClient.detailPenitipan.findMany({
     where: whereClause,
     include: {
       barang: {
@@ -369,8 +370,8 @@ const getLaporanKomisi = async (request) => {
               komisi_hunter: true,
               komisi_penitip: true,
               komisi_reusemart: true,
-            }
-          }
+            },
+          },
         },
       },
       penitipan: {
@@ -385,10 +386,7 @@ const getLaporanKomisi = async (request) => {
     orderBy: {
       tanggal_masuk: "desc",
     },
-  }
-  );
-
-  
+  });
 
   const formattedPenitipan = await Promise.all(
     listPenitipan.map(async (p) => {
@@ -423,13 +421,11 @@ const getLaporanKomisi = async (request) => {
         }
         return result.reason;
       });
-      const detailTransaksi = await prismaClient.detailTransaksi.findFirst(
-        {
-          where: {
-            id_barang: p.id_barang
-          }
-        }
-      )
+      const detailTransaksi = await prismaClient.detailTransaksi.findFirst({
+        where: {
+          id_barang: p.id_barang,
+        },
+      });
       return {
         id_dtl_penitipan: p.id_dtl_penitipan,
         nomorNota: generateNomorNota(p.tanggal_masuk, p.id_dtl_penitipan),
@@ -456,7 +452,7 @@ const getLaporanKomisi = async (request) => {
   );
 
   // console.log("\n\nData hehe", listPenitipan);
-  
+
   return [formattedPenitipan, countAllPenitipan];
 };
 
@@ -758,6 +754,84 @@ const extendPenitipan = async (id_dtl_penitipan) => {
   return result;
 };
 
+const checkMasaPenitipan = async () => {
+  const now = new Date();
+  const threeDaysFromNow = new Date(now);
+  threeDaysFromNow.setDate(now.getDate() + 3);
+  threeDaysFromNow.setHours(0, 0, 0, 0);
+  const startOfToday = startOfDay(now); // 2025-06-01 00:00:00
+  const endOfToday = endOfDay(now);
+
+  let is_h3 = false;
+  let is_h = false;
+
+  const listPenitipanH3 = await prismaClient.detailPenitipan.findMany({
+    where: {
+      tanggal_akhir: {
+        gte: threeDaysFromNow, // Greater than or equal to start of the day
+        lt: new Date(threeDaysFromNow.getTime() + 24 * 60 * 60 * 1000), // Less than start of the next day
+      },
+    },
+    include: {
+      penitipan: {
+        include: {
+          penitip: true,
+        },
+      },
+      barang: true,
+    },
+  });
+
+  if (listPenitipanH3) {
+    for (const detail of listPenitipanH3) {
+      const penitip = detail.penitipan.penitip;
+      const barang = detail.barang;
+      const toSend = {
+        user_id: penitip.id_user,
+        title: "Masa Penitipan Hampir Habis",
+        body: `Halo ${penitip.nama_penitip}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
+      };
+      console.log(toSend);
+      await notifikasiService.sendNotification(toSend);
+    }
+    is_h3 = true;
+  }
+
+  const listPenitipanH = await prismaClient.detailPenitipan.findMany({
+    where: {
+      tanggal_akhir: {
+        gte: startOfToday, 
+        lt: endOfToday, 
+      },
+    },
+    include: {
+      penitipan: {
+        include: {
+          penitip: true,
+        },
+      },
+      barang: true,
+    },
+  });
+
+  if (listPenitipanH) {
+    for (const detail of listPenitipanH) {
+      const penitip = detail.penitipan.penitip;
+      const barang = detail.barang;
+      const toSend = {
+        user_id: penitip.id_user,
+        title: "Masa Penitipan Sudah Habis",
+        body: `Halo ${penitip.nama_penitip}, masa penitipan barang ${barang.nama_barang} sudah habis! Silahkan mengambil barang ke kantor ReUseMart.`,
+      };
+      console.log(toSend);
+      await notifikasiService.sendNotification(toSend);
+    }
+    is_h = true;
+  }
+
+  return is_h3 && is_h ? "H-3 dan hari H ada dan operasi berhasil" : is_h3 ? "H-3 ada dan operasi berhasil" : is_h ? "Hari H ada dan operasi berhasil" : "H-3 dan hari H tidak ada";
+};
+
 export default {
   create,
   getList,
@@ -765,4 +839,5 @@ export default {
   getLaporanPenjualanBulanan,
   update,
   extendPenitipan,
+  checkMasaPenitipan
 };
