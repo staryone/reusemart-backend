@@ -88,6 +88,7 @@ const getList = async (req, res, next) => {
 const getHistoryPenjualan = async (req, res, next) => {
   try {
     const id = req.session.user.id_user;
+    console.log(id);
     const listPenjualan = await penitipService.getHistoryPenjualan(id);
 
     res.status(200).json({

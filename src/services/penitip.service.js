@@ -151,6 +151,7 @@ const profile = async (id) => {
         batas_ambil: dtl.batas_ambil ? dtl.batas_ambil.toISOString() : null,
         is_perpanjang: dtl.is_perpanjang,
         barang: {
+          id_barang: idToString(dtl.barang.prefix, dtl.barang.id_barang),
           nama_barang: dtl.barang.nama_barang,
           harga: dtl.barang.harga,
           status: dtl.barang.status,
@@ -246,10 +247,10 @@ const getHistoryPenjualan = async (id) => {
       penitipan: {
         select: {
           id_penitipan: true,
-          tanggal_masuk: true,
-          tanggal_laku: true,
           detail_penitipan: {
             select: {
+              tanggal_masuk: true,
+              tanggal_laku: true,
               barang: {
                 select: {
                   id_barang: true,

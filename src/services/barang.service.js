@@ -329,7 +329,7 @@ const getList = async (query) => {
   return [formattedBarang, countAllReqBarang];
 };
 
-const updateStatus = async (req) => {
+const updateStatus = async (req, id_penitip) => {
   req = validate(updateStatusBarangValidation, req);
 
   if (typeof req.id_barang === "string") {
@@ -356,6 +356,13 @@ const updateStatus = async (req) => {
       },
     },
   });
+
+  if (barang.detail_penitipan.penitipan.id_penitip !== id_penitip) {
+    throw new ResponseError(
+      401,
+      "Anda hanya bisa mengubah status milik sendiri!"
+    );
+  }
 
   if (barang.status === "TERDONASI") {
     await penitipService.updateSistem({
@@ -394,13 +401,15 @@ const update = async (id_barang, request, id_penitip, existingGambar = []) => {
       request.gambar.map(async (g) => {
         g.fieldname = formatNamaGambarBarang(id_penitip);
         await uploadFile(g, "gambar_barang");
-        return "gambar_barang/" + g.fieldname + "." + String(g.mimetype).slice(6);
+        return (
+          "gambar_barang/" + g.fieldname + "." + String(g.mimetype).slice(6)
+        );
       })
     );
   }
 
   // Remove gambar field from request to avoid Prisma errors
-  console.log("Barang req",request);
+  console.log("Barang req", request);
   delete request.gambar;
   // Use transaction for atomic updates
   const result = await prismaClient.$transaction(async (tx) => {
@@ -437,7 +446,10 @@ const update = async (id_barang, request, id_penitip, existingGambar = []) => {
           try {
             await deleteFile(url_gambar);
           } catch (error) {
-            console.error(`Failed to delete file ${url_gambar}:`, error.message);
+            console.error(
+              `Failed to delete file ${url_gambar}:`,
+              error.message
+            );
             // Continue without throwing to avoid transaction rollback
           }
         })

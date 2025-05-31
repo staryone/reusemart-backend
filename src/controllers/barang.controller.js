@@ -26,23 +26,18 @@ const getList = async (req, res, next) => {
   }
 };
 
-const updateBarangStatus = async (req, res) => {
+const updateBarangStatus = async (req, res, next) => {
   try {
-    // Memanggil fungsi updateStatus dari service
-    const result = await barangService.updateStatus(req.body);
+    const id_penitip = req.session.user.penitip.id_penitip;
+    console.log(req.body);
+    const result = await barangService.updateStatus(req.body, id_penitip);
 
-    // Mengembalikan respons sukses
     res.status(200).json({
       status: "success",
       message: "Status barang berhasil diperbarui",
-      data: result,
     });
-  } catch (error) {
-    // Menangani error
-    res.status(400).json({
-      status: "error",
-      message: error.message || "Gagal memperbarui status barang",
-    });
+  } catch (e) {
+    next(e);
   }
 };
 

@@ -52,6 +52,7 @@ const updateStatusBarangValidation = Joi.object({
   status: Joi.valid(
     "TERSEDIA",
     "DIDONASIKAN",
+    "MENUNGGU_KEMBALI",
     "TERJUAL",
     "KEMBALI",
     "TERDONASI"
