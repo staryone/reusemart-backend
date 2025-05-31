@@ -17,11 +17,11 @@ const sendNotification = async (request) => {
   });
 
   if (!user) {
-    throw new ResponseError(404, "User tidak ditemukan!");
+    return console.error("User tidak ditemukan!");
   }
 
   if (!user.fcm_token) {
-    throw new ResponseError(400, "FCM token tidak tersedia untuk user ini!");
+    return console.error("FCM token tidak tersedia untuk user ini!");
   }
 
   // Store notifikasi in the database
