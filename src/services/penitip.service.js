@@ -155,7 +155,7 @@ const profile = async (id) => {
           nama_barang: dtl.barang.nama_barang,
           harga: dtl.barang.harga,
           status: dtl.barang.status,
-          updated_at: dtl.barang.updatedAt
+          updatedAt: dtl.barang.updatedAt
             ? dtl.barang.updatedAt.toISOString()
             : null,
           gambar: dtl.barang.gambar,
