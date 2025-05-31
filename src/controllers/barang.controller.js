@@ -26,21 +26,22 @@ const getList = async (req, res, next) => {
   }
 };
 
-// const updateBarangStatus = async (req, res, next) => {
-//   try {
-//     const id_penitip = req.session.user.penitip.id_penitip;
-//     console.log(req.body);
-//     const result = await barangService.updateStatus(req.body, id_penitip);
-
-//     res.status(200).json({
-//       status: "success",
-//       message: "Status barang berhasil diperbarui",
-//     });
-//   } catch (e) {
-//     next(e);
-//   }
-// };
 const updateBarangStatus = async (req, res, next) => {
+  try {
+    const id_penitip = req.session.user.penitip.id_penitip;
+    console.log(req.body);
+    const result = await barangService.updateStatus(req.body, id_penitip);
+
+    res.status(200).json({
+      status: "success",
+      message: "Status barang berhasil diperbarui",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const updateBarangStatusByGudang = async (req, res, next) => {
   try {
     const { role, pegawai } = req.session.user;
 
@@ -56,9 +57,6 @@ const updateBarangStatus = async (req, res, next) => {
     }
 
     const userId = pegawai.id_pegawai;
-
-    console.log("Request body:", req.body);
-    console.log("User role:", role, "User ID:", userId);
 
     const result = await barangService.updateStatus(req.body, userId, role);
 
@@ -76,4 +74,5 @@ export default {
   get,
   getList,
   updateBarangStatus,
+  updateBarangStatusByGudang,
 };

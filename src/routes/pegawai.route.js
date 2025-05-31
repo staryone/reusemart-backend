@@ -8,7 +8,7 @@ const pegawaiRouter = new express.Router();
 pegawaiRouter.patch(
   "/api/pegawai/status-barang",
   restrictTo("PEGAWAI", "GUDANG"),
-  barangController.updateBarangStatus
+  barangController.updateBarangStatusByGudang
 );
 
 /**
