@@ -321,6 +321,7 @@ const getList = async (query) => {
         createdAt: barang.createdAt,
         updatedAt: barang.updatedAt,
         penitip: barang.detail_penitipan.penitipan.penitip,
+        detail_penitipan: barang.detail_penitipan,
         diskusi: [],
       };
     })
