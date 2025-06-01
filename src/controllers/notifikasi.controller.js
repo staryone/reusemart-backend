@@ -14,7 +14,7 @@ const sendNotification = async (req, res, next) => {
 
 const getNotifications = async (req, res, next) => {
   try {
-    const userId = parseInt(req.params.userId);
+    const userId = req.session.user.id_user;
     const result = await notificationService.getNotifications(userId);
     res.status(200).json({
       data: result,
@@ -27,8 +27,6 @@ const getNotifications = async (req, res, next) => {
 const updateFcmToken = async (req, res, next) => {
   try {
     req.body.userId = req.session.user.id_user;
-    console.log(req.body.userId);
-    console.log("sampe disini");
     await notificationService.updateFcmToken(req.body);
     res.status(200).json({
       data: "OK",

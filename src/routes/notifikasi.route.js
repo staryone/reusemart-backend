@@ -5,7 +5,7 @@ import { restrictTo } from "../middleware/restrictTo.middleware.js";
 const notificationRouter = express.Router();
 
 notificationRouter.get(
-  "/api/notifications/:userId",
+  "/api/notifications",
   restrictTo("PENITIP", "PEMBELI", "PEGAWAI", "KURIR", "HUNTER"),
   notificationController.getNotifications
 );

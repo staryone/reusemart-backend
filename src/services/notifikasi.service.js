@@ -52,7 +52,13 @@ const getNotifications = async (userId) => {
 
   const listNotifikasi = await prismaClient.notifikasi.findMany({
     where: { id_user: userId },
-    orderBy: { created_at: "desc" },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id_notif: true,
+      judul: true,
+      isi: true,
+      createdAt: true,
+    },
   });
 
   return listNotifikasi;

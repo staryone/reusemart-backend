@@ -52,7 +52,7 @@ const create = async (request) => {
     );
 
     const ongkos_kirim =
-      String(request.metode_pembayaran).toUpperCase() === "DIKIRIM" &&
+      String(request.metode_pengiriman).toUpperCase() === "DIKIRIM" &&
       total_harga < 1500000
         ? 100000
         : 0;
