@@ -286,10 +286,90 @@ const update = async (request) => {
   });
 };
 
+const getLaporanDonasiBarang = async (query) => {
+  const tahun = query.tahun ? parseInt(query.tahun) : null;
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // Hitung total data untuk pagination
+  const countAllDonasi = await prismaClient.donasi.count({
+    where: {
+      ...(tahun && {
+        tanggal_donasi: {
+          gte: new Date(`${tahun}-01-01`), // Mulai dari awal tahun
+          lte: new Date(`${tahun}-12-31`), // Sampai akhir tahun
+        },
+      }),
+    },
+  });
+
+  // Ambil data dengan pagination
+  const donasiList = await prismaClient.donasi.findMany({
+    where: {
+      ...(tahun && {
+        tanggal_donasi: {
+          gte: new Date(`${tahun}-01-01`), // Mulai dari awal tahun
+          lte: new Date(`${tahun}-12-31`), // Sampai akhir tahun
+        },
+      }),
+    },
+    include: {
+      barang: {
+        select: {
+          prefix: true,
+          id_barang: true,
+          nama_barang: true,
+          detail_penitipan: {
+            select: {
+              penitipan: {
+                select: {
+                  penitip: {
+                    select: {
+                      prefix: true,
+                      id_penitip: true,
+                      nama: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      request: {
+        select: {
+          organisasi: {
+            select: {
+              nama_organisasi: true,
+            },
+          },
+        },
+      },
+    },
+    skip: skip,
+    take: limit,
+  });
+
+  // Format data sesuai dengan struktur laporan
+  const formattedData = donasiList.map((donasi) => ({
+    kode_produk: `${donasi.barang.prefix}${donasi.barang.id_barang}`, // Contoh: K202
+    nama_produk: donasi.barang.nama_barang, // Nama barang
+    id_penitip: `${donasi.barang.detail_penitipan.penitipan.penitip.prefix}${donasi.barang.detail_penitipan.penitipan.penitip.id_penitip}`, // Contoh: T25
+    nama_penitip: donasi.barang.detail_penitipan.penitipan.penitip.nama, // Nama penitip
+    tanggal_donasi: donasi.tanggal_donasi.toLocaleDateString("id-ID"), // Format tanggal: 29/3/2025
+    organisasi: donasi.request.organisasi.nama_organisasi, // Nama organisasi
+    nama_penerima: donasi.nama_penerima, // Nama penerima
+  }));
+
+  return [formattedData, countAllDonasi];
+};
+
 export default {
   create,
   get,
   getList,
   getAllList,
   update,
+  getLaporanDonasiBarang,
 };

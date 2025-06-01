@@ -254,6 +254,48 @@ const destroy = async (id, id_organisasi) => {
   });
 };
 
+const getRekapRequestDonasi = async (query) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  // Hitung total data dengan status MENUNGGU
+  const countAllRequest = await prismaClient.requestDonasi.count({
+    where: {
+      status: "MENUNGGU",
+    },
+  });
+
+  // Ambil data dengan status MENUNGGU dan pagination
+  const requestList = await prismaClient.requestDonasi.findMany({
+    where: {
+      status: "MENUNGGU",
+    },
+    include: {
+      organisasi: {
+        select: {
+          prefix: true,
+          id_organisasi: true,
+          nama_organisasi: true,
+          alamat: true,
+        },
+      },
+    },
+    skip: skip,
+    take: limit,
+  });
+
+  // Format data sesuai dengan struktur laporan
+  const formattedData = requestList.map((request) => ({
+    id_organisasi: `${request.organisasi.prefix}${request.organisasi.id_organisasi}`, // Contoh: ORG10
+    nama_organisasi: request.organisasi.nama_organisasi, // Nama organisasi
+    alamat: request.organisasi.alamat, // Alamat organisasi
+    request: request.deskripsi, // Deskripsi request
+  }));
+
+  return [formattedData, countAllRequest];
+};
+
 export default {
   create,
   get,
@@ -261,4 +303,5 @@ export default {
   getAllList,
   update,
   destroy,
+  getRekapRequestDonasi,
 };

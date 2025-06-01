@@ -157,6 +157,12 @@ donasiRouter.get(
   donasiController.getAllList
 );
 
+donasiRouter.get(
+  "/api/donasi/getLaporanDonasiBarang",
+  restrictTo("PEGAWAI", "OWNER"),
+  donasiController.getLaporanDonasiBarang
+);
+
 /**
  * @swagger
  * /api/donasi/{id}:

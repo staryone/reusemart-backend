@@ -67,10 +67,26 @@ const update = async (req, res, next) => {
   }
 };
 
+const getLaporanDonasiBarang = async (req, res, next) => {
+  try {
+    const [hasilData, totalItems] = await donasiService.getLaporanDonasiBarang(
+      req.query
+    );
+
+    res.status(200).json({
+      data: hasilData,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   get,
   getList,
   getAllList,
   update,
+  getLaporanDonasiBarang,
 };

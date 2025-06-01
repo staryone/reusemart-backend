@@ -87,11 +87,26 @@ const destroy = async (req, res, next) => {
   }
 };
 
+const getRekapRequestDonasi = async (req, res, next) => {
+  try {
+    const [hasilData, totalItems] =
+      await requestDonasiService.getRekapRequestDonasi(req.query);
+
+    res.status(200).json({
+      data: hasilData,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   get,
   getList,
   getAllList,
+  getRekapRequestDonasi,
   update,
   destroy,
 };

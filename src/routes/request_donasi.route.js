@@ -151,6 +151,12 @@ requestDonasiRouter.get(
   requestDonasiController.getAllList
 );
 
+requestDonasiRouter.get(
+  "/api/request-donasi/getRekap",
+  restrictTo("PEGAWAI", "OWNER"),
+  requestDonasiController.getRekapRequestDonasi
+);
+
 /**
  * @swagger
  * /api/request-donasi/{id}:
