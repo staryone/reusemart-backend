@@ -90,6 +90,7 @@ const getList = async (request) => {
         transaksi: {
           select: {
             id_transaksi: true,
+            tanggal_transaksi: true,
             tanggal_pembayaran: true,
             status_Pembayaran: true,
           },
@@ -116,12 +117,13 @@ const getList = async (request) => {
     kurir: p.kurir
       ? {
           id_kurir: p.kurir.id_pegawai,
-          nama_kurir: p.kurir.nama,
+          nama: p.kurir.nama,
           no_hp_kurir: p.kurir.nomor_telepon,
         }
       : null,
     transaksi: {
       id_transaksi: p.transaksi.id_transaksi,
+      tanggal_transaksi: p.transaksi.tanggal_transaksi,
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       status_pembayaran: p.transaksi.status_Pembayaran,
     },
