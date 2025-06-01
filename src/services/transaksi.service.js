@@ -608,6 +608,121 @@ const getListVerifPembayaran = async (request) => {
   return [formattedTransaksi, countAllTransaksi];
 };
 
+const getLaporanTransaksiPenitip = async (query) => {
+  const idPenitip = query.id_penitip ? parseInt(query.id_penitip) : null;
+  const bulan = query.bulan ? parseInt(query.bulan) : null;
+  const tahun = query.tahun ? parseInt(query.tahun) : null;
+
+  if (!idPenitip) {
+    throw new ResponseError(400, "ID penitip harus disertakan!");
+  }
+
+  // Filter berdasarkan bulan dan tahun
+  const dateFilter = {};
+  if (tahun) {
+    dateFilter.gte = new Date(`${tahun}-01-01`);
+    dateFilter.lte = new Date(`${tahun}-12-31`);
+  }
+  if (bulan && tahun) {
+    dateFilter.gte = new Date(
+      `${tahun}-${bulan.toString().padStart(2, "0")}-01`
+    );
+    dateFilter.lte = new Date(tahun, bulan, 0); // Akhir bulan
+  }
+
+  // Ambil data transaksi penitip
+  const transaksiList = await prismaClient.detailPenitipan.findMany({
+    where: {
+      penitipan: {
+        id_penitip: idPenitip,
+      },
+      barang: {
+        detail_transaksi: {
+          transaksi: {
+            updatedAt: {
+              ...(dateFilter.gte && { gte: dateFilter.gte }),
+              ...(dateFilter.lte && { lte: dateFilter.lte }),
+            },
+          },
+        },
+      },
+    },
+    include: {
+      barang: {
+        select: {
+          prefix: true,
+          id_barang: true,
+          nama_barang: true,
+          detail_transaksi: {
+            select: {
+              komisi_penitip: true,
+              komisi_reusemart: true,
+              transaksi: {
+                select: {
+                  tanggal_transaksi: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Format data dan hitung bonus
+  const formattedData = transaksiList.map((transaksi) => {
+    const tanggalTransaksi = new Date(
+      transaksi.barang.detail_transaksi.transaksi.tanggal_transaksi
+    );
+    const tanggalUpdated = new Date(
+      transaksi.barang.detail_transaksi.transaksi.updatedAt
+    );
+    const diffDays = Math.ceil(
+      (tanggalUpdated - tanggalTransaksi) / (1000 * 60 * 60 * 24)
+    );
+    const bonusTerjualCepat =
+      diffDays < 7
+        ? transaksi.barang.detail_transaksi.komisi_reusemart * 0.1
+        : 0;
+
+    return {
+      kode_produk: `${transaksi.barang.prefix}${transaksi.barang.id_barang}`, // Contoh: K201
+      nama_produk: transaksi.barang.nama_barang, // Nama barang
+      tanggal_masuk: tanggalTransaksi.toLocaleDateString("id-ID"), // Format: 5/1/2025
+      tanggal_laku: tanggalUpdated.toLocaleDateString("id-ID"), // Format: 7/1/2025
+      harga_jual_bersih: transaksi.barang.detail_transaksi.komisi_penitip, // Harga jual bersih
+      bonus_terjual_cepat: bonusTerjualCepat, // Bonus terjual cepat
+      pendapatan:
+        transaksi.barang.detail_transaksi.komisi_penitip + bonusTerjualCepat, // Total pendapatan
+    };
+  });
+
+  // Hitung total pendapatan
+  const totalPendapatan = formattedData.reduce(
+    (sum, item) => sum + item.pendapatan,
+    0
+  );
+
+  const totalBonusTerjualCepat = formattedData.reduce(
+    (sum, item) => sum + item.bonus_terjual_cepat,
+    0
+  );
+
+  const totalHargaJualBersih = formattedData.reduce(
+    (sum, item) => sum + item.harga_jual_bersih,
+    0
+  );
+
+  return {
+    transaksi: formattedData,
+    totalHargaJualBersih: totalHargaJualBersih,
+    totalBonusTerjual: totalBonusTerjualCepat,
+    totalPendapatan: totalPendapatan,
+
+  };
+};
+
 export default {
   create,
   get,
@@ -616,4 +731,5 @@ export default {
   updateExpiredPayment,
   updateStatusByCS,
   getListVerifPembayaran,
+  getLaporanTransaksiPenitip,
 };

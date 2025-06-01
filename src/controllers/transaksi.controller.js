@@ -101,6 +101,18 @@ const updateExpiredPayment = async (req, res, next) => {
   }
 };
 
+const getLaporanTransaksiPenitip = async (req, res, next) => {
+  try {
+    const result = await transaksiService.getLaporanTransaksiPenitip(req.query);
+
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   get,
@@ -108,4 +120,5 @@ export default {
   verifPembayaran,
   updateExpiredPayment,
   getListVerifPembayaran,
+  getLaporanTransaksiPenitip,
 };
