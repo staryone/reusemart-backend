@@ -789,7 +789,7 @@ const checkMasaPenitipan = async () => {
       const toSend = {
         user_id: penitip.id_user,
         title: "Masa Penitipan Hampir Habis",
-        body: `Halo ${penitip.nama_penitip}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
+        body: `Halo ${penitip.nama}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
       };
       console.log(toSend);
       await notifikasiService.sendNotification(toSend);
@@ -821,7 +821,7 @@ const checkMasaPenitipan = async () => {
       const toSend = {
         user_id: penitip.id_user,
         title: "Masa Penitipan Sudah Habis",
-        body: `Halo ${penitip.nama_penitip}, masa penitipan barang ${barang.nama_barang} sudah habis! Silahkan mengambil barang ke kantor ReUseMart.`,
+        body: `Halo ${penitip.nama}, masa penitipan barang ${barang.nama_barang} sudah habis! Silahkan mengambil barang ke kantor ReUseMart.`,
       };
       console.log(toSend);
       await notifikasiService.sendNotification(toSend);
