@@ -101,6 +101,11 @@ const getListDikirim = async (request) => {
               },
             },
             alamat: true,
+            detail_transaksi: {
+              include: {
+                barang: true,
+              },
+            },
           },
         },
       },
@@ -140,6 +145,13 @@ const getListDikirim = async (request) => {
         nama: p.transaksi.pembeli.nama,
         email: p.transaksi.pembeli.user.email,
       },
+      detail_transaksi: p.transaksi.detail_transaksi.map((dt) => ({
+        barang: {
+          id_barang: dt.barang.id_barang,
+          nama_barang: dt.barang.nama_barang,
+          harga: dt.barang.harga,
+        },
+      })),
       alamat: p.transaksi.alamat
         ? {
             id_alamat: p.transaksi.alamat.id_alamat,
