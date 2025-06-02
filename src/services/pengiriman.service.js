@@ -89,12 +89,7 @@ const getListDikirim = async (request) => {
           select: { id_pegawai: true, nama: true, nomor_telepon: true },
         },
         transaksi: {
-          select: {
-            id_transaksi: true,
-            tanggal_transaksi: true,
-            tanggal_pembayaran: true,
-            metode_pengiriman: true,
-            status_Pembayaran: true,
+          include: {
             pembeli: {
               include: {
                 user: true,
@@ -103,7 +98,19 @@ const getListDikirim = async (request) => {
             alamat: true,
             detail_transaksi: {
               include: {
-                barang: true,
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            pegawai_qc: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -140,16 +147,20 @@ const getListDikirim = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      total_poin: p.transaksi.total_poin,
+      potongan_poin: p.transaksi.potongan_poin,
       pembeli: {
         id_pembeli: p.transaksi.pembeli.id_pembeli,
         nama: p.transaksi.pembeli.nama,
         email: p.transaksi.pembeli.user.email,
+        poin_loyalitas: p.transaksi.pembeli.poin_loyalitas,
       },
       detail_transaksi: p.transaksi.detail_transaksi.map((dt) => ({
         barang: {
           id_barang: dt.barang.id_barang,
           nama_barang: dt.barang.nama_barang,
           harga: dt.barang.harga,
+          nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
         },
       })),
       alamat: p.transaksi.alamat
@@ -276,6 +287,31 @@ const aturPengiriman = async (request) => {
     where: {
       id_pengiriman: id_pengiriman,
     },
+    select: {
+      id_kurir: true,
+      transaksi: {
+        select: {
+          id_pembeli: true,
+          detail_transaksi: {
+            select: {
+              barang: {
+                select: {
+                  detail_penitipan: {
+                    select: {
+                      penitipan: {
+                        select: {
+                          id_penitip: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!pengiriman) {
@@ -293,6 +329,41 @@ const aturPengiriman = async (request) => {
       updatedAt: new Date(),
     },
   });
+
+  const [kurir, pembeli, listIdPenitip] = await Promise.all([
+    await prismaClient.pegawai.findUnique({
+      where: {
+        id_pegawai: pengiriman.id_kurir,
+      },
+      select: {
+        id_user: true,
+      },
+    }),
+    await prismaClient.pembeli.findUnique({
+      where: {
+        id_pembeli: pengiriman.transaksi.id_pembeli,
+      },
+      select: {
+        id_user: true,
+      },
+    }),
+    pengiriman.transaksi.detail_transaksi.map(async (trx) => {
+      const { id_user } = await prismaClient.penitip.findUnique({
+        where: {
+          id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
+        },
+      });
+      return id_user;
+    }),
+  ]);
+
+  const toSend = {
+    user_id: penitip.id_user,
+    title: "Masa Penitipan Hampir Habis",
+    body: `Halo ${penitip.nama}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
+  };
+
+  notifikasiService.sendNotification();
 
   return "OK";
 };
