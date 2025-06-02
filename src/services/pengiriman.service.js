@@ -213,18 +213,30 @@ const getListDiambil = async (request) => {
           select: { id_pegawai: true, nama: true, nomor_telepon: true },
         },
         transaksi: {
-          select: {
-            id_transaksi: true,
-            tanggal_transaksi: true,
-            tanggal_pembayaran: true,
-            metode_pengiriman: true,
-            status_Pembayaran: true,
+          include: {
             pembeli: {
               include: {
                 user: true,
               },
             },
             alamat: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            pegawai_qc: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -259,11 +271,26 @@ const getListDiambil = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      total_poin: p.transaksi.total_poin,
+      potongan_poin: p.transaksi.potongan_poin,
       pembeli: {
         id_pembeli: p.transaksi.pembeli.id_pembeli,
         nama: p.transaksi.pembeli.nama,
         email: p.transaksi.pembeli.user.email,
+        poin_loyalitas: p.transaksi.pembeli.poin_loyalitas,
       },
+      detail_transaksi: p.transaksi.detail_transaksi.map((dt) => ({
+        barang: {
+          id_barang: dt.barang.id_barang,
+          nama_barang: dt.barang.nama_barang,
+          harga: dt.barang.harga,
+          id_qc: idToString(
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.prefix,
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
+          ),
+          nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
+        },
+      })),
       alamat: p.transaksi.alamat
         ? {
             id_alamat: p.transaksi.alamat.id_alamat,
