@@ -160,6 +160,10 @@ const getListDikirim = async (request) => {
           id_barang: dt.barang.id_barang,
           nama_barang: dt.barang.nama_barang,
           harga: dt.barang.harga,
+          id_qc: idToString(
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.prefix,
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
+          ),
           nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
         },
       })),
@@ -347,23 +351,27 @@ const aturPengiriman = async (request) => {
         id_user: true,
       },
     }),
-    pengiriman.transaksi.detail_transaksi.map(async (trx) => {
-      const { id_user } = await prismaClient.penitip.findUnique({
-        where: {
-          id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
-        },
-      });
-      return id_user;
-    }),
+    await Promise.all(
+      pengiriman.transaksi.detail_transaksi.map(async (trx) => {
+        const { id_user } = await prismaClient.penitip.findUnique({
+          where: {
+            id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
+          },
+        });
+        return id_user;
+      })
+    ),
   ]);
 
-  const toSend = {
-    user_id: penitip.id_user,
-    title: "Masa Penitipan Hampir Habis",
-    body: `Halo ${penitip.nama}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
-  };
+  console.log();
 
-  notifikasiService.sendNotification();
+  // const toSend = {
+  //   user_id: penitip.id_user,
+  //   title: "Masa Penitipan Hampir Habis",
+  //   body: `Halo ${penitip.nama}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
+  // };
+
+  // notifikasiService.sendNotification();
 
   return "OK";
 };
