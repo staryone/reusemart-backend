@@ -251,6 +251,60 @@ const aturPengiriman = async (request) => {
   return "OK";
 };
 
+const aturPengambilan = async (request) => {
+  const id_pengiriman = parseInt(request.id_pengiriman, 10);
+  request.tanggal = new Date(request.tanggal).toISOString();
+
+  const pengiriman = await prismaClient.pengiriman.findUnique({
+    where: {
+      id_pengiriman: id_pengiriman,
+    },
+  });
+
+  if (!pengiriman) {
+    throw new ResponseError(404, "Pengiriman tidak ditemukan");
+  }
+
+  const updatedPengiriman = await prismaClient.pengiriman.update({
+    where: {
+      id_pengiriman: id_pengiriman,
+    },
+    data: {
+      tanggal: request.tanggal,
+      status_pengiriman: "SIAP_DIAMBIL",
+      updatedAt: new Date(),
+    },
+  });
+
+  return "OK";
+};
+
+const konfirmasiPengambilan = async (request) => {
+  const id_pengiriman = parseInt(request.id_pengiriman, 10);
+
+  const pengiriman = await prismaClient.pengiriman.findUnique({
+    where: {
+      id_pengiriman: id_pengiriman,
+    },
+  });
+
+  if (!pengiriman) {
+    throw new ResponseError(404, "Pengiriman tidak ditemukan");
+  }
+
+  const updatedPengiriman = await prismaClient.pengiriman.update({
+    where: {
+      id_pengiriman: id_pengiriman,
+    },
+    data: {
+      status_pengiriman: "SUDAH_DITERIMA",
+      updatedAt: new Date(),
+    },
+  });
+
+  return "OK";
+};
+
 // const update = async (request) => {
 //   const updateRequest = validate(updatePengirimanValidation, request);
 //   const id_pengiriman = idToInteger(updateRequest.id_pengiriman);
@@ -319,6 +373,8 @@ export default {
   getListDikirim,
   getListDiambil,
   aturPengiriman,
+  aturPengambilan,
+  konfirmasiPengambilan,
   // update,
   // destroy,
 };

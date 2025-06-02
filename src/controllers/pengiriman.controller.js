@@ -126,6 +126,32 @@ const aturPengiriman = async (req, res, next) => {
   }
 };
 
+const aturPengambilan = async (req, res, next) => {
+  try {
+    const result = await pengirimanService.aturPengambilan(req.body);
+
+    res.status(200).json({
+      data: result,
+      message: "Pengambilan berhasil diatur!",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const konfirmasiPengambilan = async (req, res, next) => {
+  try {
+    const result = await pengirimanService.konfirmasiPengambilan(req.body);
+
+    res.status(200).json({
+      data: result,
+      message: "Konfirmasi pengambilan berhasil!",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 // const update = async (req, res, next) => {
 //   try {
 //     const pengiriman = {
@@ -168,6 +194,8 @@ export default {
   getListDikirim,
   getListDiambil,
   aturPengiriman,
+  aturPengambilan,
+  konfirmasiPengambilan,
   // update,
   // destroy,
 };

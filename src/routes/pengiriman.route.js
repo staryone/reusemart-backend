@@ -28,6 +28,18 @@ pengirimanRouter.post(
   pengirimanController.aturPengiriman
 );
 
+pengirimanRouter.post(
+  "/api/pengiriman/atur-pengambilan",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.aturPengambilan
+);
+
+pengirimanRouter.post(
+  "/api/pengiriman/konfirmasi-pengambilan",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.konfirmasiPengambilan
+);
+
 // pengirimanRouter.get(
 //   "/api/pengiriman/:id",
 //   restrictTo("PEGAWAI", "CS", "GUDANG", "PENITIP"),
