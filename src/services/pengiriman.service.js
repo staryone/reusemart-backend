@@ -495,6 +495,63 @@ const konfirmasiPengambilan = async (request) => {
   return "OK";
 };
 
+const cekPengirimanHangus = async (request) => {
+  const listSiapDiambil = await prismaClient.pengiriman.findMany({
+    where: {
+      status_pengiriman: "SIAP_DIAMBIL",
+    },
+    include: {
+      transaksi: {
+        include: {
+          detail_transaksi: {
+            include: {
+              barang: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  await Promise.all(
+    listSiapDiambil.map(async (pengiriman) => {
+      const waktuPengambilan = new Date(pengiriman.tanggal);
+      const deadline = new Date(
+        waktuPengambilan.getTime() + 48 * 60 * 60 * 1000
+      ); // 48 jam setelah waktu pengambilan
+      const waktuSekarang = new Date();
+
+      // Cek apakah sudah lebih dari 1 jam
+      if (waktuSekarang - deadline <= 0) {
+        // Update status pengiriman menjadi HANGUS
+        await prismaClient.pengiriman.update({
+          where: {
+            id_pengiriman: pengiriman.id_pengiriman,
+          },
+          data: {
+            status_pengiriman: "DIBATALKAN",
+            updatedAt: new Date(),
+          },
+        });
+
+        await Promise.all(
+          pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+            await prismaClient.barang.update({
+              where: {
+                id_barang: dt.barang.id_barang,
+              },
+              data: {
+                status_barang: "DIDONASIKAN",
+              },
+            });
+          })
+        );
+      }
+    })
+  );
+  return "OK";
+};
+
 // const update = async (request) => {
 //   const updateRequest = validate(updatePengirimanValidation, request);
 //   const id_pengiriman = idToInteger(updateRequest.id_pengiriman);
@@ -565,6 +622,6 @@ export default {
   aturPengiriman,
   aturPengambilan,
   konfirmasiPengambilan,
-  // update,
+  cekPengirimanHangus,
   // destroy,
 };

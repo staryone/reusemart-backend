@@ -4,6 +4,7 @@ import cron from "node-cron";
 import transaksiService from "./services/transaksi.service.js";
 import penitipanService from "./services/penitipan.service.js";
 import penitipService from "./services/penitip.service.js";
+import pengirimanService from "./services/pengiriman.service.js";
 
 app.listen(3001, () => {
   logger.info(`Server running on http://localhost:3001`);
@@ -23,6 +24,12 @@ app.listen(3001, () => {
   cron.schedule("0 0 0 1 * *", async () => {
     const result = await penitipService.topSeller();
     logger.info("Update top seller...");
+    logger.info(result);
+  });
+
+  cron.schedule("0 0 0 * * *", async () => {
+    const result = await pengirimanService.cekPengirimanHangus();
+    logger.info("Memeriksa pengiriman hangus...");
     logger.info(result);
   });
 });
