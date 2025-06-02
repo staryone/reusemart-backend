@@ -332,15 +332,41 @@ const aturPengiriman = async (request) => {
       id_kurir: request.id_kurir,
       updatedAt: new Date(),
     },
+    select: {
+      id_kurir: true,
+      transaksi: {
+        select: {
+          id_pembeli: true,
+          detail_transaksi: {
+            include: {
+              barang: {
+                select: {
+                  detail_penitipan: {
+                    select: {
+                      penitipan: {
+                        select: {
+                          id_penitip: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   const [kurir, pembeli, listIdPenitip] = await Promise.all([
     await prismaClient.pegawai.findUnique({
       where: {
-        id_pegawai: pengiriman.id_kurir,
+        id_pegawai: request.id_kurir,
       },
       select: {
         id_user: true,
+        nama: true,
       },
     }),
     await prismaClient.pembeli.findUnique({
@@ -349,27 +375,39 @@ const aturPengiriman = async (request) => {
       },
       select: {
         id_user: true,
+        nama: true,
       },
     }),
     await Promise.all(
       pengiriman.transaksi.detail_transaksi.map(async (trx) => {
-        const { id_user } = await prismaClient.penitip.findUnique({
+        return await prismaClient.penitip.findUnique({
           where: {
             id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
           },
+          select: {
+            id_user: true,
+            nama: true,
+          },
         });
-        return id_user;
       })
     ),
   ]);
 
-  console.log();
+  console.log(kurir.id_user);
+  console.log(pembeli.id_user);
+  console.log(listIdPenitip);
 
-  // const toSend = {
-  //   user_id: penitip.id_user,
-  //   title: "Masa Penitipan Hampir Habis",
-  //   body: `Halo ${penitip.nama}, masa penitipan barang ${barang.nama_barang} sisa 3 hari, silahkan konfirmasi perpanjangan di website ReUseMart`,
-  // };
+  await Promise.all([
+    await notifikasiService.sendNotification(),
+    await notifikasiService.sendNotification(),
+    await notifikasiService.sendNotification(),
+  ]);
+
+  const toSendKurir = {
+    user_id: kurir.id_user,
+    title: "Jadwal Pengiriman",
+    body: `Halo ${kurir.nama}, barang $ dijadwalkan dikirim pada $. Pastikan pengiriman tepat waktu ya!`,
+  };
 
   // notifikasiService.sendNotification();
 
