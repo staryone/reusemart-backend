@@ -95,6 +95,12 @@ const getListDikirim = async (request) => {
             tanggal_pembayaran: true,
             metode_pengiriman: true,
             status_Pembayaran: true,
+            pembeli: {
+              include: {
+                user: true,
+              },
+            },
+            alamat: true,
           },
         },
       },
@@ -129,6 +135,17 @@ const getListDikirim = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      pembeli: {
+        id_pembeli: p.transaksi.pembeli.id_pembeli,
+        nama: p.transaksi.pembeli.nama,
+        email: p.transaksi.pembeli.user.email,
+      },
+      alamat: p.transaksi.alamat
+        ? {
+            id_alamat: p.transaksi.alamat.id_alamat,
+            detail_alamat: p.transaksi.alamat.detail_alamat,
+          }
+        : null,
     },
   }));
 
@@ -175,6 +192,12 @@ const getListDiambil = async (request) => {
             tanggal_pembayaran: true,
             metode_pengiriman: true,
             status_Pembayaran: true,
+            pembeli: {
+              include: {
+                user: true,
+              },
+            },
+            alamat: true,
           },
         },
       },
@@ -209,6 +232,17 @@ const getListDiambil = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      pembeli: {
+        id_pembeli: p.transaksi.pembeli.id_pembeli,
+        nama: p.transaksi.pembeli.nama,
+        email: p.transaksi.pembeli.user.email,
+      },
+      alamat: p.transaksi.alamat
+        ? {
+            id_alamat: p.transaksi.alamat.id_alamat,
+            detail_alamat: p.transaksi.alamat.detail_alamat,
+          }
+        : null,
     },
   }));
 
