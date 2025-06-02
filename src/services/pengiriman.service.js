@@ -3,6 +3,7 @@ import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 import { idToInteger, idToString } from "../utils/formater.util.js";
 import { getIdAuthValidation } from "../validation/auth.validate.js";
+import notifikasiService from "./notifikasi.service.js";
 // import {
 //   createPengirimanValidation,
 //   getPengirimanValidation,
@@ -310,160 +311,329 @@ const getListDiambil = async (request) => {
 };
 
 const aturPengiriman = async (request) => {
-  const id_pengiriman = parseInt(request.id_pengiriman, 10);
-  request.tanggal = new Date(request.tanggal).toISOString();
-  request.id_kurir = idToInteger(request.id_kurir);
+  await prismaClient.$transaction(async (tx) => {
+    const id_pengiriman = parseInt(request.id_pengiriman, 10);
+    request.tanggal = new Date(request.tanggal).toISOString();
+    request.id_kurir = idToInteger(request.id_kurir);
 
-  const pengiriman = await prismaClient.pengiriman.findUnique({
-    where: {
-      id_pengiriman: id_pengiriman,
-    },
-    select: {
-      id_kurir: true,
-      transaksi: {
-        select: {
-          id_pembeli: true,
-          detail_transaksi: {
-            select: {
-              barang: {
-                select: {
-                  detail_penitipan: {
-                    select: {
-                      penitipan: {
-                        select: {
-                          id_penitip: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!pengiriman) {
-    throw new ResponseError(404, "Pengiriman tidak ditemukan");
-  }
-
-  const updatedPengiriman = await prismaClient.pengiriman.update({
-    where: {
-      id_pengiriman: id_pengiriman,
-    },
-    data: {
-      tanggal: request.tanggal,
-      status_pengiriman: "SEDANG_DIKIRIM",
-      id_kurir: request.id_kurir,
-      updatedAt: new Date(),
-    },
-    select: {
-      id_kurir: true,
-      transaksi: {
-        select: {
-          id_pembeli: true,
-          detail_transaksi: {
-            include: {
-              barang: {
-                select: {
-                  detail_penitipan: {
-                    select: {
-                      penitipan: {
-                        select: {
-                          id_penitip: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  const [kurir, pembeli, listIdPenitip] = await Promise.all([
-    await prismaClient.pegawai.findUnique({
+    const pengiriman = await tx.pengiriman.findUnique({
       where: {
-        id_pegawai: request.id_kurir,
+        id_pengiriman: id_pengiriman,
       },
       select: {
-        id_user: true,
-        nama: true,
-      },
-    }),
-    await prismaClient.pembeli.findUnique({
-      where: {
-        id_pembeli: pengiriman.transaksi.id_pembeli,
-      },
-      select: {
-        id_user: true,
-        nama: true,
-      },
-    }),
-    await Promise.all(
-      pengiriman.transaksi.detail_transaksi.map(async (trx) => {
-        return await prismaClient.penitip.findUnique({
-          where: {
-            id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
-          },
+        id_kurir: true,
+        transaksi: {
           select: {
-            id_user: true,
-            nama: true,
+            id_pembeli: true,
+            detail_transaksi: {
+              select: {
+                barang: {
+                  select: {
+                    detail_penitipan: {
+                      select: {
+                        penitipan: {
+                          select: {
+                            id_penitip: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
-        });
-      })
-    ),
-  ]);
+        },
+      },
+    });
 
-  console.log(kurir.id_user);
-  console.log(pembeli.id_user);
-  console.log(listIdPenitip);
+    if (!pengiriman) {
+      throw new ResponseError(404, "Pengiriman tidak ditemukan");
+    }
 
-  await Promise.all([
-    await notifikasiService.sendNotification(),
-    await notifikasiService.sendNotification(),
-    await notifikasiService.sendNotification(),
-  ]);
+    const updatedPengiriman = await tx.pengiriman.update({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      data: {
+        tanggal: request.tanggal,
+        status_pengiriman: "SEDANG_DIKIRIM",
+        id_kurir: request.id_kurir,
+        updatedAt: new Date(),
+      },
+      select: {
+        id_kurir: true,
+        tanggal: true,
+        transaksi: {
+          select: {
+            id_pembeli: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  select: {
+                    nama_barang: true,
+                    detail_penitipan: {
+                      select: {
+                        penitipan: {
+                          select: {
+                            id_penitip: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-  const toSendKurir = {
-    user_id: kurir.id_user,
-    title: "Jadwal Pengiriman",
-    body: `Halo ${kurir.nama}, barang $ dijadwalkan dikirim pada $. Pastikan pengiriman tepat waktu ya!`,
-  };
+    const [kurir, pembeli, listPenitip] = await Promise.all([
+      await tx.pegawai.findUnique({
+        where: {
+          id_pegawai: request.id_kurir,
+        },
+        select: {
+          id_user: true,
+          nama: true,
+        },
+      }),
+      await tx.pembeli.findUnique({
+        where: {
+          id_pembeli: pengiriman.transaksi.id_pembeli,
+        },
+        select: {
+          id_user: true,
+          nama: true,
+        },
+      }),
+      await Promise.all(
+        pengiriman.transaksi.detail_transaksi.map(async (trx) => {
+          return await tx.penitip.findUnique({
+            where: {
+              id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
+            },
+            select: {
+              id_user: true,
+              nama: true,
+            },
+          });
+        })
+      ),
+    ]);
 
-  // notifikasiService.sendNotification();
+    const formater = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
 
+    const formattedDatetime = formater.format(
+      new Date(updatedPengiriman.tanggal)
+    );
+
+    const listNamaBarang = updatedPengiriman.transaksi.detail_transaksi.map(
+      (dtl) => {
+        return dtl.barang.nama_barang;
+      }
+    );
+
+    const toSendKurir = {
+      user_id: kurir.id_user,
+      title: "Jadwal Pengiriman Barang",
+      body: `Halo ${kurir.nama}, barang ${listNamaBarang.join(
+        ", "
+      )} dijadwalkan untuk dikirim pada ${formattedDatetime}. Pastikan pengiriman tepat waktu ya!`,
+    };
+
+    const toSendPembeli = {
+      user_id: pembeli.id_user,
+      title: "Pesananmu Sedang Dalam Perjalanan!",
+      body: `Halo ${pembeli.nama}, pesananmu ${listNamaBarang.join(
+        ", "
+      )} akan dikirim pada ${formattedDatetime}. Cek detail transaksi di aplikasi untuk perkiraan waktu tiba. Terima kasih telah berbelanja!`,
+    };
+
+    await Promise.all([
+      await notifikasiService.sendNotification(toSendKurir),
+      await Promise.all(
+        listPenitip.map(async (penitip) => {
+          const toSendPenitip = {
+            user_id: penitip.id_user,
+            title: "Barangmu Siap Dikirim!",
+            body: `Halo ${penitip.nama}, barangmu ${listNamaBarang.join(
+              ", "
+            )} dijadwalkan akan dikirim pada ${formattedDatetime}. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
+          };
+
+          await notifikasiService.sendNotification(toSendPenitip);
+        })
+      ),
+      await notifikasiService.sendNotification(toSendPembeli),
+    ]);
+
+    return "OK";
+  });
   return "OK";
 };
 
 const aturPengambilan = async (request) => {
-  const id_pengiriman = parseInt(request.id_pengiriman, 10);
-  request.tanggal = new Date(request.tanggal).toISOString();
+  await prismaClient.$transaction(async (tx) => {
+    const id_pengiriman = parseInt(request.id_pengiriman, 10);
+    request.tanggal = new Date(request.tanggal).toISOString();
 
-  const pengiriman = await prismaClient.pengiriman.findUnique({
-    where: {
-      id_pengiriman: id_pengiriman,
-    },
-  });
+    const pengiriman = await tx.pengiriman.findUnique({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      select: {
+        id_kurir: true,
+        transaksi: {
+          select: {
+            id_pembeli: true,
+            detail_transaksi: {
+              select: {
+                barang: {
+                  select: {
+                    detail_penitipan: {
+                      select: {
+                        penitipan: {
+                          select: {
+                            id_penitip: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-  if (!pengiriman) {
-    throw new ResponseError(404, "Pengiriman tidak ditemukan");
-  }
+    if (!pengiriman) {
+      throw new ResponseError(404, "Pengiriman tidak ditemukan");
+    }
 
-  const updatedPengiriman = await prismaClient.pengiriman.update({
-    where: {
-      id_pengiriman: id_pengiriman,
-    },
-    data: {
-      tanggal: request.tanggal,
-      status_pengiriman: "SIAP_DIAMBIL",
-      updatedAt: new Date(),
-    },
+    const updatedPengiriman = await tx.pengiriman.update({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      data: {
+        tanggal: request.tanggal,
+        status_pengiriman: "SIAP_DIAMBIL",
+        updatedAt: new Date(),
+      },
+      select: {
+        id_kurir: true,
+        tanggal: true,
+        transaksi: {
+          select: {
+            id_pembeli: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  select: {
+                    nama_barang: true,
+                    detail_penitipan: {
+                      select: {
+                        penitipan: {
+                          select: {
+                            id_penitip: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const [pembeli, listPenitip] = await Promise.all([
+      await tx.pembeli.findUnique({
+        where: {
+          id_pembeli: pengiriman.transaksi.id_pembeli,
+        },
+        select: {
+          id_user: true,
+          nama: true,
+        },
+      }),
+      await Promise.all(
+        pengiriman.transaksi.detail_transaksi.map(async (trx) => {
+          return await tx.penitip.findUnique({
+            where: {
+              id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
+            },
+            select: {
+              id_user: true,
+              nama: true,
+            },
+          });
+        })
+      ),
+    ]);
+
+    const formater = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    const formattedDatetime = formater.format(
+      new Date(updatedPengiriman.tanggal)
+    );
+
+    const listNamaBarang = updatedPengiriman.transaksi.detail_transaksi.map(
+      (dtl) => {
+        return dtl.barang.nama_barang;
+      }
+    );
+
+    const toSendPembeli = {
+      user_id: pembeli.id_user,
+      title: "Pesananmu Siap Diambil!",
+      body: `Halo ${pembeli.nama}, pesananmu ${listNamaBarang.join(
+        ", "
+      )} siap di ambil pada ${formattedDatetime}. Cek detail transaksi di aplikasi untuk informasi lebih lanjut. Terima kasih telah berbelanja!`,
+    };
+
+    await Promise.all([
+      await notifikasiService.sendNotification(toSendPembeli),
+      await Promise.all(
+        listPenitip.map(async (penitip) => {
+          const toSendPenitip = {
+            user_id: penitip.id_user,
+            title: "Barangmu Siap Diambil Pembeli!",
+            body: `Halo ${penitip.nama}, barangmu ${listNamaBarang.join(
+              ", "
+            )} siap diambil pembeli pada ${formattedDatetime}. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
+          };
+
+          await notifikasiService.sendNotification(toSendPenitip);
+        })
+      ),
+    ]);
+
+    return "OK";
   });
 
   return "OK";
@@ -495,7 +665,7 @@ const konfirmasiPengambilan = async (request) => {
   return "OK";
 };
 
-const cekPengirimanHangus = async (request) => {
+const cekPengirimanHangus = async () => {
   const listSiapDiambil = await prismaClient.pengiriman.findMany({
     where: {
       status_pengiriman: "SIAP_DIAMBIL",
