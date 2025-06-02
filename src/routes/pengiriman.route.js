@@ -11,9 +11,33 @@ const pengirimanRouter = new express.Router();
 // );
 
 pengirimanRouter.get(
-  "/api/pengiriman/lists",
+  "/api/pengiriman/lists-dikirim",
   restrictTo("PEGAWAI", "GUDANG"),
-  pengirimanController.getList
+  pengirimanController.getListDikirim
+);
+
+pengirimanRouter.get(
+  "/api/pengiriman/lists-diambil",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.getListDiambil
+);
+
+pengirimanRouter.post(
+  "/api/pengiriman/atur-pengiriman",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.aturPengiriman
+);
+
+pengirimanRouter.post(
+  "/api/pengiriman/atur-pengambilan",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.aturPengambilan
+);
+
+pengirimanRouter.post(
+  "/api/pengiriman/konfirmasi-pengambilan",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.konfirmasiPengambilan
 );
 
 // pengirimanRouter.get(

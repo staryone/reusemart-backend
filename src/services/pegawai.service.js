@@ -106,71 +106,121 @@ const get = async (id) => {
   return formattedPegawai;
 };
 
+// const getList = async (request) => {
+//   const page = parseInt(request.page) || 1;
+//   const limit = parseInt(request.limit) || 10;
+//   const skip = (page - 1) * limit;
+//   const q = request.search;
+
+//   const countAllPegawai = await prismaClient.pegawai.count({
+//     where: q
+//       ? {
+//           OR: [
+//             {
+//               nama: {
+//                 contains: q,
+//               },
+//             },
+//             {
+//               user: {
+//                 email: {
+//                   contains: q,
+//                 },
+//               },
+//             },
+//             {
+//               jabatan: {
+//                 nama_jabatan: {
+//                   contains: q,
+//                 },
+//               },
+//             },
+//           ],
+//         }
+//       : {},
+//   });
+
+//   const listPegawai = await prismaClient.pegawai.findMany({
+//     where: q
+//       ? {
+//           OR: [
+//             {
+//               nama: {
+//                 contains: q,
+//               },
+//             },
+//             {
+//               user: {
+//                 email: {
+//                   contains: q,
+//                 },
+//               },
+//             },
+//             {
+//               jabatan: {
+//                 nama_jabatan: {
+//                   contains: q,
+//                 },
+//               },
+//             },
+//           ],
+//         }
+//       : {},
+//     include: {
+//       user: {
+//         select: {
+//           email: true,
+//         },
+//       },
+//       jabatan: true,
+//     },
+//     skip: skip,
+//     take: limit,
+//   });
+
+//   const formattedPegawai = listPegawai.map((p) => ({
+//     id_pegawai: idToString(p.prefix, p.id_pegawai),
+//     email: p.user.email,
+//     nama: p.nama,
+//     nomor_telepon: p.nomor_telepon,
+//     komisi: p.komisi,
+//     tgl_lahir: p.tgl_lahir,
+//     jabatan: p.jabatan,
+//   }));
+
+//   return [formattedPegawai, countAllPegawai];
+// };
 const getList = async (request) => {
   const page = parseInt(request.page) || 1;
   const limit = parseInt(request.limit) || 10;
   const skip = (page - 1) * limit;
   const q = request.search;
+  const id_jabatan = request.id_jabatan
+    ? parseInt(request.id_jabatan)
+    : undefined;
 
-  const countAllPegawai = await prismaClient.pegawai.count({
-    where: q
+  const baseWhere = {
+    ...(id_jabatan ? { id_jabatan: id_jabatan } : {}),
+    ...(q
       ? {
           OR: [
-            {
-              nama: {
-                contains: q,
-              },
-            },
-            {
-              user: {
-                email: {
-                  contains: q,
-                },
-              },
-            },
-            {
-              jabatan: {
-                nama_jabatan: {
-                  contains: q,
-                },
-              },
-            },
+            { nama: { contains: q } },
+            { user: { email: { contains: q } } },
+            { jabatan: { nama_jabatan: { contains: q } } },
           ],
         }
-      : {},
+      : {}),
+  };
+
+  const countAllPegawai = await prismaClient.pegawai.count({
+    where: baseWhere,
   });
 
   const listPegawai = await prismaClient.pegawai.findMany({
-    where: q
-      ? {
-          OR: [
-            {
-              nama: {
-                contains: q,
-              },
-            },
-            {
-              user: {
-                email: {
-                  contains: q,
-                },
-              },
-            },
-            {
-              jabatan: {
-                nama_jabatan: {
-                  contains: q,
-                },
-              },
-            },
-          ],
-        }
-      : {},
+    where: baseWhere,
     include: {
       user: {
-        select: {
-          email: true,
-        },
+        select: { email: true },
       },
       jabatan: true,
     },
