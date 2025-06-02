@@ -580,6 +580,103 @@ const destroy = async (id) => {
   return prismaClient.$transaction([deletedPenitip, deletedUser]);
 };
 
+const topSeller = async () => {
+  const now = new Date();
+  const previousMonth = new Date(now);
+  previousMonth.setMonth(now.getMonth() - 1);
+  const startOfMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);
+  const endOfMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  // Fetch data
+  const detailPenitipan = await prismaClient.detailPenitipan.findMany({
+    where: {
+      tanggal_laku: {
+        not: null,
+        gte: startOfMonth,
+        lte: endOfMonth,
+      },
+    },
+    include: {
+      barang: {
+        select: {
+          harga: true,
+        },
+      },
+      penitipan: {
+        include: {
+          penitip: {
+            select: {
+              id_penitip: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Aggregate harga by id_penitip
+  const totalsByPenitip = detailPenitipan.reduce((acc, detail) => {
+    const idPenitip = detail.penitipan.penitip.id_penitip;
+    const harga = detail.barang.harga;
+
+    if (!acc[idPenitip]) {
+      acc[idPenitip] = 0;
+    }
+    acc[idPenitip] += harga;
+
+    return acc;
+  }, {});
+
+  // Find the id_penitip with the highest total harga
+  let topPenitip = null;
+  let maxTotal = 0;
+
+  for (const [idPenitip, total] of Object.entries(totalsByPenitip)) {
+    if (total > maxTotal) {
+      maxTotal = total;
+      topPenitip = idPenitip;
+    }
+  }
+
+  const calonTopSeller = await prismaClient.penitip.findUnique({
+    where: {
+      id_penitip: topPenitip
+    }
+  })
+
+  const currentTopSeller = await prismaClient.penitip.findFirst({
+    where: {
+      is_top_seller: true
+    }
+  })
+
+  const bonus = 0.01 * calonTopSeller.saldo;
+
+  const updateNewTopSeller = await prismaClient.penitip.update({
+    where: {
+      id_penitip: calonTopSeller.id_penitip
+    },
+    data: {
+      is_top_seller: true,
+      saldo: calonTopSeller.saldo + bonus
+    }
+  })
+
+  const removePreviousTopSeller = await prismaClient.penitip.update({
+    where: {
+      id_penitip: currentTopSeller.id_penitip
+    },
+    data: {
+      is_top_seller: false,
+    }
+  })
+
+  return {
+    id_penitip: topPenitip ? Number(topPenitip) : null,
+    total_harga: maxTotal,
+  };
+};
+
 export default {
   create,
   profile,
@@ -589,4 +686,5 @@ export default {
   update,
   updateSistem,
   destroy,
+  topSeller
 };
