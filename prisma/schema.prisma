@@ -427,6 +427,7 @@ enum StatusPengiriman {
   SIAP_DIAMBIL
   SEDANG_DIKIRIM
   SUDAH_DITERIMA
+  DIBATALKAN
 }
 
 enum StatusRequestDonasi {

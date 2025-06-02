@@ -89,12 +89,30 @@ const getListDikirim = async (request) => {
           select: { id_pegawai: true, nama: true, nomor_telepon: true },
         },
         transaksi: {
-          select: {
-            id_transaksi: true,
-            tanggal_transaksi: true,
-            tanggal_pembayaran: true,
-            metode_pengiriman: true,
-            status_Pembayaran: true,
+          include: {
+            pembeli: {
+              include: {
+                user: true,
+              },
+            },
+            alamat: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            pegawai_qc: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -129,6 +147,32 @@ const getListDikirim = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      total_poin: p.transaksi.total_poin,
+      potongan_poin: p.transaksi.potongan_poin,
+      pembeli: {
+        id_pembeli: p.transaksi.pembeli.id_pembeli,
+        nama: p.transaksi.pembeli.nama,
+        email: p.transaksi.pembeli.user.email,
+        poin_loyalitas: p.transaksi.pembeli.poin_loyalitas,
+      },
+      detail_transaksi: p.transaksi.detail_transaksi.map((dt) => ({
+        barang: {
+          id_barang: dt.barang.id_barang,
+          nama_barang: dt.barang.nama_barang,
+          harga: dt.barang.harga,
+          id_qc: idToString(
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.prefix,
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
+          ),
+          nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
+        },
+      })),
+      alamat: p.transaksi.alamat
+        ? {
+            id_alamat: p.transaksi.alamat.id_alamat,
+            detail_alamat: p.transaksi.alamat.detail_alamat,
+          }
+        : null,
     },
   }));
 
@@ -169,12 +213,30 @@ const getListDiambil = async (request) => {
           select: { id_pegawai: true, nama: true, nomor_telepon: true },
         },
         transaksi: {
-          select: {
-            id_transaksi: true,
-            tanggal_transaksi: true,
-            tanggal_pembayaran: true,
-            metode_pengiriman: true,
-            status_Pembayaran: true,
+          include: {
+            pembeli: {
+              include: {
+                user: true,
+              },
+            },
+            alamat: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            pegawai_qc: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -209,6 +271,32 @@ const getListDiambil = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      total_poin: p.transaksi.total_poin,
+      potongan_poin: p.transaksi.potongan_poin,
+      pembeli: {
+        id_pembeli: p.transaksi.pembeli.id_pembeli,
+        nama: p.transaksi.pembeli.nama,
+        email: p.transaksi.pembeli.user.email,
+        poin_loyalitas: p.transaksi.pembeli.poin_loyalitas,
+      },
+      detail_transaksi: p.transaksi.detail_transaksi.map((dt) => ({
+        barang: {
+          id_barang: dt.barang.id_barang,
+          nama_barang: dt.barang.nama_barang,
+          harga: dt.barang.harga,
+          id_qc: idToString(
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.prefix,
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
+          ),
+          nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
+        },
+      })),
+      alamat: p.transaksi.alamat
+        ? {
+            id_alamat: p.transaksi.alamat.id_alamat,
+            detail_alamat: p.transaksi.alamat.detail_alamat,
+          }
+        : null,
     },
   }));
 
@@ -230,6 +318,31 @@ const aturPengiriman = async (request) => {
     where: {
       id_pengiriman: id_pengiriman,
     },
+    select: {
+      id_kurir: true,
+      transaksi: {
+        select: {
+          id_pembeli: true,
+          detail_transaksi: {
+            select: {
+              barang: {
+                select: {
+                  detail_penitipan: {
+                    select: {
+                      penitipan: {
+                        select: {
+                          id_penitip: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!pengiriman) {
@@ -246,7 +359,84 @@ const aturPengiriman = async (request) => {
       id_kurir: request.id_kurir,
       updatedAt: new Date(),
     },
+    select: {
+      id_kurir: true,
+      transaksi: {
+        select: {
+          id_pembeli: true,
+          detail_transaksi: {
+            include: {
+              barang: {
+                select: {
+                  detail_penitipan: {
+                    select: {
+                      penitipan: {
+                        select: {
+                          id_penitip: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
+
+  const [kurir, pembeli, listIdPenitip] = await Promise.all([
+    await prismaClient.pegawai.findUnique({
+      where: {
+        id_pegawai: request.id_kurir,
+      },
+      select: {
+        id_user: true,
+        nama: true,
+      },
+    }),
+    await prismaClient.pembeli.findUnique({
+      where: {
+        id_pembeli: pengiriman.transaksi.id_pembeli,
+      },
+      select: {
+        id_user: true,
+        nama: true,
+      },
+    }),
+    await Promise.all(
+      pengiriman.transaksi.detail_transaksi.map(async (trx) => {
+        return await prismaClient.penitip.findUnique({
+          where: {
+            id_penitip: trx.barang.detail_penitipan.penitipan.id_penitip,
+          },
+          select: {
+            id_user: true,
+            nama: true,
+          },
+        });
+      })
+    ),
+  ]);
+
+  console.log(kurir.id_user);
+  console.log(pembeli.id_user);
+  console.log(listIdPenitip);
+
+  await Promise.all([
+    await notifikasiService.sendNotification(),
+    await notifikasiService.sendNotification(),
+    await notifikasiService.sendNotification(),
+  ]);
+
+  const toSendKurir = {
+    user_id: kurir.id_user,
+    title: "Jadwal Pengiriman",
+    body: `Halo ${kurir.nama}, barang $ dijadwalkan dikirim pada $. Pastikan pengiriman tepat waktu ya!`,
+  };
+
+  // notifikasiService.sendNotification();
 
   return "OK";
 };
