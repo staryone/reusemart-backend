@@ -43,7 +43,22 @@ const profile = async (req, res, next) => {
   }
 };
 
+const tambahPoin = async (req, res, next) => {
+  try {
+    const id = req.session.user.id_user;
+    const poin = req.body.poin;
+    const result = await pembeliService.tambahPoin(id, poin);
+
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   register,
   profile,
+  tambahPoin,
 };

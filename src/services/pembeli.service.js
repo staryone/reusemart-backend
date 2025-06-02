@@ -58,7 +58,7 @@ const profile = async (id) => {
                   gambar: true,
                 },
               },
-              is_rating: true
+              is_rating: true,
             },
           },
         },
@@ -84,7 +84,44 @@ const profile = async (id) => {
   return formattedPembeli;
 };
 
+const tambahPoin = async (id, poin) => {
+  const id_user = validate(getIdAuthValidation, id);
+
+  const pembeli = await prismaClient.pembeli.findUnique({
+    where: {
+      id_user: id_user,
+    },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!pembeli) {
+    throw new ResponseError(404, "Pembeli tidak ditemukan");
+  }
+
+  const updatedPembeli = await prismaClient.pembeli.update({
+    where: {
+      id_user: id_user,
+    },
+    data: {
+      poin_loyalitas: pembeli.poin_loyalitas + Number(poin),
+    },
+  });
+
+  return {
+    message: "OK",
+    tambahan: poin,
+    poin_loyalitas: updatedPembeli.poin_loyalitas,
+  };
+};
+
 export default {
   create,
   profile,
+  tambahPoin,
 };

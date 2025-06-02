@@ -31,4 +31,10 @@ pembeliRouter.get(
   pembeliController.profile
 );
 
+pembeliRouter.patch(
+  "/api/pembeli/tambah-poin",
+  restrictTo("PEMBELI"),
+  pembeliController.tambahPoin
+);
+
 export { pembeliRouter };
