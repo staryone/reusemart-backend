@@ -1,3 +1,4 @@
+import { parse } from "path";
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../errors/response.error.js";
 import { idToInteger, idToString } from "../utils/formater.util.js";
@@ -220,6 +221,36 @@ const getListDiambil = async (request) => {
   };
 };
 
+const aturPengiriman = async (request) => {
+  const id_pengiriman = parseInt(request.id_pengiriman, 10);
+  request.tanggal = new Date(request.tanggal).toISOString();
+  request.id_kurir = idToInteger(request.id_kurir);
+
+  const pengiriman = await prismaClient.pengiriman.findUnique({
+    where: {
+      id_pengiriman: id_pengiriman,
+    },
+  });
+
+  if (!pengiriman) {
+    throw new ResponseError(404, "Pengiriman tidak ditemukan");
+  }
+
+  const updatedPengiriman = await prismaClient.pengiriman.update({
+    where: {
+      id_pengiriman: id_pengiriman,
+    },
+    data: {
+      tanggal: request.tanggal,
+      status_pengiriman: "SEDANG_DIKIRIM",
+      id_kurir: request.id_kurir,
+      updatedAt: new Date(),
+    },
+  });
+
+  return "OK";
+};
+
 // const update = async (request) => {
 //   const updateRequest = validate(updatePengirimanValidation, request);
 //   const id_pengiriman = idToInteger(updateRequest.id_pengiriman);
@@ -287,6 +318,7 @@ export default {
   // get,
   getListDikirim,
   getListDiambil,
+  aturPengiriman,
   // update,
   // destroy,
 };

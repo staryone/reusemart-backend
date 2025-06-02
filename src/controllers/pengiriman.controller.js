@@ -75,10 +75,6 @@ import pengirimanService from "../services/pengiriman.service.js";
 
 const getListDikirim = async (req, res, next) => {
   try {
-    if (!req.session.user?.pegawai) {
-      throw new Error("Unauthorized: Employee access required");
-    }
-
     const { page, limit, status } = req.query;
     const request = {
       page: page || "1",
@@ -99,10 +95,6 @@ const getListDikirim = async (req, res, next) => {
 
 const getListDiambil = async (req, res, next) => {
   try {
-    if (!req.session.user?.pegawai) {
-      throw new Error("Unauthorized: Employee access required");
-    }
-
     const { page, limit, status } = req.query;
     const request = {
       page: page || "1",
@@ -115,6 +107,19 @@ const getListDiambil = async (req, res, next) => {
     res.status(200).json({
       data: result.data,
       totalItems: result.total,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const aturPengiriman = async (req, res, next) => {
+  try {
+    const result = await pengirimanService.aturPengiriman(req.body);
+
+    res.status(200).json({
+      data: result,
+      message: "Pengiriman berhasil diatur!",
     });
   } catch (e) {
     next(e);
@@ -162,6 +167,7 @@ export default {
   // get,
   getListDikirim,
   getListDiambil,
+  aturPengiriman,
   // update,
   // destroy,
 };

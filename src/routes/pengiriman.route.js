@@ -22,6 +22,12 @@ pengirimanRouter.get(
   pengirimanController.getListDiambil
 );
 
+pengirimanRouter.post(
+  "/api/pengiriman/atur-pengiriman",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.aturPengiriman
+);
+
 // pengirimanRouter.get(
 //   "/api/pengiriman/:id",
 //   restrictTo("PEGAWAI", "CS", "GUDANG", "PENITIP"),
