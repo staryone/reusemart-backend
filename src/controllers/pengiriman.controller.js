@@ -48,9 +48,33 @@ import pengirimanService from "../services/pengiriman.service.js";
 //   }
 // };
 
-const getList = async (req, res, next) => {
+// const getList = async (req, res, next) => {
+//   try {
+//     // Restrict access to authenticated employees (handled by restrictTo middleware)
+//     if (!req.session.user?.pegawai) {
+//       throw new Error("Unauthorized: Employee access required");
+//     }
+
+//     const { page, limit, status } = req.query;
+//     const request = {
+//       page: page || "1",
+//       limit: limit || "10",
+//       status: status || "ALL",
+//     };
+
+//     const result = await pengirimanService.getList(request);
+
+//     res.status(200).json({
+//       data: result.data,
+//       totalItems: result.total,
+//     });
+//   } catch (e) {
+//     next(e);
+//   }
+// };
+
+const getListDikirim = async (req, res, next) => {
   try {
-    // Restrict access to authenticated employees (handled by restrictTo middleware)
     if (!req.session.user?.pegawai) {
       throw new Error("Unauthorized: Employee access required");
     }
@@ -59,10 +83,34 @@ const getList = async (req, res, next) => {
     const request = {
       page: page || "1",
       limit: limit || "10",
-      status: status || "ALL",
+      status: status || "",
     };
 
-    const result = await pengirimanService.getList(request);
+    const result = await pengirimanService.getListDikirim(request);
+
+    res.status(200).json({
+      data: result.data,
+      totalItems: result.total,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+const getListDiambil = async (req, res, next) => {
+  try {
+    if (!req.session.user?.pegawai) {
+      throw new Error("Unauthorized: Employee access required");
+    }
+
+    const { page, limit, status } = req.query;
+    const request = {
+      page: page || "1",
+      limit: limit || "10",
+      status: status || "",
+    };
+
+    const result = await pengirimanService.getListDiambil(request);
 
     res.status(200).json({
       data: result.data,
@@ -112,7 +160,8 @@ const getList = async (req, res, next) => {
 export default {
   // create,
   // get,
-  getList,
+  getListDikirim,
+  getListDiambil,
   // update,
   // destroy,
 };

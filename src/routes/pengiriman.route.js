@@ -11,9 +11,15 @@ const pengirimanRouter = new express.Router();
 // );
 
 pengirimanRouter.get(
-  "/api/pengiriman/lists",
+  "/api/pengiriman/lists-dikirim",
   restrictTo("PEGAWAI", "GUDANG"),
-  pengirimanController.getList
+  pengirimanController.getListDikirim
+);
+
+pengirimanRouter.get(
+  "/api/pengiriman/lists-diambil",
+  restrictTo("PEGAWAI", "GUDANG"),
+  pengirimanController.getListDiambil
 );
 
 // pengirimanRouter.get(

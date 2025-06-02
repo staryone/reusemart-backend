@@ -60,29 +60,29 @@ import { validate } from "../validation/validate.js";
 //   };
 // };
 
-const getList = async (request) => {
+const getListDikirim = async (request) => {
   const page = Math.max(1, parseInt(request.page) || 1);
   const limit = Math.max(1, parseInt(request.limit) || 10);
   const status = request.status || "ALL";
   const skip = (page - 1) * limit;
 
-  // Validate status_pengiriman
-  const validStatuses = [
-    "DIPROSES",
-    "SIAP_DIAMBIL",
-    "SEDANG_DIKIRIM",
-    "SUDAH_DITERIMA",
-  ];
+  const validStatuses = ["DIPROSES", "SEDANG_DIKIRIM", "SUDAH_DITERIMA"];
   if (status !== "ALL" && !validStatuses.includes(status)) {
     throw new ResponseError("Invalid status_pengiriman value", 400);
   }
 
   const [countAllPengiriman, listPengiriman] = await Promise.all([
     prismaClient.pengiriman.count({
-      where: { status_pengiriman: status === "ALL" ? undefined : status },
+      where: {
+        status_pengiriman: status === "ALL" ? undefined : status,
+        transaksi: { metode_pengiriman: "DIKIRIM" },
+      },
     }),
     prismaClient.pengiriman.findMany({
-      where: { status_pengiriman: status === "ALL" ? undefined : status },
+      where: {
+        status_pengiriman: status === "ALL" ? undefined : status,
+        transaksi: { metode_pengiriman: "DIKIRIM" },
+      },
       include: {
         kurir: {
           select: { id_pegawai: true, nama: true, nomor_telepon: true },
@@ -92,6 +92,7 @@ const getList = async (request) => {
             id_transaksi: true,
             tanggal_transaksi: true,
             tanggal_pembayaran: true,
+            metode_pengiriman: true,
             status_Pembayaran: true,
           },
         },
@@ -125,6 +126,87 @@ const getList = async (request) => {
       id_transaksi: p.transaksi.id_transaksi,
       tanggal_transaksi: p.transaksi.tanggal_transaksi,
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
+      metode_pengiriman: p.transaksi.metode_pengiriman,
+      status_pembayaran: p.transaksi.status_Pembayaran,
+    },
+  }));
+
+  return {
+    data: formattedPengiriman,
+    total: countAllPengiriman,
+    page,
+    limit,
+    totalPages: Math.ceil(countAllPengiriman / limit),
+  };
+};
+
+const getListDiambil = async (request) => {
+  const page = Math.max(1, parseInt(request.page) || 1);
+  const limit = Math.max(1, parseInt(request.limit) || 10);
+  const status = request.status || "ALL";
+  const skip = (page - 1) * limit;
+
+  const validStatuses = ["DIPROSES", "SIAP_DIAMBIL", "SUDAH_DITERIMA"];
+  if (status !== "ALL" && !validStatuses.includes(status)) {
+    throw new ResponseError("Invalid status_pengiriman value", 400);
+  }
+
+  const [countAllPengiriman, listPengiriman] = await Promise.all([
+    prismaClient.pengiriman.count({
+      where: {
+        status_pengiriman: status === "ALL" ? undefined : status,
+        transaksi: { metode_pengiriman: "DIAMBIL" },
+      },
+    }),
+    prismaClient.pengiriman.findMany({
+      where: {
+        status_pengiriman: status === "ALL" ? undefined : status,
+        transaksi: { metode_pengiriman: "DIAMBIL" },
+      },
+      include: {
+        kurir: {
+          select: { id_pegawai: true, nama: true, nomor_telepon: true },
+        },
+        transaksi: {
+          select: {
+            id_transaksi: true,
+            tanggal_transaksi: true,
+            tanggal_pembayaran: true,
+            metode_pengiriman: true,
+            status_Pembayaran: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      skip: skip,
+      take: limit,
+    }),
+  ]);
+
+  if (!listPengiriman || listPengiriman.length === 0) {
+    throw new ResponseError("No pengiriman data found", 404);
+  }
+
+  const formattedPengiriman = listPengiriman.map((p) => ({
+    id_pengiriman: p.id_pengiriman,
+    tanggal: p.tanggal,
+    status_pengiriman: p.status_pengiriman,
+    id_kurir: p.id_kurir,
+    id_transaksi: p.id_transaksi,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+    kurir: p.kurir
+      ? {
+          id_kurir: p.kurir.id_pegawai,
+          nama: p.kurir.nama,
+          no_hp_kurir: p.kurir.nomor_telepon,
+        }
+      : null,
+    transaksi: {
+      id_transaksi: p.transaksi.id_transaksi,
+      tanggal_transaksi: p.transaksi.tanggal_transaksi,
+      tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
+      metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
     },
   }));
@@ -203,7 +285,8 @@ const getList = async (request) => {
 export default {
   //   create,
   // get,
-  getList,
+  getListDikirim,
+  getListDiambil,
   // update,
   // destroy,
 };
