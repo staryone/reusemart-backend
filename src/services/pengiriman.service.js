@@ -4,64 +4,7 @@ import { ResponseError } from "../errors/response.error.js";
 import { idToInteger, idToString } from "../utils/formater.util.js";
 import { getIdAuthValidation } from "../validation/auth.validate.js";
 import notifikasiService from "./notifikasi.service.js";
-// import {
-//   createPengirimanValidation,
-//   getPengirimanValidation,
-//   updatePengirimanValidation,
-// } from "../validation/pengiriman.validate.js";
-import { validate } from "../validation/validate.js";
-import { tr } from "date-fns/locale";
-
-// const create = async (request) => {
-//   const pengiriman = validate(createPengirimanValidation, request);
-
-//   const createdPengiriman = await prismaClient.pengiriman.create({
-//     data: {
-//       id_pengiriman: pengiriman.id_pengiriman,
-//       tanggal: pengiriman.tanggal,
-//       status_pengiriman: pengiriman.status_pengiriman,
-//       id_kurir: pengiriman.id_kurir,
-//       id_transaksi: pengiriman.id_transaksi,
-//       createdAt: new Date(),
-//       updatedAt: new Date(),
-//     },
-//   });
-
-//   return {
-//     id_pengiriman: idToString(createdPengiriman.id_pengiriman),
-//     tanggal: createdPengiriman.tanggal,
-//     status_pengiriman: createdPengiriman.status_pengiriman,
-//     id_kurir: idToString(createdPengiriman.id_kurir),
-//     id_transaksi: idToString(createdPengiriman.id_transaksi),
-//     createdAt: createdPengiriman.createdAt,
-//     updatedAt: createdPengiriman.updatedAt,
-//   };
-// };
-
-// const get = async (id) => {
-//   id = validate(getPengirimanValidation, id);
-//   const id_pengiriman = idToInteger(id);
-
-//   const pengiriman = await prismaClient.pengiriman.findUnique({
-//     where: {
-//       id_pengiriman: id_pengiriman,
-//     },
-//   });
-
-//   if (!pengiriman) {
-//     throw new ResponseError(404, "Pengiriman tidak ditemukan");
-//   }
-
-//   return {
-//     id_pengiriman: idToString(pengiriman.id_pengiriman),
-//     tanggal: pengiriman.tanggal,
-//     status_pengiriman: pengiriman.status_pengiriman,
-//     id_kurir: idToString(pengiriman.id_kurir),
-//     id_transaksi: idToString(pengiriman.id_transaksi),
-//     createdAt: pengiriman.createdAt,
-//     updatedAt: pengiriman.updatedAt,
-//   };
-// };
+import { getUrlFile } from "../application/storage.js";
 
 const getListDikirim = async (request) => {
   const page = Math.max(1, parseInt(request.page) || 1);
@@ -111,6 +54,7 @@ const getListDikirim = async (request) => {
                         },
                       },
                     },
+                    gambar: true,
                   },
                 },
               },
@@ -127,6 +71,27 @@ const getListDikirim = async (request) => {
   if (!listPengiriman || listPengiriman.length === 0) {
     throw new ResponseError("No pengiriman data found", 404);
   }
+
+  // Transform image URLs using getUrlFile
+  try {
+    await Promise.all(
+      listPengiriman.map(async (pengiriman) => {
+        pengiriman.transaksi.detail_transaksi = await Promise.all(
+          pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+            dt.barang.gambar = await Promise.all(
+              dt.barang.gambar.map(async (g) => {
+                return {
+                  url_gambar: await getUrlFile(g.url_gambar),
+                  is_primary: g.is_primary,
+                };
+              })
+            );
+            return dt;
+          })
+        );
+      })
+    );
+  } catch {}
 
   const formattedPengiriman = listPengiriman.map((p) => ({
     id_pengiriman: p.id_pengiriman,
@@ -149,8 +114,11 @@ const getListDikirim = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      total_harga: p.transaksi.total_harga,
+      ongkos_kirim: p.transaksi.ongkos_kirim,
       total_poin: p.transaksi.total_poin,
       potongan_poin: p.transaksi.potongan_poin,
+      total_akhir: p.transaksi.total_akhir,
       pembeli: {
         id_pembeli: p.transaksi.pembeli.id_pembeli,
         nama: p.transaksi.pembeli.nama,
@@ -167,6 +135,7 @@ const getListDikirim = async (request) => {
             dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
           ),
           nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
+          gambar: dt.barang.gambar,
         },
       })),
       alamat: p.transaksi.alamat
@@ -235,6 +204,7 @@ const getListDiambil = async (request) => {
                         },
                       },
                     },
+                    gambar: true,
                   },
                 },
               },
@@ -251,6 +221,27 @@ const getListDiambil = async (request) => {
   if (!listPengiriman || listPengiriman.length === 0) {
     throw new ResponseError("No pengiriman data found", 404);
   }
+
+  // Transform image URLs using getUrlFile
+  try {
+    await Promise.all(
+      listPengiriman.map(async (pengiriman) => {
+        pengiriman.transaksi.detail_transaksi = await Promise.all(
+          pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+            dt.barang.gambar = await Promise.all(
+              dt.barang.gambar.map(async (g) => {
+                return {
+                  url_gambar: await getUrlFile(g.url_gambar),
+                  is_primary: g.is_primary,
+                };
+              })
+            );
+            return dt;
+          })
+        );
+      })
+    );
+  } catch {}
 
   const formattedPengiriman = listPengiriman.map((p) => ({
     id_pengiriman: p.id_pengiriman,
@@ -273,8 +264,11 @@ const getListDiambil = async (request) => {
       tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
       metode_pengiriman: p.transaksi.metode_pengiriman,
       status_pembayaran: p.transaksi.status_Pembayaran,
+      total_harga: p.transaksi.total_harga,
+      ongkos_kirim: p.transaksi.ongkos_kirim,
       total_poin: p.transaksi.total_poin,
       potongan_poin: p.transaksi.potongan_poin,
+      total_akhir: p.transaksi.total_akhir,
       pembeli: {
         id_pembeli: p.transaksi.pembeli.id_pembeli,
         nama: p.transaksi.pembeli.nama,
@@ -291,6 +285,7 @@ const getListDiambil = async (request) => {
             dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
           ),
           nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
+          gambar: dt.barang.gambar,
         },
       })),
       alamat: p.transaksi.alamat
