@@ -692,7 +692,7 @@ const cekPengirimanHangus = async () => {
       const waktuSekarang = new Date();
 
       // Cek apakah sudah lebih dari 1 jam
-      if (waktuSekarang - deadline <= 0) {
+      if (waktuSekarang > deadline) {
         // Update status pengiriman menjadi HANGUS
         await prismaClient.pengiriman.update({
           where: {
@@ -704,6 +704,10 @@ const cekPengirimanHangus = async () => {
           },
         });
 
+        console.log(
+          `Pengiriman dengan ID ${pengiriman.id_pengiriman} telah dibatalkan karena sudah lebih dari 48 jam.`
+        );
+
         await Promise.all(
           pengiriman.transaksi.detail_transaksi.map(async (dt) => {
             await prismaClient.barang.update({
@@ -711,9 +715,12 @@ const cekPengirimanHangus = async () => {
                 id_barang: dt.barang.id_barang,
               },
               data: {
-                status_barang: "DIDONASIKAN",
+                status: "DIDONASIKAN",
               },
             });
+            console.log(
+              `Barang dengan ID ${dt.barang.id_barang} telah didonasikan karena pengiriman hangus.`
+            );
           })
         );
       }
