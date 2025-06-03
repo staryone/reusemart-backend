@@ -204,6 +204,23 @@ const logout = async (id) => {
     },
   });
 
+  return "OK";
+};
+
+const logoutMobile = async (id) => {
+  const deletedSession = await prismaClient.session.delete({
+    where: {
+      id_session: id,
+    },
+    select: {
+      user: {
+        select: {
+          id_user: true,
+        },
+      },
+    },
+  });
+
   return prismaClient.user.update({
     where: {
       id_user: deletedSession.user.id_user,
@@ -372,6 +389,7 @@ export default {
   loginMobile,
   register,
   logout,
+  logoutMobile,
   updatePassword,
   forgotPassword,
   resetPassword,

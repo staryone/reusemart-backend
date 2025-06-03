@@ -32,4 +32,10 @@ app.listen(3001, () => {
     logger.info("Memeriksa pengiriman hangus...");
     logger.info(result);
   });
+
+  cron.schedule("0 0 0 * * *", async () => {
+    const result = await pengirimanService.cekPengirimanSedangDikirimToday();
+    logger.info("Memeriksa pengiriman yang sedang dikirim kurir...");
+    logger.info(result);
+  });
 });

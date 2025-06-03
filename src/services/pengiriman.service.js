@@ -468,7 +468,7 @@ const aturPengiriman = async (request) => {
         listPenitip.map(async (penitip) => {
           const toSendPenitip = {
             user_id: penitip.id_user,
-            title: "Barangmu Siap Dikirim!",
+            title: "Barang Titipanmu Siap Dikirim ke Pembeli!",
             body: `Halo ${penitip.nama}, barang ${listNamaBarang.join(
               ", "
             )} dijadwalkan akan dikirim pada ${formattedDatetime}. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
@@ -623,8 +623,8 @@ const aturPengambilan = async (request) => {
         listPenitip.map(async (penitip) => {
           const toSendPenitip = {
             user_id: penitip.id_user,
-            title: "Barangmu Siap Diambil Pembeli!",
-            body: `Halo ${penitip.nama}, barang ${listNamaBarang.join(
+            title: "Barang Titipanmu Siap Diambil Pembeli!",
+            body: `Halo ${penitip.nama}, barang titipanmu ${listNamaBarang.join(
               ", "
             )} siap diambil pembeli pada ${formattedDatetime}. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
           };
@@ -848,6 +848,80 @@ const cekPengirimanHangus = async () => {
   return "OK";
 };
 
+const cekPengirimanSedangDikirimToday = async () => {
+  const today = new Date();
+  const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+  const listSedangDikirimToday = await prismaClient.pengiriman.findMany({
+    where: {
+      status_pengiriman: "SEDANG_DIKIRIM",
+      tanggal: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    },
+    include: {
+      transaksi: {
+        include: {
+          pembeli: true,
+          detail_transaksi: {
+            include: {
+              barang: {
+                include: {
+                  detail_penitipan: {
+                    include: {
+                      penitipan: {
+                        include: {
+                          penitip: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (listSedangDikirimToday.length > 0) {
+    await Promise.all(
+      listSedangDikirimToday.map(async (pengirimanToday) => {
+        const listNamaBarang = pengirimanToday.transaksi.detail_transaksi.map(
+          (dtl) => {
+            return dtl.barang.nama_barang;
+          }
+        );
+        const toSendPembeli = {
+          user_id: pengirimanToday.transaksi.pembeli.id_user,
+          title: "Pesananmu Sedang Diantarkan!",
+          body: `Halo ${
+            pengirimanToday.transaksi.pembeli.nama
+          }, pesananmu ${listNamaBarang.join(
+            ", "
+          )} hari ini sedang dikirim. Cek detail transaksi di aplikasi untuk informasi lebih lanjut. Terima kasih telah berbelanja!`,
+        };
+        await notifikasiService.sendNotification(toSendPembeli);
+        await Promise.all(
+          pengirimanToday.transaksi.detail_transaksi.map(async (dtl) => {
+            const toSendPenitip = {
+              user_id: dtl.barang.detail_penitipan.penitipan.penitip.id_user,
+              title: "Barang Titipanmu Sedang Diantarkan Ke Pembeli!",
+              body: `Halo ${dtl.barang.detail_penitipan.penitipan.penitip.nama}, barang titipanmu ${dtl.barang.nama_barang} hari ini sedang dikirim ke pembeli. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
+            };
+            await notifikasiService.sendNotification(toSendPenitip);
+          })
+        );
+      })
+    );
+  }
+
+  return "OK";
+};
+
 // const update = async (request) => {
 //   const updateRequest = validate(updatePengirimanValidation, request);
 //   const id_pengiriman = idToInteger(updateRequest.id_pengiriman);
@@ -919,5 +993,6 @@ export default {
   aturPengambilan,
   konfirmasiPengambilan,
   cekPengirimanHangus,
+  cekPengirimanSedangDikirimToday,
   // destroy,
 };
