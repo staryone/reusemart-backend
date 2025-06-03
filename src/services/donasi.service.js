@@ -12,20 +12,115 @@ import {
 } from "../validation/donasi.validate.js";
 import { validate } from "../validation/validate.js";
 import barangService from "./barang.service.js";
+import notifikasiService from "./notifikasi.service.js";
+
+// const create = async (request) => {
+//   request = validate(createDonasiValidation, request);
+//   request.id_barang = idToInteger(request.id_barang);
+
+//   const barang = await prismaClient.barang.findUnique({
+//     where: {
+//       id_barang: request.id_barang,
+//     },
+//     select: {
+//       harga: true,
+//     },
+//   });
+
+//   const penitip = await prismaClient.barang.findUnique({
+//     where: {
+//       id_barang: request.id_barang,
+//     },
+//     select: {
+//       detail_penitipan: {
+//         select: {
+//           penitipan: {
+//             select: {
+//               penitip: {
+//                 select: {
+//                   poin: true,
+//                   id_penitip: true,
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       },
+//     },
+//   });
+
+//   request.poin_penitip = barang.harga / 10000;
+
+//   const totalPoin =
+//     penitip.detail_penitipan.penitipan.penitip.poin + request.poin_penitip;
+
+//   await prismaClient.penitip.update({
+//     where: {
+//       id_penitip: penitip.detail_penitipan.penitipan.penitip.id_penitip,
+//     },
+//     data: {
+//       poin: totalPoin,
+//     },
+//   });
+
+//   await prismaClient.requestDonasi.update({
+//     where: {
+//       id_request: request.id_request,
+//     },
+//     data: {
+//       status: "DISETUJUI",
+//     },
+//   });
+
+//   await prismaClient.barang.update({
+//     where: {
+//       id_barang: request.id_barang,
+//     },
+//     data: {
+//       status: "TERDONASI",
+//     },
+//   });
+
+//   return prismaClient.donasi.create({
+//     data: request,
+//   });
+// };
 
 const create = async (request) => {
+  // Validate request and convert id_barang to integer
   request = validate(createDonasiValidation, request);
   request.id_barang = idToInteger(request.id_barang);
+  request.id_request = idToInteger(request.id_request);
 
+  // Fetch barang details
   const barang = await prismaClient.barang.findUnique({
     where: {
       id_barang: request.id_barang,
     },
     select: {
       harga: true,
+      nama_barang: true, // Added to include item name for notification
     },
   });
 
+  const requestDonasi = await prismaClient.requestDonasi.findUnique({
+    where: {
+      id_request: request.id_request,
+    },
+    select: {
+      organisasi: {
+        select: {
+          nama_organisasi: true, // Added to include organization name for notification
+        },
+      },
+    },
+  });
+
+  console.log(
+    `Processing donation for item: ${barang.nama_barang}, Request ID: ${request.id_request}`
+  );
+
+  // Fetch penitip details
   const penitip = await prismaClient.barang.findUnique({
     where: {
       id_barang: request.id_barang,
@@ -39,6 +134,8 @@ const create = async (request) => {
                 select: {
                   poin: true,
                   id_penitip: true,
+                  id_user: true, // Added to get user ID for notification
+                  nama: true, // Added to get penitip name for notification
                 },
               },
             },
@@ -48,11 +145,17 @@ const create = async (request) => {
     },
   });
 
+  console.log(
+    `Processing donation for item: ${barang.nama_barang}, Penitip ID: ${penitip.detail_penitipan.penitipan.penitip.id_penitip}`
+  );
+
+  // Calculate points for penitip
   request.poin_penitip = barang.harga / 10000;
 
   const totalPoin =
     penitip.detail_penitipan.penitipan.penitip.poin + request.poin_penitip;
 
+  // Update penitip points
   await prismaClient.penitip.update({
     where: {
       id_penitip: penitip.detail_penitipan.penitipan.penitip.id_penitip,
@@ -62,6 +165,7 @@ const create = async (request) => {
     },
   });
 
+  // Update request status
   await prismaClient.requestDonasi.update({
     where: {
       id_request: request.id_request,
@@ -71,6 +175,7 @@ const create = async (request) => {
     },
   });
 
+  // Update barang status
   await prismaClient.barang.update({
     where: {
       id_barang: request.id_barang,
@@ -80,9 +185,26 @@ const create = async (request) => {
     },
   });
 
-  return prismaClient.donasi.create({
+  // Create donation record
+  const donasi = await prismaClient.donasi.create({
     data: request,
   });
+
+  console.log(`Donasi created with ID: ${donasi.id_donasi}`);
+
+  // Send notification to penitip
+  const toSendPenitip = {
+    user_id: penitip.detail_penitipan.penitipan.penitip.id_user,
+    title: "Donasi Barangmu Disetujui!",
+    body: `Halo ${penitip.detail_penitipan.penitipan.penitip.nama}, barang ${barang.nama_barang} telah didonasikan kepada ${requestDonasi.organisasi.nama_organisasi}. Kamu mendapatkan ${request.poin_penitip} poin. Cek detailnya di aplikasi. Terima kasih atas donasimu!`,
+  };
+  await notifikasiService.sendNotification(toSendPenitip);
+
+  console.log(
+    `Notifikasi dikirim ke penitip ${penitip.detail_penitipan.penitipan.penitip.nama} (ID: ${penitip.detail_penitipan.penitipan.penitip.id_user})`
+  );
+
+  return donasi;
 };
 
 const get = async (id) => {
