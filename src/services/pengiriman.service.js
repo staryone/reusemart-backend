@@ -10,6 +10,7 @@ import notifikasiService from "./notifikasi.service.js";
 //   updatePengirimanValidation,
 // } from "../validation/pengiriman.validate.js";
 import { validate } from "../validation/validate.js";
+import { tr } from "date-fns/locale";
 
 // const create = async (request) => {
 //   const pengiriman = validate(createPengirimanValidation, request);
@@ -640,28 +641,146 @@ const aturPengambilan = async (request) => {
 };
 
 const konfirmasiPengambilan = async (request) => {
-  const id_pengiriman = parseInt(request.id_pengiriman, 10);
+  await prismaClient.$transaction(async (tx) => {
+    const id_pengiriman = parseInt(request.id_pengiriman, 10);
 
-  const pengiriman = await prismaClient.pengiriman.findUnique({
-    where: {
-      id_pengiriman: id_pengiriman,
-    },
+    const pengiriman = await tx.pengiriman.findUnique({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      include: {
+        transaksi: {
+          include: {
+            pembeli: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            penitip: true,
+                            hunter: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!pengiriman) {
+      throw new ResponseError(404, "Pengiriman tidak ditemukan");
+    }
+
+    const tglTransaksi = pengiriman.transaksi.tanggal_transaksi;
+
+    await Promise.all(
+      pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+        let persenKomisiReusemart = 0;
+        if (dt.barang.detail_penitipan.penitipan.is_perpanjang === true) {
+          if (dt.barang.detail_penitipan.penitipan.id_hunter !== null) {
+            persenKomisiReusemart = 0.25; // 25% untuk perpanjang penitipan dengan hunter
+          } else {
+            persenKomisiReusemart = 0.3; // 30% untuk perpanjang penitipan tanpa hunter
+          }
+        } else {
+          if (dt.barang.detail_penitipan.penitipan.id_hunter !== null) {
+            persenKomisiReusemart = 0.15; // 15% untuk penitipan dengan hunter
+          } else {
+            persenKomisiReusemart = 0.2; // 20% untuk penitipan tanpa hunter
+          }
+        }
+        const komisiHunter =
+          dt.barang.detail_penitipan.penitipan.id_hunter !== null
+            ? dt.barang.harga * 0.05
+            : 0;
+        let komisiReusemart = dt.barang.harga * persenKomisiReusemart;
+        let komisiPenitip = 0;
+        if (
+          tglTransaksi.getTime() <
+          dt.barang.detail_penitipan.tanggal_masuk.getTime() +
+            7 * 24 * 60 * 60 * 1000
+        ) {
+          komisiPenitip = komisiReusemart * 0.1; // 10% untuk penitipan kurang dari 7 hari
+          komisiReusemart -= komisiPenitip; // kurangi komisi penitip dari komisi reusemart
+        }
+        const pendapatanPenitip =
+          dt.barang.harga - komisiHunter - komisiReusemart + komisiPenitip;
+
+        await tx.penitip.update({
+          where: {
+            id_penitip: dt.barang.detail_penitipan.penitipan.id_penitip,
+          },
+          data: {
+            saldo: {
+              increment: pendapatanPenitip,
+            },
+          },
+        });
+
+        if (dt.barang.detail_penitipan.penitipan.id_hunter !== null) {
+          await tx.pegawai.update({
+            where: {
+              id_pegawai: dt.barang.detail_penitipan.penitipan.id_hunter,
+            },
+            data: {
+              komisi: {
+                increment: komisiHunter,
+              },
+            },
+          });
+        }
+
+        await tx.detailTransaksi.update({
+          where: {
+            id_dtl_transaksi: dt.id_dtl_transaksi,
+          },
+          data: {
+            komisi_hunter: {
+              increment: komisiHunter,
+            },
+            komisi_reusemart: {
+              increment: komisiReusemart,
+            },
+            komisi_penitip: {
+              increment: pendapatanPenitip,
+            },
+          },
+        });
+      })
+    );
+
+    await tx.pengiriman.update({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      data: {
+        status_pengiriman: "SUDAH_DITERIMA",
+        updatedAt: new Date(),
+      },
+    });
+
+    //tambah poin pembeli
+    await tx.pembeli.update({
+      where: {
+        id_pembeli: pengiriman.transaksi.pembeli.id_pembeli,
+      },
+      data: {
+        poin_loyalitas:
+          pengiriman.transaksi.pembeli.poin_loyalitas +
+          pengiriman.transaksi.total_poin,
+      },
+    });
+
+    return "OK";
   });
-
-  if (!pengiriman) {
-    throw new ResponseError(404, "Pengiriman tidak ditemukan");
-  }
-
-  const updatedPengiriman = await prismaClient.pengiriman.update({
-    where: {
-      id_pengiriman: id_pengiriman,
-    },
-    data: {
-      status_pengiriman: "SUDAH_DITERIMA",
-      updatedAt: new Date(),
-    },
-  });
-
   return "OK";
 };
 
