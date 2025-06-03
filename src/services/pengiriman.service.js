@@ -469,7 +469,7 @@ const aturPengiriman = async (request) => {
           const toSendPenitip = {
             user_id: penitip.id_user,
             title: "Barangmu Siap Dikirim!",
-            body: `Halo ${penitip.nama}, barangmu ${listNamaBarang.join(
+            body: `Halo ${penitip.nama}, barang ${listNamaBarang.join(
               ", "
             )} dijadwalkan akan dikirim pada ${formattedDatetime}. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
           };
@@ -624,7 +624,7 @@ const aturPengambilan = async (request) => {
           const toSendPenitip = {
             user_id: penitip.id_user,
             title: "Barangmu Siap Diambil Pembeli!",
-            body: `Halo ${penitip.nama}, barangmu ${listNamaBarang.join(
+            body: `Halo ${penitip.nama}, barang ${listNamaBarang.join(
               ", "
             )} siap diambil pembeli pada ${formattedDatetime}. Pantau statusnya di aplikasi dan pastikan semua detail sudah benar. Terima kasih!`,
           };
