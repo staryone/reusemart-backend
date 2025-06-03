@@ -74,13 +74,7 @@ const profile = async (id) => {
         select: {
           id_penitipan: true,
           detail_penitipan: {
-            select: {
-              id_dtl_penitipan: true,
-              tanggal_masuk: true,
-              tanggal_akhir: true,
-              tanggal_laku: true,
-              batas_ambil: true,
-              is_perpanjang: true,
+            include: {
               barang: {
                 include: {
                   gambar: true,
@@ -93,6 +87,7 @@ const profile = async (id) => {
                       },
                     },
                   },
+                  kategori: true,
                 },
               },
             },
@@ -155,10 +150,16 @@ const profile = async (id) => {
           nama_barang: dtl.barang.nama_barang,
           harga: dtl.barang.harga,
           status: dtl.barang.status,
+          deskripsi: dtl.barang.deskripsi,
+          garansi: dtl.barang.garansi ? dtl.barang.garansi.toISOString() : null,
+          berat: dtl.barang.berat,
           updatedAt: dtl.barang.updatedAt
             ? dtl.barang.updatedAt.toISOString()
             : null,
           gambar: dtl.barang.gambar,
+          kategori: {
+            nama_kategori: dtl.barang.kategori.nama_kategori,
+          },
         },
       })),
     })),
@@ -174,65 +175,6 @@ const profile = async (id) => {
       )
       .flat(),
   };
-
-  //uncomment yang bawah, comment yang atas buat console log json detail transaksi
-
-  // const formattedPenitip = {
-  //   id_penitip: idToString(penitip.prefix, penitip.id_penitip),
-  //   email: penitip.user.email,
-  //   nomor_ktp: penitip.nomor_ktp,
-  //   foto_ktp: penitip.foto_ktp,
-  //   nama: penitip.nama,
-  //   alamat: penitip.alamat,
-  //   nomor_telepon: penitip.nomor_telepon,
-  //   saldo: penitip.saldo,
-  //   rating: penitip.rating,
-  //   total_review: penitip.total_review,
-  //   jumlah_review: penitip.jumlah_review,
-  //   is_top_seller: penitip.is_top_seller,
-  //   total_per_bulan: penitip.total_per_bulan,
-  //   poin: penitip.poin,
-  //   penitipan: penitip.penitipan.map((penitipan) => ({
-  //     id_penitipan: penitipan.id_penitipan,
-  //     detail_penitipan: penitipan.detail_penitipan.map((dtl) => {
-  //       const detailPenitipanData = {
-  //         id_dtl_penitipan: dtl.id_dtl_penitipan,
-  //         tanggal_masuk: dtl.tanggal_masuk.toISOString(),
-  //         tanggal_akhir: dtl.tanggal_akhir.toISOString(),
-  //         tanggal_laku: dtl.tanggal_laku
-  //           ? dtl.tanggal_laku.toISOString()
-  //           : null,
-  //         batas_ambil: dtl.batas_ambil ? dtl.batas_ambil.toISOString() : null,
-  //         is_perpanjang: dtl.is_perpanjang,
-  //         barang: {
-  //           nama_barang: dtl.barang.nama_barang,
-  //           harga: dtl.barang.harga,
-  //           status: dtl.barang.status,
-  //           gambar: dtl.barang.gambar,
-  //         },
-  //       };
-  //       console.log(
-  //         `Detail Penitipan ${dtl.id_dtl_penitipan}:`,
-  //         JSON.stringify(detailPenitipanData, null, 2)
-  //       );
-  //       return detailPenitipanData;
-  //     }),
-  //   })),
-  //   detail_transaksi: penitip.penitipan
-  //     .map((penitipan) =>
-  //       penitipan.detail_penitipan
-  //         .map((dtl_penitipan) =>
-  //           dtl_penitipan.barang?.detail_transaksi
-  //             ? dtl_penitipan.barang.detail_transaksi
-  //             : null
-  //         )
-  //         .filter((transaksi) => transaksi !== null)
-  //     )
-  //     .flat(),
-  // };
-
-  // console.log("Formatted Penitip:", formattedPenitip);
-  // console.log("Penitip Detail Transaksi:", formattedPenitip.detail_transaksi);
 
   return formattedPenitip;
 };
@@ -584,8 +526,20 @@ const topSeller = async () => {
   const now = new Date();
   const previousMonth = new Date(now);
   previousMonth.setMonth(now.getMonth() - 1);
-  const startOfMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);
-  const endOfMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+  const startOfMonth = new Date(
+    previousMonth.getFullYear(),
+    previousMonth.getMonth(),
+    1
+  );
+  const endOfMonth = new Date(
+    previousMonth.getFullYear(),
+    previousMonth.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
+  );
 
   // Fetch data
   const detailPenitipan = await prismaClient.detailPenitipan.findMany({
@@ -640,36 +594,36 @@ const topSeller = async () => {
 
   const calonTopSeller = await prismaClient.penitip.findUnique({
     where: {
-      id_penitip: topPenitip
-    }
-  })
+      id_penitip: topPenitip,
+    },
+  });
 
   const currentTopSeller = await prismaClient.penitip.findFirst({
     where: {
-      is_top_seller: true
-    }
-  })
+      is_top_seller: true,
+    },
+  });
 
   const bonus = 0.01 * calonTopSeller.saldo;
 
   const updateNewTopSeller = await prismaClient.penitip.update({
     where: {
-      id_penitip: calonTopSeller.id_penitip
+      id_penitip: calonTopSeller.id_penitip,
     },
     data: {
       is_top_seller: true,
-      saldo: calonTopSeller.saldo + bonus
-    }
-  })
+      saldo: calonTopSeller.saldo + bonus,
+    },
+  });
 
   const removePreviousTopSeller = await prismaClient.penitip.update({
     where: {
-      id_penitip: currentTopSeller.id_penitip
+      id_penitip: currentTopSeller.id_penitip,
     },
     data: {
       is_top_seller: false,
-    }
-  })
+    },
+  });
 
   return {
     id_penitip: topPenitip ? Number(topPenitip) : null,
@@ -686,5 +640,5 @@ export default {
   update,
   updateSistem,
   destroy,
-  topSeller
+  topSeller,
 };
