@@ -78,11 +78,26 @@ const logout = async (req, res, next) => {
   }
 };
 
+const logoutMobile = async (req, res, next) => {
+  try {
+    const id = req.session.id_session;
+    await authService.logoutMobile(id);
+
+    res.status(200).json({
+      data: "OK",
+      message: "Logout App berhasil!",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   forgotPassword,
   resetPassword,
   checkValidToken,
   logout,
+  logoutMobile,
   login,
-  loginMobile
+  loginMobile,
 };
