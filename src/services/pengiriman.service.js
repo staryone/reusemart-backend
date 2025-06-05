@@ -68,9 +68,9 @@ const getListDikirim = async (request) => {
     }),
   ]);
 
-  if (!listPengiriman || listPengiriman.length === 0) {
-    throw new ResponseError("No pengiriman data found", 404);
-  }
+  // if (!listPengiriman || listPengiriman.length === 0) {
+  //   throw new ResponseError("No pengiriman data found", 404);
+  // }
 
   // Transform image URLs using getUrlFile
   try {
