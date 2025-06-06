@@ -54,6 +54,12 @@ transaksiRouter.post(
 );
 
 transaksiRouter.get(
+  "/api/transaksi/getLaporanTransaksiPenitip",
+  restrictTo("PEGAWAI", "OWNER"),
+  transaksiController.getLaporanTransaksiPenitip
+);
+
+transaksiRouter.get(
   "/api/transaksi/verifLists",
   restrictTo("PEGAWAI", "CS"),
   transaksiController.getListVerifPembayaran

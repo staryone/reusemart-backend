@@ -28,8 +28,7 @@ export const formatBuktiPembayaran = (id_pembeli) => {
 
 export const generateNomorNota = (tanggal_transaksi, id) => {
   const year = new Date(tanggal_transaksi).getFullYear().toString().slice(2);
-  const month = new Date(tanggal_transaksi)
-    .getMonth()
+  const month = (new Date(tanggal_transaksi).getMonth() + 1)
     .toString()
     .padStart(2, "0");
 

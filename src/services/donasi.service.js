@@ -90,7 +90,6 @@ const create = async (request) => {
   // Validate request and convert id_barang to integer
   request = validate(createDonasiValidation, request);
   request.id_barang = idToInteger(request.id_barang);
-  request.id_request = idToInteger(request.id_request);
 
   // Fetch barang details
   const barang = await prismaClient.barang.findUnique({
