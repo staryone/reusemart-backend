@@ -903,8 +903,17 @@ const konfirmasiPengambilan = async (request) => {
               increment: komisiReusemart,
             },
             komisi_penitip: {
-              increment: pendapatanPenitip,
+              increment: komisiPenitip,
             },
+          },
+        });
+
+        await tx.detailPenitipan.update({
+          where: {
+            id_barang: dt.barang.id_barang,
+          },
+          data: {
+            tanggal_laku: new Date(),
           },
         });
       })
