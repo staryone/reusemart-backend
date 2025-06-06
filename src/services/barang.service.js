@@ -36,11 +36,12 @@ const create = async (request, id_penitip) => {
   });
 
   await Promise.all(
-    imageURLs.map(async (imageurl) => {
+    imageURLs.map(async (imageurl,index) => {
       await prismaClient.gambarBarang.create({
         data: {
           url_gambar: imageurl,
           id_barang: barang.id_barang,
+          is_primary: index == 0 ? true : false
         },
       });
     })

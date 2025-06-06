@@ -48,7 +48,7 @@ const create = async (req, res, next) => {
     parsedPenitipanData.id_pegawai_qc = idToInteger(
       parsedPenitipanData.id_pegawai_qc
     );
-    // parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter ? idToInteger(parsedPenitipanData.id_hunter) : undefined;
+    parsedPenitipanData.id_hunter = parsedPenitipanData.id_hunter ? idToInteger(parsedPenitipanData.id_hunter) : undefined;
 
     //  console.log("\n\n",parsedBarangData);
     // Call the service to create Penitipan, Barang, and DetailPenitipan

@@ -107,7 +107,6 @@ const getList = async (request) => {
   if (endDate && isNaN(endDate.getTime())) {
     throw new Error("Invalid end date format");
   }
-
   // Base where clause for search and filter
   const baseWhere =
     q || filter
