@@ -844,7 +844,14 @@ const checkMasaPenitipan = async () => {
               not: "KEMBALI"
             }
           }
-        }
+        },
+        {
+          barang: {
+            status: {
+              not: "MENUNGGU_KEMBALI"
+            }
+          }
+        },
       ]
     },
     include: {
