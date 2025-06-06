@@ -568,6 +568,10 @@ const topSeller = async () => {
     },
   });
 
+  if(!detailPenitipan){
+    return "Tidak ada hasil";
+  }
+
   // Aggregate harga by id_penitip
   const totalsByPenitip = detailPenitipan.reduce((acc, detail) => {
     const idPenitip = detail.penitipan.penitip.id_penitip;
@@ -592,9 +596,11 @@ const topSeller = async () => {
     }
   }
 
+  console.log("\n\nTotals",totalsByPenitip);
+
   const calonTopSeller = await prismaClient.penitip.findUnique({
     where: {
-      id_penitip: topPenitip,
+      id_penitip: Number(topPenitip),
     },
   });
 
@@ -604,7 +610,7 @@ const topSeller = async () => {
     },
   });
 
-  const bonus = 0.01 * calonTopSeller.saldo;
+  const bonus = 0.01 * maxTotal;
 
   const updateNewTopSeller = await prismaClient.penitip.update({
     where: {

@@ -763,6 +763,7 @@ const checkMasaPenitipan = async () => {
 
   let is_h3 = false;
   let is_h = false;
+  let is_donasi = false;
 
   const listPenitipanH3 = await prismaClient.detailPenitipan.findMany({
     where: {
@@ -828,7 +829,51 @@ const checkMasaPenitipan = async () => {
     is_h = true;
   }
 
-  return is_h3 && is_h ? "H-3 dan hari H ada dan operasi berhasil" : is_h3 ? "H-3 ada dan operasi berhasil" : is_h ? "Hari H ada dan operasi berhasil" : "H-3 dan hari H tidak ada";
+  const listPenitipanDonasi = await prismaClient.detailPenitipan.findMany({
+    where: {
+      AND: [
+        {
+          batas_ambil: {
+            gte: startOfToday, 
+            lt: endOfToday, 
+          },
+        },
+        {
+          barang: {
+            status: {
+              not: "KEMBALI"
+            }
+          }
+        }
+      ]
+    },
+    include: {
+      penitipan: {
+        include: {
+          penitip: true,
+        },
+      },
+      barang: true,
+    },
+  });
+
+  if (listPenitipanDonasi) {
+    console.log("\n\nList",listPenitipanDonasi);
+    for (const detail of listPenitipanDonasi) {
+      const barang = detail.barang;
+      await prismaClient.barang.update({
+        where: {
+          id_barang: barang.id_barang
+        },
+        data: {
+          status: "DIDONASIKAN"
+        }
+      })
+    }
+    is_donasi = true;
+  }
+
+  return "H-3: " + is_h3 + ", H: " + is_h + ", status donasi: " + is_donasi;
 };
 
 export default {
