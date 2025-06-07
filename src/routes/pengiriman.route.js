@@ -12,7 +12,7 @@ const pengirimanRouter = new express.Router();
 
 pengirimanRouter.get(
   "/api/pengiriman/lists-dikirim",
-  restrictTo("PEGAWAI", "GUDANG"),
+  restrictTo("PEGAWAI", "GUDANG", "KURIR"),
   pengirimanController.getListDikirim
 );
 
@@ -38,6 +38,12 @@ pengirimanRouter.post(
   "/api/pengiriman/konfirmasi-pengambilan",
   restrictTo("PEGAWAI", "GUDANG"),
   pengirimanController.konfirmasiPengambilan
+);
+
+pengirimanRouter.post(
+  "/api/pengiriman/konfirmasi-pengiriman",
+  restrictTo("PEGAWAI", "KURIR"),
+  pengirimanController.konfirmasiPengirimanSelesai
 );
 
 // pengirimanRouter.get(

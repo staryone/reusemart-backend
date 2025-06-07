@@ -1136,6 +1136,229 @@ const cekPengirimanSedangDikirimToday = async () => {
   return "OK";
 };
 
+const konfirmasiPengirimanSelesai = async (request) => {
+  await prismaClient.$transaction(async (tx) => {
+    const id_pengiriman = parseInt(request.id_pengiriman, 10);
+
+    const pengiriman = await tx.pengiriman.findUnique({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      include: {
+        transaksi: {
+          include: {
+            pembeli: {
+              include: {
+                user: true, // Include user to get id_user for notifications
+              },
+            },
+            detail_transaksi: {
+              include: {
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            penitip: {
+                              include: {
+                                user: true, // Include user to get id_user for notifications
+                              },
+                            },
+                            hunter: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!pengiriman) {
+      throw new ResponseError(404, "Pengiriman tidak ditemukan");
+    }
+
+    // Validate status_pengiriman to ensure it's in a confirmable state
+    const validStatuses = ["SEDANG_DIKIRIM"];
+    if (!validStatuses.includes(pengiriman.status_pengiriman)) {
+      throw new ResponseError(
+        `Pengiriman dengan status ${pengiriman.status_pengiriman} tidak dapat dikonfirmasi`,
+        400
+      );
+    }
+
+    const tglTransaksi = pengiriman.transaksi.tanggal_transaksi;
+
+    // Calculate commissions and update records
+    await Promise.all(
+      pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+        let persenKomisiReusemart = 0;
+        if (dt.barang.detail_penitipan.penitipan.is_perpanjang === true) {
+          if (dt.barang.detail_penitipan.penitipan.id_hunter !== null) {
+            persenKomisiReusemart = 0.25; // 25% untuk perpanjang penitipan dengan hunter
+          } else {
+            persenKomisiReusemart = 0.3; // 30% untuk perpanjang penitipan tanpa hunter
+          }
+        } else {
+          if (dt.barang.detail_penitipan.penitipan.id_hunter !== null) {
+            persenKomisiReusemart = 0.15; // 15% untuk penitipan dengan hunter
+          } else {
+            persenKomisiReusemart = 0.2; // 20% untuk penitipan tanpa hunter
+          }
+        }
+        const komisiHunter =
+          dt.barang.detail_penitipan.penitipan.id_hunter !== null
+            ? dt.barang.harga * 0.05
+            : 0;
+        let komisiReusemart = dt.barang.harga * persenKomisiReusemart;
+        let komisiPenitip = 0;
+        if (
+          tglTransaksi.getTime() <
+          dt.barang.detail_penitipan.tanggal_masuk.getTime() +
+            7 * 24 * 60 * 60 * 1000
+        ) {
+          komisiPenitip = komisiReusemart * 0.1; // 10% untuk penitipan kurang dari 7 hari
+          komisiReusemart -= komisiPenitip; // kurangi komisi penitip dari komisi reusemart
+        }
+        const pendapatanPenitip =
+          dt.barang.harga - komisiHunter - komisiReusemart + komisiPenitip;
+
+        await tx.penitip.update({
+          where: {
+            id_penitip: dt.barang.detail_penitipan.penitipan.id_penitip,
+          },
+          data: {
+            saldo: {
+              increment: pendapatanPenitip,
+            },
+          },
+        });
+
+        if (dt.barang.detail_penitipan.penitipan.id_hunter !== null) {
+          await tx.pegawai.update({
+            where: {
+              id_pegawai: dt.barang.detail_penitipan.penitipan.id_hunter,
+            },
+            data: {
+              komisi: {
+                increment: komisiHunter,
+              },
+            },
+          });
+        }
+
+        await tx.detailTransaksi.update({
+          where: {
+            id_dtl_transaksi: dt.id_dtl_transaksi,
+          },
+          data: {
+            komisi_hunter: {
+              increment: komisiHunter,
+            },
+            komisi_reusemart: {
+              increment: komisiReusemart,
+            },
+            komisi_penitip: {
+              increment: komisiPenitip,
+            },
+          },
+        });
+
+        await tx.detailPenitipan.update({
+          where: {
+            id_barang: dt.barang.id_barang,
+          },
+          data: {
+            tanggal_laku: new Date(),
+          },
+        });
+      })
+    );
+
+    // Update pengiriman status
+    await tx.pengiriman.update({
+      where: {
+        id_pengiriman: id_pengiriman,
+      },
+      data: {
+        status_pengiriman: "SUDAH_DITERIMA",
+        updatedAt: new Date(),
+      },
+    });
+
+    // Tambah poin pembeli
+    await tx.pembeli.update({
+      where: {
+        id_pembeli: pengiriman.transaksi.pembeli.id_pembeli,
+      },
+      data: {
+        poin_loyalitas:
+          pengiriman.transaksi.pembeli.poin_loyalitas +
+          pengiriman.transaksi.total_poin,
+      },
+    });
+
+    // Prepare notifications
+    const formater = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    const formattedDatetime = formater.format(new Date());
+
+    const listNamaBarang = pengiriman.transaksi.detail_transaksi.map(
+      (dtl) => dtl.barang.nama_barang
+    );
+
+    // Notification for pembeli
+    const toSendPembeli = {
+      user_id: pengiriman.transaksi.pembeli.user.id_user,
+      title: "Pesananmu Telah Sampai Tujuan!",
+      body: `Halo ${
+        pengiriman.transaksi.pembeli.nama
+      }, pesananmu ${listNamaBarang.join(
+        ", "
+      )} telah berhasil sampai ke tujuan pada ${formattedDatetime}. Terima kasih telah berbelanja!`,
+    };
+
+    // Notifications for each penitip
+    const listPenitip = await Promise.all(
+      pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+        return {
+          user_id: dt.barang.detail_penitipan.penitipan.penitip.user.id_user,
+          nama: dt.barang.detail_penitipan.penitipan.penitip.nama,
+          nama_barang: dt.barang.nama_barang,
+        };
+      })
+    );
+
+    // Send notifications
+    await Promise.all([
+      notifikasiService.sendNotification(toSendPembeli),
+      ...listPenitip.map((penitip) =>
+        notifikasiService.sendNotification({
+          user_id: penitip.user_id,
+          title: "Barang Titipanmu Telah Sampai ke Pembeli!",
+          body: `Halo ${penitip.nama}, barang titipanmu ${penitip.nama_barang} telah sampai ke pembeli pada ${formattedDatetime}. Saldo telah diperbarui di akunmu. Terima kasih!`,
+        })
+      ),
+    ]);
+  });
+
+  return "OK";
+};
+
 // const update = async (request) => {
 //   const updateRequest = validate(updatePengirimanValidation, request);
 //   const id_pengiriman = idToInteger(updateRequest.id_pengiriman);
@@ -1206,6 +1429,7 @@ export default {
   aturPengiriman,
   aturPengambilan,
   konfirmasiPengambilan,
+  konfirmasiPengirimanSelesai,
   cekPengirimanHangus,
   cekPengirimanSedangDikirimToday,
   // destroy,
