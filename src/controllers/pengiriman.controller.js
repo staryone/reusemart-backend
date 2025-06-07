@@ -93,6 +93,30 @@ const getListDikirim = async (req, res, next) => {
   }
 };
 
+const getListDikirimByIdKurir = async (req, res, next) => {
+  try {
+    const { page, limit, status } = req.query;
+    const request = {
+      page: page || "1",
+      limit: limit || "10",
+      status: status || "",
+    };
+    const id_kurir = req.session.user.pegawai.id_pegawai;
+
+    const result = await pengirimanService.getListDikirimByIdKurir(
+      request,
+      id_kurir
+    );
+
+    res.status(200).json({
+      data: result.data,
+      totalItems: result.total,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const getListDiambil = async (req, res, next) => {
   try {
     const { page, limit, status } = req.query;
@@ -207,6 +231,7 @@ export default {
   // create,
   // get,
   getListDikirim,
+  getListDikirimByIdKurir,
   getListDiambil,
   aturPengiriman,
   aturPengambilan,

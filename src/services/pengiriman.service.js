@@ -1359,6 +1359,158 @@ const konfirmasiPengirimanSelesai = async (request) => {
   return "OK";
 };
 
+const getListDikirimByIdKurir = async (request, id_kurir) => {
+  const page = Math.max(1, parseInt(request.page) || 1);
+  const limit = Math.max(1, parseInt(request.limit) || 10);
+  const status = request.status || "ALL";
+  const skip = (page - 1) * limit;
+
+  const validStatuses = ["DIPROSES", "SEDANG_DIKIRIM", "SUDAH_DITERIMA"];
+  if (status !== "ALL" && !validStatuses.includes(status)) {
+    throw new ResponseError("Invalid status_pengiriman value", 400);
+  }
+
+  const [countAllPengiriman, listPengiriman] = await Promise.all([
+    prismaClient.pengiriman.count({
+      where: {
+        status_pengiriman: status === "ALL" ? undefined : status,
+        transaksi: { metode_pengiriman: "DIKIRIM" },
+        id_kurir: id_kurir,
+      },
+    }),
+    prismaClient.pengiriman.findMany({
+      where: {
+        status_pengiriman: status === "ALL" ? undefined : status,
+        transaksi: { metode_pengiriman: "DIKIRIM" },
+        id_kurir: id_kurir,
+      },
+      include: {
+        kurir: {
+          select: { id_pegawai: true, nama: true, nomor_telepon: true },
+        },
+        transaksi: {
+          include: {
+            pembeli: {
+              include: {
+                user: true,
+              },
+            },
+            alamat: true,
+            detail_transaksi: {
+              include: {
+                barang: {
+                  include: {
+                    detail_penitipan: {
+                      include: {
+                        penitipan: {
+                          include: {
+                            pegawai_qc: true,
+                          },
+                        },
+                      },
+                    },
+                    gambar: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      skip: skip,
+      take: limit,
+    }),
+  ]);
+
+  // if (!listPengiriman || listPengiriman.length === 0) {
+  //   throw new ResponseError("No pengiriman data found", 404);
+  // }
+
+  // Transform image URLs using getUrlFile
+  try {
+    await Promise.all(
+      listPengiriman.map(async (pengiriman) => {
+        pengiriman.transaksi.detail_transaksi = await Promise.all(
+          pengiriman.transaksi.detail_transaksi.map(async (dt) => {
+            dt.barang.gambar = await Promise.all(
+              dt.barang.gambar.map(async (g) => {
+                return {
+                  url_gambar: await getUrlFile(g.url_gambar),
+                  is_primary: g.is_primary,
+                };
+              })
+            );
+            return dt;
+          })
+        );
+      })
+    );
+  } catch {}
+
+  const formattedPengiriman = listPengiriman.map((p) => ({
+    id_pengiriman: p.id_pengiriman,
+    tanggal: p.tanggal,
+    status_pengiriman: p.status_pengiriman,
+    id_kurir: p.id_kurir,
+    id_transaksi: p.id_transaksi,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+    kurir: p.kurir
+      ? {
+          id_kurir: p.kurir.id_pegawai,
+          nama: p.kurir.nama,
+          no_hp_kurir: p.kurir.nomor_telepon,
+        }
+      : null,
+    transaksi: {
+      id_transaksi: p.transaksi.id_transaksi,
+      tanggal_transaksi: p.transaksi.tanggal_transaksi,
+      tanggal_pembayaran: p.transaksi.tanggal_pembayaran,
+      metode_pengiriman: p.transaksi.metode_pengiriman,
+      status_pembayaran: p.transaksi.status_Pembayaran,
+      total_harga: p.transaksi.total_harga,
+      ongkos_kirim: p.transaksi.ongkos_kirim,
+      total_poin: p.transaksi.total_poin,
+      potongan_poin: p.transaksi.potongan_poin,
+      total_akhir: p.transaksi.total_akhir,
+      pembeli: {
+        id_pembeli: p.transaksi.pembeli.id_pembeli,
+        nama: p.transaksi.pembeli.nama,
+        email: p.transaksi.pembeli.user.email,
+        poin_loyalitas: p.transaksi.pembeli.poin_loyalitas,
+      },
+      detail_transaksi: p.transaksi.detail_transaksi.map((dt) => ({
+        barang: {
+          id_barang: dt.barang.id_barang,
+          nama_barang: dt.barang.nama_barang,
+          harga: dt.barang.harga,
+          id_qc: idToString(
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.prefix,
+            dt.barang.detail_penitipan.penitipan.pegawai_qc.id_pegawai
+          ),
+          nama_qc: dt.barang.detail_penitipan.penitipan.pegawai_qc.nama,
+          gambar: dt.barang.gambar,
+        },
+      })),
+      alamat: p.transaksi.alamat
+        ? {
+            id_alamat: p.transaksi.alamat.id_alamat,
+            detail_alamat: p.transaksi.alamat.detail_alamat,
+          }
+        : null,
+    },
+  }));
+
+  return {
+    data: formattedPengiriman,
+    total: countAllPengiriman,
+    page,
+    limit,
+    totalPages: Math.ceil(countAllPengiriman / limit),
+  };
+};
+
 // const update = async (request) => {
 //   const updateRequest = validate(updatePengirimanValidation, request);
 //   const id_pengiriman = idToInteger(updateRequest.id_pengiriman);
@@ -1425,6 +1577,7 @@ export default {
   //   create,
   // get,
   getListDikirim,
+  getListDikirimByIdKurir,
   getListDiambil,
   aturPengiriman,
   aturPengambilan,
