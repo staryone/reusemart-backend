@@ -834,8 +834,7 @@ const checkMasaPenitipan = async () => {
       AND: [
         {
           batas_ambil: {
-            gte: startOfToday, 
-            lt: endOfToday, 
+            lt: startOfToday, 
           },
         },
         {
