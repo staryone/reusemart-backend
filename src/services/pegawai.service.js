@@ -37,6 +37,54 @@ const create = async (request) => {
   return formattedPegawai;
 };
 
+// const profile = async (id) => {
+//   const id_user = validate(getIdAuthValidation, id);
+
+//   const pegawai = await prismaClient.pegawai.findUnique({
+//     where: {
+//       id_user: id_user,
+//     },
+//     include: {
+//       user: {
+//         select: {
+//           email: true,
+//         },
+//       },
+//       jabatan: true,
+//       penitipan_hunter: {
+//         include: {
+//           detail_penitipan: {
+//             include: {
+//               barang: true,
+//             },
+//           },
+//         },
+//       },
+//     },
+//   });
+
+//   if (!pegawai) {
+//     throw new ResponseError(404, "Pegawai tidak ditemukan");
+//   }
+
+//   const formattedPegawai = {
+//     id_pegawai: idToString(pegawai.prefix, pegawai.id_pegawai),
+//     email: pegawai.user.email,
+//     nama: pegawai.nama,
+//     nomor_telepon: pegawai.nomor_telepon,
+//     komisi: pegawai.komisi,
+//     tgl_lahir: pegawai.tgl_lahir,
+//     jabatan: pegawai.jabatan,
+//     detail_penitipan: pegawai.penitipan_hunter.map((hunter) => ({
+//       barang: hunter.detail_penitipan.map((detail) => ({
+//         nama_barang: detail.barang.nama_barang,
+//         harga_barang: detail.barang.harga,
+//       })),
+//     })),
+//   };
+
+//   return formattedPegawai;
+// };
 const profile = async (id) => {
   const id_user = validate(getIdAuthValidation, id);
 
@@ -51,6 +99,20 @@ const profile = async (id) => {
         },
       },
       jabatan: true,
+      penitipan_hunter: {
+        include: {
+          detail_penitipan: {
+            where: {
+              barang: {
+                status: "TERJUAL",
+              },
+            },
+            include: {
+              barang: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -66,6 +128,15 @@ const profile = async (id) => {
     komisi: pegawai.komisi,
     tgl_lahir: pegawai.tgl_lahir,
     jabatan: pegawai.jabatan,
+    detail_penitipan: pegawai.penitipan_hunter.map((hunter) => ({
+      barang: hunter.detail_penitipan.map((detail) => ({
+        nama_barang: detail.barang.nama_barang,
+        harga_barang: detail.barang.harga,
+        komisi: detail.barang.harga * 0.05,
+        tanggal_masuk: detail.tanggal_masuk,
+        tanggal_laku: detail.barang.updatedAt,
+      })),
+    })),
   };
 
   return formattedPegawai;

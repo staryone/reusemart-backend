@@ -311,6 +311,7 @@ const getList = async (query) => {
 
       return {
         id_barang: idToString(barang.prefix, barang.id_barang),
+        id_barang_int: barang.id_barang,
         nama_barang: barang.nama_barang,
         deskripsi: barang.deskripsi,
         harga: barang.harga,
