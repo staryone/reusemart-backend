@@ -103,10 +103,23 @@ const getCategoryStats = async (req, res, next) => {
   }
 };
 
+const getExpiredItems = async (req, res, next) => {
+  try {
+    const result = await barangService.getExpiredItems();
+
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   get,
   getList,
   updateBarangStatus,
   updateBarangStatusByGudang,
   getCategoryStats,
+  getExpiredItems,
 };

@@ -688,6 +688,56 @@ const getCategoryStats = async (year = null) => {
   }
 };
 
+const getExpiredItems = async () => {
+  const currentDate = new Date(); // Tanggal saat ini: 09 Juni 2025, 11:50 WIB
+
+  const expiredItems = await prismaClient.barang.findMany({
+    where: {
+      detail_penitipan: {
+        tanggal_akhir: {
+          lt: currentDate, // Mengambil barang dengan tanggal_akhir sebelum sekarang
+        },
+      },
+    },
+    include: {
+      detail_penitipan: {
+        include: {
+          penitipan: {
+            include: {
+              penitip: {
+                select: {
+                  prefix: true,
+                  id_penitip: true,
+                  nama: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const formattedItems = await Promise.all(
+    expiredItems.map(async (item) => {
+      return {
+        kode_produk: idToString(item.prefix, item.id_barang),
+        nama_produk: item.nama_barang,
+        id_penitip: idToString(
+          item.detail_penitipan.penitipan.penitip.prefix,
+          item.detail_penitipan.penitipan.penitip.id_penitip
+        ),
+        nama_penitip: item.detail_penitipan.penitipan.penitip.nama,
+        tanggal_masuk: item.detail_penitipan.tanggal_masuk,
+        tanggal_akhir: item.detail_penitipan.tanggal_akhir,
+        batas_ambil: item.detail_penitipan.batas_ambil, // Mengasumsikan ada kolom batas_ambil
+      };
+    })
+  );
+
+  return formattedItems;
+};
+
 export default {
   create,
   get,
@@ -695,4 +745,5 @@ export default {
   updateStatus,
   update,
   getCategoryStats,
+  getExpiredItems,
 };

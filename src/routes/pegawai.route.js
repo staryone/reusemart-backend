@@ -5,6 +5,12 @@ import { restrictTo } from "../middleware/restrictTo.middleware.js";
 
 const pegawaiRouter = new express.Router();
 
+pegawaiRouter.get(
+  "/api/owner/get-expired-items",
+  restrictTo("PEGAWAI", "OWNER"),
+  barangController.getExpiredItems
+);
+
 pegawaiRouter.patch(
   "/api/pegawai/status-barang",
   restrictTo("PEGAWAI", "GUDANG"),
