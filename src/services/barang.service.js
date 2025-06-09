@@ -36,12 +36,12 @@ const create = async (request, id_penitip) => {
   });
 
   await Promise.all(
-    imageURLs.map(async (imageurl,index) => {
+    imageURLs.map(async (imageurl, index) => {
       await prismaClient.gambarBarang.create({
         data: {
           url_gambar: imageurl,
           id_barang: barang.id_barang,
-          is_primary: index == 0 ? true : false
+          is_primary: index == 0 ? true : false,
         },
       });
     })
@@ -580,10 +580,119 @@ const update = async (id_barang, request, id_penitip, existingGambar = []) => {
   return result;
 };
 
+// const getCategoryStats = async () => {
+//   try {
+//     // Fetch all categories with their associated items
+//     const categories = await prismaClient.kategori.findMany({
+//       include: {
+//         barang: {
+//           select: {
+//             status: true,
+//           },
+//         },
+//       },
+//     });
+
+//     // Process the data to calculate stats for each category
+//     const categoryStats = categories.map((kategori) => {
+//       const stats = kategori.barang.reduce(
+//         (acc, barang) => {
+//           if (barang.status === "TERJUAL") {
+//             acc.sold += 1;
+//           } else if (
+//             barang.status === "DIDONASIKAN" ||
+//             barang.status === "KEMBALI"
+//           ) {
+//             acc.unsold += 1;
+//           }
+//           return acc;
+//         },
+//         { sold: 0, unsold: 0 }
+//       );
+
+//       return {
+//         id_kategori: kategori.id_kategori,
+//         nama_kategori: kategori.nama_kategori,
+//         total_sold: stats.sold,
+//         total_unsold: stats.unsold,
+//       };
+//     });
+
+//     return categoryStats;
+//   } catch (error) {
+//     console.error("Error in getCategoryStats:", error);
+//     throw new ResponseError(
+//       500,
+//       "Gagal mengambil statistik kategori: " + error.message
+//     );
+//   }
+// };
+const getCategoryStats = async (year = null) => {
+  try {
+    // Build the where clause for filtering by year if provided
+    const yearFilter = year
+      ? {
+          createdAt: {
+            gte: new Date(`${year}-01-01T00:00:00.000Z`),
+            lte: new Date(`${year}-12-31T23:59:59.999Z`),
+          },
+        }
+      : {};
+
+    // Fetch all categories with their associated items, filtered by year if specified
+    const categories = await prismaClient.kategori.findMany({
+      include: {
+        barang: {
+          where: yearFilter,
+          select: {
+            status: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    // Process the data to calculate stats for each category
+    const categoryStats = categories.map((kategori) => {
+      const stats = kategori.barang.reduce(
+        (acc, barang) => {
+          if (barang.status === "TERJUAL") {
+            acc.sold += 1;
+          } else if (
+            barang.status === "DIDONASIKAN" ||
+            barang.status === "TERDONASI" ||
+            barang.status === "KEMBALI"
+          ) {
+            acc.unsold += 1;
+          }
+          return acc;
+        },
+        { sold: 0, unsold: 0 }
+      );
+
+      return {
+        id_kategori: kategori.id_kategori,
+        nama_kategori: kategori.nama_kategori,
+        total_sold: stats.sold,
+        total_unsold: stats.unsold,
+      };
+    });
+
+    return categoryStats;
+  } catch (error) {
+    console.error("Error in getCategoryStats:", error);
+    throw new ResponseError(
+      500,
+      "Gagal mengambil statistik kategori: " + error.message
+    );
+  }
+};
+
 export default {
   create,
   get,
   getList,
   updateStatus,
   update,
+  getCategoryStats,
 };

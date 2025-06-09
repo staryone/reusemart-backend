@@ -380,4 +380,10 @@ pegawaiRouter.patch(
   pegawaiController.resetPassword
 );
 
+pegawaiRouter.get(
+  "/api/owner/get-category-stats",
+  restrictTo("PEGAWAI", "OWNER"),
+  barangController.getCategoryStats
+);
+
 export { pegawaiRouter };

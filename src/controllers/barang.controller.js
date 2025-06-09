@@ -70,9 +70,43 @@ const updateBarangStatusByGudang = async (req, res, next) => {
   }
 };
 
+// const getCategoryStats = async (req, res, next) => {
+//   try {
+//     const result = await barangService.getCategoryStats();
+
+//     res.status(200).json({
+//       data: result,
+//     });
+//   } catch (e) {
+//     next(e);
+//   }
+// };
+const getCategoryStats = async (req, res, next) => {
+  try {
+    const year = req.query.year ? parseInt(req.query.year) : null;
+
+    // Validate year if provided
+    if (
+      year &&
+      (isNaN(year) || year < 1900 || year > new Date().getFullYear())
+    ) {
+      throw new ResponseError(400, "Invalid year provided");
+    }
+
+    const result = await barangService.getCategoryStats(year);
+
+    res.status(200).json({
+      data: result,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   get,
   getList,
   updateBarangStatus,
   updateBarangStatusByGudang,
+  getCategoryStats,
 };
