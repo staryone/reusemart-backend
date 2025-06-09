@@ -632,9 +632,15 @@ const getCategoryStats = async (year = null) => {
     // Build the where clause for filtering by year if provided
     const yearFilter = year
       ? {
-          createdAt: {
-            gte: new Date(`${year}-01-01T00:00:00.000Z`),
-            lte: new Date(`${year}-12-31T23:59:59.999Z`),
+          // createdAt: {
+          //   gte: new Date(`${year}-01-01T00:00:00.000Z`),
+          //   lte: new Date(`${year}-12-31T23:59:59.999Z`),
+          // },
+          detail_penitipan: {
+            tanggal_masuk: {
+              gte: new Date(`${year}-01-01T00:00:00.000Z`),
+              lte: new Date(`${year}-12-31T23:59:59.999Z`),
+            },
           },
         }
       : {};
@@ -646,7 +652,11 @@ const getCategoryStats = async (year = null) => {
           where: yearFilter,
           select: {
             status: true,
-            createdAt: true,
+            detail_penitipan: {
+              select: {
+                tanggal_masuk: true,
+              },
+            },
           },
         },
       },
@@ -660,7 +670,6 @@ const getCategoryStats = async (year = null) => {
             acc.sold += 1;
           } else if (
             barang.status === "DIDONASIKAN" ||
-            barang.status === "TERDONASI" ||
             barang.status === "KEMBALI"
           ) {
             acc.unsold += 1;
