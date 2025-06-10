@@ -255,6 +255,7 @@ const getAllList = async (query) => {
     },
     skip: skip,
     take: limit,
+    orderBy: {tanggal_redeem: "desc"}
   });
 
   return [listRedeemMerch, countAllRedeemMerch];
