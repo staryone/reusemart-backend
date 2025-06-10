@@ -916,6 +916,15 @@ const konfirmasiPengambilan = async (request) => {
             tanggal_laku: new Date(),
           },
         });
+
+        await tx.barang.update({
+          where: {
+            id_barang: dt.barang.id_barang,
+          },
+          data: {
+            status: "TERJUAL"
+          }
+        })
       })
     );
 

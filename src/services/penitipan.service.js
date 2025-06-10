@@ -455,6 +455,137 @@ const getLaporanKomisi = async (request) => {
   return [formattedPenitipan, countAllPenitipan];
 };
 
+// const getLaporanPenjualanBulanan = async (request) => {
+//   const q = request.search;
+//   const filter = request.status;
+//   const startDate = request.startDate ? new Date(request.startDate) : undefined;
+//   const endDate = request.endDate ? new Date(request.endDate) : undefined;
+
+//   // Validate dates
+//   if (startDate && isNaN(startDate.getTime())) {
+//     throw new Error("Invalid start date format");
+//   }
+//   if (endDate && isNaN(endDate.getTime())) {
+//     throw new Error("Invalid end date format");
+//   }
+
+//   // Base where clause for search and filter
+//   const baseWhere =
+//     filter === "TERJUAL" || q
+//       ? {
+//           OR: [
+//             q
+//               ? {
+//                   penitipan: {
+//                     hunter: {
+//                       nama: {
+//                         contains: q,
+//                       },
+//                     },
+//                   },
+//                 }
+//               : null,
+//             q
+//               ? {
+//                   barang: {
+//                     nama_barang: {
+//                       contains: q,
+//                     },
+//                   },
+//                 }
+//               : null,
+//             filter === "TERJUAL"
+//               ? {
+//                   barang: {
+//                     status: {
+//                       equals: "TERJUAL",
+//                     },
+//                   },
+//                 }
+//               : null,
+//           ].filter(Boolean),
+//         }
+//       : {};
+
+//   // Add date range filter to the where clause
+//   const dateRangeFilter =
+//     startDate || endDate
+//       ? {
+//           tanggal_laku: {
+//             ...(startDate ? { gte: startDate } : {}),
+//             ...(endDate ? { lte: endDate } : {}),
+//           },
+//         }
+//       : {};
+
+//   // Combine base filters with date range filter
+//   const whereClause = {
+//     ...baseWhere,
+//     ...(startDate || endDate ? dateRangeFilter : {}),
+//     ...(baseWhere.OR ? { AND: [baseWhere] } : {}),
+//   };
+
+//   // Fetch all relevant data
+//   const listPenitipan = await prismaClient.detailPenitipan.findMany({
+//     where: whereClause,
+//     include: {
+//       barang: {
+//         select: {
+//           harga: true,
+//           status: true,
+//           detail_transaksi: {
+//             select: {
+//               komisi_hunter: true
+//             }
+//           }
+//         },
+//       },
+//     },
+//     orderBy: {
+//       tanggal_laku: "asc",
+//     },
+//   });
+//   console.log("\n\n", listPenitipan[1].barang.detail_transaksi);
+
+//   // Aggregate data by month manually
+//   const aggregatedData = listPenitipan.reduce((acc, item) => {
+//     if (item.barang.status !== "TERJUAL") return acc; // Double-check status
+//     const date = new Date(item.tanggal_laku);
+//     const monthYear = date.toLocaleDateString("id-ID", {
+//       month: "long",
+//       year: "numeric",
+//     });
+
+//     console.log("\n\nMasuk ga ya",item.barang.detail_transaksi[0].komisi_hunter);
+//     const existingMonth = acc.find((m) => m.month === monthYear);
+//     if (existingMonth) {
+//       existingMonth.itemsSold += 1;
+//       existingMonth.totalSales += item.barang.detail_transaksi[0].komisi_hunter || 0;
+//     } else {
+//       acc.push({
+//         month: monthYear,
+//         itemsSold: 1,
+//         totalSales: item.barang.detail_transaksi[0].komisi_hunter || 0,
+//       });
+//     }
+//     return acc;
+//   }, []);
+
+//   // Sort by date for consistency
+//   aggregatedData.sort((a, b) => {
+//     const dateA = new Date(a.month, 0).getTime();
+//     const dateB = new Date(b.month, 0).getTime();
+//     return dateA - dateB;
+//   });
+
+//   // Count total records for all months (optional, for completeness)
+//   const countAllPenitipan = await prismaClient.detailPenitipan.count({
+//     where: whereClause,
+//   });
+
+//   console.log("\n\n", aggregatedData);
+//   return [aggregatedData, countAllPenitipan];
+// };
 const getLaporanPenjualanBulanan = async (request) => {
   const q = request.search;
   const filter = request.status;
