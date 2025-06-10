@@ -1,21 +1,10 @@
 import { prismaClient } from "../application/database.js";
 import { getUrlFile, uploadFile, deleteFile } from "../application/storage.js";
 import { ResponseError } from "../errors/response.error.js";
-import { idToInteger, idToString } from "../utils/formater.util.js";
-import {
-  createMerchandiseValidation,
-  getMerchandiseValidation,
-  updateMerchandiseValidation,
-} from "../validation/merchandise.validate.js";
-import { validate } from "../validation/validate.js";
-
-const formatNamaGambarMerch = (id_merchandise) => {
-  return `merch_${id_merchandise}_${Date.now()}`;
-};
+import { idToString } from "../utils/formater.util.js";
 
 const get = async (idMerchandise) => {
-  idMerchandise = validate(getMerchandiseValidation, idMerchandise);
-  const id_merchandise = idToInteger(idMerchandise);
+  const id_merchandise = parseInt(idMerchandise);
 
   const merchandise = await prismaClient.merchandise.findUnique({
     where: {
@@ -37,13 +26,11 @@ const get = async (idMerchandise) => {
   }
 
   return {
-    id_merchandise: idToString("MERCH", merchandise.id_merchandise),
+    id_merchandise: merchandise.id_merchandise,
     nama_merch: merchandise.nama_merch,
     harga_poin: merchandise.harga_poin,
     stok: merchandise.stok,
-    url_gambar: merchandise.url_gambar
-      ? await getUrlFile(merchandise.url_gambar)
-      : null,
+    url_gambar: merchandise.url_gambar,
     createdAt: merchandise.createdAt,
     updatedAt: merchandise.updatedAt,
   };
@@ -102,11 +89,11 @@ const getList = async (query) => {
 
   const formattedMerchandise = await Promise.all(
     listMerchandise.map(async (merch) => ({
-      id_merchandise: idToString("MERCH", merch.id_merchandise),
+      id_merchandise: merch.id_merchandise,
       nama_merch: merch.nama_merch,
       harga_poin: merch.harga_poin,
       stok: merch.stok,
-      url_gambar: merch.url_gambar ? await getUrlFile(merch.url_gambar) : null,
+      url_gambar: merch.url_gambar,
       createdAt: merch.createdAt,
       updatedAt: merch.updatedAt,
     }))
@@ -116,10 +103,6 @@ const getList = async (query) => {
 };
 
 const update = async (id_merchandise, request) => {
-  request.id_merchandise = id_merchandise;
-  request = validate(updateMerchandiseValidation, request);
-  id_merchandise = idToInteger(id_merchandise);
-
   const existingMerch = await prismaClient.merchandise.findUnique({
     where: { id_merchandise },
     select: { url_gambar: true },

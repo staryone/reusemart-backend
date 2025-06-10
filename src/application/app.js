@@ -25,6 +25,7 @@ import { transaksiRouter } from "../routes/transaksi.route.js";
 import { ratingRouter } from "../routes/rating.route.js";
 import notificationRouter from "../routes/notifikasi.route.js";
 import { pengirimanRouter } from "../routes/pengiriman.route.js";
+import { merchandiseRouter } from "../routes/merchandise.route.js";
 
 export const app = express();
 const PASSWORD_SWAGGER = process.env.PASSWORD_SWAGGER;
@@ -65,4 +66,5 @@ app.use(transaksiRouter);
 app.use(ratingRouter);
 app.use(notificationRouter);
 app.use(pengirimanRouter);
+app.use(merchandiseRouter);
 app.use(errorMiddleware);

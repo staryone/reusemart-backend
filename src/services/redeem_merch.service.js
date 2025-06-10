@@ -8,24 +8,93 @@ import {
 } from "../validation/redeem_merch.validate.js";
 import { validate } from "../validation/validate.js";
 
+// const create = async (request) => {
+//   request = validate(createRedeemMerchValidation, request);
+
+//   const currentMerch = await prismaClient.merchandise.findUnique({
+//     where: {
+//         id_merchandise: request.id_merchandise,
+//       },
+//   });
+
+//   if(request.jumlah_merch > currentMerch.stok){
+//     throw new ResponseError(400, "Jumlah merchandise yang tersedia tidak mencukupi")
+//   }
+//   else {
+//     currentMerch.stok = currentMerch.stok - request.jumlah_merch;
+//   }
+//   return prismaClient.redeemMerchandise.create({
+//     data: request,
+//   });
+// };
 const create = async (request) => {
   request = validate(createRedeemMerchValidation, request);
-  
+
   const currentMerch = await prismaClient.merchandise.findUnique({
     where: {
-        id_merchandise: request.id_merchandise,
-      },
+      id_merchandise: request.id_merchandise,
+    },
   });
 
-  if(request.jumlah_merch > currentMerch.stok){
-    throw new ResponseError(400, "Jumlah merchandise yang tersedia tidak mencukupi")
+  if (!currentMerch) {
+    throw new ResponseError(404, "Merchandise tidak ditemukan");
   }
-  else {
-    currentMerch.stok = currentMerch.stok - request.jumlah_merch;
+
+  if (request.jumlah_merch > currentMerch.stok) {
+    throw new ResponseError(
+      400,
+      "Jumlah merchandise yang tersedia tidak mencukupi"
+    );
   }
-  return prismaClient.redeemMerchandise.create({
-    data: request,
+
+  const pembeli = await prismaClient.pembeli.findUnique({
+    where: {
+      id_pembeli: request.id_pembeli,
+    },
+    select: {
+      poin_loyalitas: true,
+    },
   });
+
+  if (!pembeli) {
+    throw new ResponseError(404, "Pembeli tidak ditemukan");
+  }
+
+  const totalPointsRequired = currentMerch.harga_poin * request.jumlah_merch;
+
+  if (pembeli.poin_loyalitas < totalPointsRequired) {
+    throw new ResponseError(
+      400,
+      `Poin tidak cukup. Anda memiliki ${pembeli.poin_loyalitas} poin, diperlukan ${totalPointsRequired} poin.`
+    );
+  }
+
+  const result = await prismaClient.$transaction([
+    // Update merchandise stock
+    prismaClient.merchandise.update({
+      where: {
+        id_merchandise: request.id_merchandise,
+      },
+      data: {
+        stok: currentMerch.stok - request.jumlah_merch,
+      },
+    }),
+    // Deduct buyer points
+    prismaClient.pembeli.update({
+      where: {
+        id_pembeli: request.id_pembeli,
+      },
+      data: {
+        poin_loyalitas: pembeli.poin_loyalitas - totalPointsRequired,
+      },
+    }),
+    // Create redeemMerchandise record
+    prismaClient.redeemMerchandise.create({
+      data: request,
+    }),
+  ]);
+
+  return result[2]; // Return the created redeemMerchandise record
 };
 
 const get = async (id, id_pembeli) => {
@@ -150,7 +219,7 @@ const getAllList = async (query) => {
                   merchandise: {
                     nama_merch: {
                       contains: q,
-                    }
+                    },
                   },
                 }
               : null,
@@ -182,7 +251,7 @@ const getAllList = async (query) => {
     where: whereClause,
     include: {
       pembeli: true,
-        merchandise: true
+      merchandise: true,
     },
     skip: skip,
     take: limit,
