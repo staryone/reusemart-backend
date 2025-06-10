@@ -151,6 +151,7 @@ model Merchandise {
   nama_merch     String                    @db.VarChar(255)
   harga_poin     Int
   stok           Int
+  url_gambar     String                    @db.VarChar(255)
   createdAt      DateTime                  @default(now())
   updatedAt      DateTime                  @default(now()) @db.DateTime(0)
   redeem_merch   RedeemMerchandise[] @relation("RedeemMerchToMerchandise")
