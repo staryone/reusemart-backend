@@ -240,4 +240,10 @@ redeemMerchRouter.patch(
   redeemMerchController.update
 );
 
+redeemMerchRouter.get(
+  "/api/redeem-merch/my-lists",
+  restrictTo("PEMBELI"),
+  redeemMerchController.getListByPembeli
+);
+
 export { redeemMerchRouter };

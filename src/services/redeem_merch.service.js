@@ -287,9 +287,52 @@ const update = async (request) => {
   });
 };
 
+const getListByPembeli = async (id_pembeli, query) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const q = query.search;
+
+  // Build the where clause dynamically
+  const whereClause = {
+    id_pembeli: id_pembeli,
+    ...(q
+      ? {
+          OR: [
+            {
+              merchandise: {
+                nama_merch: {
+                  contains: q,
+                },
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const [countAllRedeemMerch, listRedeemMerch] = await Promise.all([
+    prismaClient.redeemMerchandise.count({
+      where: whereClause,
+    }),
+    prismaClient.redeemMerchandise.findMany({
+      where: whereClause,
+      include: {
+        pembeli: true,
+        merchandise: true,
+      },
+      skip: skip,
+      take: limit,
+    }),
+  ]);
+
+  return [listRedeemMerch, countAllRedeemMerch];
+};
+
 export default {
   create,
   get,
   getAllList,
   update,
+  getListByPembeli,
 };

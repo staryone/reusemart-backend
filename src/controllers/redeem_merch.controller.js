@@ -47,8 +47,9 @@ const get = async (req, res, next) => {
 
 const getAllList = async (req, res, next) => {
   try {
-    const [listRedeemMerch, totalItems] =
-      await redeemMerchService.getAllList(req.query);
+    const [listRedeemMerch, totalItems] = await redeemMerchService.getAllList(
+      req.query
+    );
 
     res.status(200).json({
       data: listRedeemMerch,
@@ -73,9 +74,25 @@ const update = async (req, res, next) => {
   }
 };
 
+const getListByPembeli = async (req, res, next) => {
+  try {
+    const id_pembeli = parseInt(req.session.user.pembeli.id_pembeli);
+    const [listRedeemMerch, totalItems] =
+      await redeemMerchService.getListByPembeli(id_pembeli, req.query);
+
+    res.status(200).json({
+      data: listRedeemMerch,
+      totalItems: totalItems,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 export default {
   create,
   get,
   getAllList,
   update,
+  getListByPembeli,
 };
