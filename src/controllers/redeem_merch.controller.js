@@ -76,7 +76,7 @@ const update = async (req, res, next) => {
 
 const getListByPembeli = async (req, res, next) => {
   try {
-    const id_pembeli = parseInt(req.session.user.pembeli.id_pembeli);
+    const id_pembeli = req.session.user.pembeli.id_pembeli;
     const [listRedeemMerch, totalItems] =
       await redeemMerchService.getListByPembeli(id_pembeli, req.query);
 

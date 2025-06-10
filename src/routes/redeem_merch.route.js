@@ -4,6 +4,12 @@ import redeemMerchController from "../controllers/redeem_merch.controller.js";
 
 const redeemMerchRouter = new express.Router();
 
+redeemMerchRouter.get(
+  "/api/redeem-merch/my-lists",
+  restrictTo("PEMBELI"),
+  redeemMerchController.getListByPembeli
+);
+
 /**
  * @swagger
  * /api/redeem-merch:
@@ -238,12 +244,6 @@ redeemMerchRouter.patch(
   "/api/redeem-merch/:id",
   restrictTo("PEMBELI", "PEGAWAI", "CS"),
   redeemMerchController.update
-);
-
-redeemMerchRouter.get(
-  "/api/redeem-merch/my-lists",
-  restrictTo("PEMBELI"),
-  redeemMerchController.getListByPembeli
 );
 
 export { redeemMerchRouter };
