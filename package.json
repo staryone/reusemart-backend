@@ -8,11 +8,11 @@
   "main": "src/main.js",
   "scripts": {
     "test": "jest -i",
-    "dev": "node src/main.js",
+    "dev": "nodemon src/main.js",
     "seed": "node prisma/seed.js",
     "reset": "npx prisma migrate reset",
     "migrate": "npx prisma migrate dev",
-    "start": "nodemon src/main.js"
+    "start": "node src/main.js"
   },
   "jest": {
     "transform": {
