@@ -319,7 +319,7 @@ const forgotPassword = async (email) => {
   const contentMail = await renderMailHtml("reset-password-sent.ejs", {
     name: user.name,
     email: user.email,
-    resetLink: `http://localhost:3000/reset-password/${token}`,
+    resetLink: `http://reusemart.my.id/reset-password/${token}`,
   });
 
   const mailOptions = {
