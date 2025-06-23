@@ -329,7 +329,13 @@ const forgotPassword = async (email) => {
     html: String(contentMail),
   };
 
-  console.log(await sendMail(mailOptions));
+  try {
+    const result = await sendMail(mailOptions);
+    console.log("Email sent result:", result);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new ResponseError(500, "Gagal mengirim email: " + error.message);
+  }
 
   await prismaClient.user.update({
     where: {
