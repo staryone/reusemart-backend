@@ -14,6 +14,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import "dotenv/config";
 import { renderMailHtml, sendMail } from "../application/mail.js";
+import sendgridMail from "@sendgrid/mail";
 
 const login = async (request) => {
   const loginRequest = validate(loginAuthValidation, request);
@@ -322,18 +323,20 @@ const forgotPassword = async (email) => {
     resetLink: `http://reusemart.my.id/reset-password/${token}`,
   });
 
-  const mailOptions = {
-    from: "reusemart.my.id@gmail.com",
+  // SendGrid setup
+  sendgridMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  const msg = {
     to: email,
+    from: "support@reusemart.my.id",
     subject: "Password Reset",
     html: String(contentMail),
   };
 
   try {
-    const result = await sendMail(mailOptions);
-    console.log("Email sent result:", result);
+    await sendgridMail.send(msg);
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error sending email with SendGrid:", error);
     throw new ResponseError(500, "Gagal mengirim email: " + error.message);
   }
 
