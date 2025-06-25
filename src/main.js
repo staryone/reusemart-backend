@@ -20,11 +20,11 @@ app.listen(3001, () => {
   //   logger.info("Memeriksa masa penitipan...");
   //   logger.info(result);
   // });
-  cron.schedule("0 0 0 * * *", async () => {
-    const result = await penitipanService.checkMasaPenitipan();
-    logger.info("Memeriksa masa penitipan...");
-    logger.info(result);
-  });
+  // cron.schedule("0 0 0 * * *", async () => {
+  //   const result = await penitipanService.checkMasaPenitipan();
+  //   logger.info("Memeriksa masa penitipan...");
+  //   logger.info(result);
+  // });
 
   // cron.schedule("* * * * *", async () => {
   //   logger.info("Update top seller...");
