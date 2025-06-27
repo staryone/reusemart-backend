@@ -239,12 +239,6 @@ const getHistoryPenjualan = async (id) => {
     },
   });
 
-  const test = await prismaClient.detailTransaksi.findMany({});
-  console.log(test);
-
-  // logger.info(transactions);
-  // console.log(transactions);
-
   return transactions;
 };
 
