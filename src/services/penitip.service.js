@@ -239,6 +239,9 @@ const getHistoryPenjualan = async (id) => {
     },
   });
 
+  // logger.info(transactions);
+  console.log(transactions);
+
   return transactions;
 };
 
