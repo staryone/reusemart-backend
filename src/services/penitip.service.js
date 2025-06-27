@@ -182,54 +182,56 @@ const profile = async (id) => {
 const getHistoryPenjualan = async (id) => {
   const id_user = validate(getIdAuthValidation, id);
 
-  const transactions = await prismaClient.penitip.findUnique({
+  const transactions = await prismaClient.detailTransaksi.findMany({
     where: {
-      id_user: id_user,
+      AND: [
+        {
+          transaksi: {
+            pengiriman: {
+              status_pengiriman: "SUDAH_DITERIMA",
+            },
+          },
+        },
+        {
+          barang: {
+            detail_penitipan: {
+              penitipan: {
+                penitip: { id_user },
+              },
+            },
+          },
+        },
+      ],
     },
     select: {
-      id_penitip: true,
-      nama: true,
-      penitipan: {
+      id_dtl_transaksi: true,
+      poin: true,
+      komisi_penitip: true,
+      barang: {
         select: {
-          id_penitipan: true,
+          id_barang: true,
+          nama_barang: true,
+          harga: true,
           detail_penitipan: {
             select: {
               tanggal_masuk: true,
               tanggal_laku: true,
-              barang: {
-                select: {
-                  id_barang: true,
-                  nama_barang: true,
-                  harga: true,
-                  detail_transaksi: {
-                    where: {
-                      transaksi: {
-                        isNot: null,
-                      },
-                    },
-                    select: {
-                      id_dtl_transaksi: true,
-                      poin: true,
-                      komisi_penitip: true,
-                      transaksi: {
-                        select: {
-                          pengiriman: true,
-                          id_transaksi: true,
-                          tanggal_transaksi: true,
-                          total_harga: true,
-                          status_Pembayaran: true,
-                          total_akhir: true,
-                          pembeli: {
-                            select: {
-                              nama: true,
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
+            },
+          },
+        },
+      },
+      transaksi: {
+        select: {
+          id_transaksi: true,
+          tanggal_transaksi: true,
+          total_harga: true,
+          total_akhir: true,
+          status_Pembayaran: true,
+          pembeli: { select: { nama: true } },
+          pengiriman: {
+            select: {
+              tanggal: true,
+              status_pengiriman: true,
             },
           },
         },
