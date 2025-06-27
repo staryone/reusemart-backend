@@ -202,6 +202,11 @@ const getHistoryPenjualan = async (id) => {
                   nama_barang: true,
                   harga: true,
                   detail_transaksi: {
+                    where: {
+                      transaksi: {
+                        isNot: null,
+                      },
+                    },
                     select: {
                       id_dtl_transaksi: true,
                       poin: true,
@@ -568,7 +573,7 @@ const topSeller = async () => {
     },
   });
 
-  if(!detailPenitipan){
+  if (!detailPenitipan) {
     return "Tidak ada hasil";
   }
 
@@ -596,7 +601,7 @@ const topSeller = async () => {
     }
   }
 
-  console.log("\n\nTotals",totalsByPenitip);
+  console.log("\n\nTotals", totalsByPenitip);
 
   const calonTopSeller = await prismaClient.penitip.findUnique({
     where: {
